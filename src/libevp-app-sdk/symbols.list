@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+EVP_blobOperation
+EVP_getWorkspaceDirectory
+EVP_initialize
+EVP_processEvent
+EVP_sendMessage
+EVP_sendRpcResponse
+EVP_sendState
+EVP_sendTelemetry
+EVP_setConfigurationCallback
+EVP_setMessageCallback
+EVP_setRpcCallback
+EVP_BlobRequestHttpExt_initialize
+EVP_BlobRequestHttpExt_addHeader
+EVP_BlobRequestHttpExt_addAzureHeader
+EVP_BlobRequestHttpExt_free
+EVP_BlobRequestHttpExt_setUrl
+EVP_streamOutputOpen
+EVP_streamInputOpen
+EVP_streamClose
+EVP_streamWrite

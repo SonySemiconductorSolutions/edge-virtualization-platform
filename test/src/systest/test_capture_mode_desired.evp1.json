@@ -1,0 +1,3 @@
+{
+    "deployment":"{\"deploymentId\":\"4619b7ed-02a9-8c8f-44cd-000000000001\",\"instanceSpecs\":{\"b218f90b-9228-423f-8e02-000000000001\":{\"moduleId\":\"b91fe3e8-df6d-41b7-90cb-72f8b92bdf5\",\"entryPoint\":\"backdoor-capture\",\"version\":1,\"publish\":{},\"subscribe\":{}}},\"modules\":{\"b91fe3e8-df6d-41b7-90cb-72f8b92bdf5\":{\"moduleImpl\":\"spawn\",\"downloadUrl\":\"\",\"hash\":\"\"}},\"publishTopics\":{},\"subscribeTopics\":{}}"
+}

@@ -1,0 +1,232 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+config EVP_AGENT_EXPERIMENTAL
+	bool "Enable experimental Kconfig options for EVP agent"
+	default n
+	---help---
+		This option enables experimental Kconfig options for EVP agent.
+
+config EVP_MQTT_RECV_BUFF_SIZE
+	int "MQTT receiver buffer size"
+	default 131072
+	---help---
+		The agent uses statically allocated buffer for MQTT processing.
+		This option configures the size of the buffer.
+		It affects the max size of MQTT packets the agent can deal with.
+
+config EVP_MQTT_SEND_BUFF_SIZE
+	int "MQTT sender buffer size"
+	default 131072
+	---help---
+		The agent uses statically allocated buffer for MQTT processing.
+		This option configures the size of the buffer.
+		It affects the max size of MQTT packets the agent can deal with.
+
+config EVP_AGENT_XLOG_LEVEL
+	int "EVP agent log level"
+	default 2
+	---help---
+		One of XLOG_LEVEL_ values defined in xlog.h file.
+
+config EVP_AGENT_XLOG_TO_SYSLOG
+	bool "Use the SYSLOG for XLOG output"
+	default n
+
+config EVP_AGENT_TLS_DEBUG_THRESHOLD
+	int "EVP agent EVP_AGENT_TLS_DEBUG_THRESHOLD"
+	default 1
+	---help---
+		Available values:
+		https://github.com/ARMmbed/mbedtls/blob/94ca18733a9d52438a530823df783d332206c069/include/mbedtls/debug.h#L93-L100
+
+		The default threshold was chosen to include the fatal alert message,
+		which is level 1. mbedtls doesn't seem to provide a nicer way for
+		applications to get alerts. (cf. OpenSSL has SSL_CB_ALERT)
+		https://github.com/ARMmbed/mbedtls/blob/94ca18733a9d52438a530823df783d332206c069/library/ssl_msg.c#L4955-L4956
+
+config EVP_AGENT_TLS_KEYLOG
+	bool "EVP agent TLS key logging"
+	default n
+	---help---
+		If the "EVP_TLS_KEYLOGFILE" environment variable is set,
+		appends CLIENTRANDOM records compatible with SSLKEYLOGFILE
+		to the file.
+
+config EVP_MODULE_IMPL_OBJ
+	bool "module_impl_obj.c"
+	default n
+	---help---
+		A partial implementation of MODULE_IMPL,
+		used by other MODULE_IMPL_xxx as a library.
+
+config EVP_MODULE_IMPL_NOOP
+	bool "module_instance_impl_obj.c"
+	default n
+	---help---
+		A partial implementation of MODULE_IMPL,
+		used by other MODULE_IMPL_xxx as a library.
+
+choice
+	prompt "Type of persistance"
+	default EVP_TWINS_PERSISTENCE
+
+config EVP_TWINS_PERSISTENCE
+	bool "Persist DeploymentManifest/Configuration/State"
+	---help---
+		If enabled, store the local copies of these data onto
+		the filesystem so that they can be restored when the
+		agent rebooted later.
+
+config EVP_TWINS_NO_PERSISTANCE
+	bool "No Persist DeploymentManifest/Configuration/State"
+	---help---
+		If enabled they are merely kept in-core and they will
+		be lost when agent is terminated.
+
+endchoice
+
+config EVP_SDK_LOCAL
+	bool "Provide local access for the module SDK"
+	default n
+
+config EVP_SDK_SOCKET
+	bool "Provide unix domain socket for the module SDK to connent"
+	default n
+
+config EVP_MODULE_IMPL_OBJ_LOCAL
+	bool "Local module objects"
+	select EVP_MODULE_IMPL_OBJ
+	select EVP_MODULE_IMPL_NOOP
+	---help---
+		Support local filesystem EVP modules
+
+config EVP_MODULE_IMPL_DLFCN
+	bool "dlopen ELF module"
+	# Enable by default for NuttX
+	default EXTERNALS_EVP_AGENT
+	select EVP_MODULE_IMPL_OBJ
+	select EVP_MODULE_IMPL_NOOP
+	select EVP_SDK_LOCAL
+	---help---
+		Support EVP modules based on NuttX dlfcn.
+
+config EVP_MODULE_IMPL_SPAWN
+	bool "Exec binary as process"
+	select EVP_MODULE_IMPL_OBJ
+	select EVP_MODULE_IMPL_NOOP
+	select EVP_SDK_SOCKET
+	---help---
+		Support EVP modules based on native binaries.
+
+config EVP_MODULE_IMPL_PYTHON
+	bool "Exec Python module as process"
+	depends on EVP_MODULE_IMPL_SPAWN
+	default y
+	select EVP_MODULE_IMPL_OBJ
+	select EVP_MODULE_IMPL_NOOP
+	select EVP_SDK_SOCKET
+	---help---
+		Support EVP modules based on Python modules.
+
+config EVP_MODULE_IMPL_DOCKER
+	bool "Talk with Docker API"
+	select EVP_SDK_SOCKET
+	---help---
+		Support EVP modules based on Docker.
+
+config EVP_MODULE_IMPL_WASM
+	bool "WebAssembly modules"
+	select EVP_MODULE_IMPL_OBJ
+	select EVP_MODULE_IMPL_NOOP
+	select EVP_SDK_LOCAL
+	select EVP_MODULE_IMPL_WASM_NATIVE_LIBS
+	---help---
+		Support EVP modules based on WebAssembly.
+
+if EVP_MODULE_IMPL_WASM
+config EVP_MODULE_IMPL_WASM_DEFAULT_STACKSIZE
+	int "Default stack size for WASM modules"
+	default 8192
+
+config EVP_MODULE_IMPL_WASM_DEFAULT_HEAPSIZE
+	int "Default heap size for WASM modules"
+	default 8192
+
+config EVP_MODULE_IMPL_WASM_DEFAULT_HOST_STACKSIZE
+	int "Default stack size for WASM runner thread"
+	default 0
+	---help---
+		0 means to use the system default.
+
+config EVP_MODULE_IMPL_WASM_NATIVE_LIBS
+	bool "Wasm native libraries"
+	default y
+	---help---
+		Allow loading native libraries to the Wasm runtime
+endif
+
+config EVP_AGENT_XLOG_COLORED_OUTPUT
+	depends on !EVP_AGENT_XLOG_TO_SYSLOG
+	bool "Print colored log output"
+	default n
+	---help---
+		Uses ANSI escape codes to print colored log output.
+
+config EVP_AGENT_MODULE_LOG_REPORT_LEN
+	int "The max length reported from module log"
+	range 1024 131072
+	default 4096
+	---help---
+		If the data to report is longer than than max, the
+		oldest data wil be discarded.
+
+config EVP_AGENT_MODULE_LOG_REPORT_PERIOD
+	int "The modle log report period"
+	range 500 60000
+	default 1000
+	---help---
+		The value is specified in ms
+
+config EVP_AGENT_BOARD_SUPPORT
+	string "Name of board-specific Makefile"
+	---help---
+		You can specify a Makefile with board-specific configuration here
+
+config EVP_AGENT_MAX_LIVE_BLOBS_PER_INSTANCE
+	int "Maximum allowed number of ongoing blob requests per instance"
+	default 10
+	---help---
+		Calls to EVP_blobOperation outside this limit shall be ignored by
+		the agent with EVP_DENIED.
+
+# WARNING: This is an experimental option and will be removed in future releases.
+config EVP_BLOB_GET_UPLOAD_URL
+	bool "EVP blobGetUploadURL support"
+	default n
+	depends on EVP_AGENT_EXPERIMENTAL
+	---help---
+		Retrieve STP access token.
+
+config EVP_AGENT_LOCAL_SDK_NNG_STREAMS
+	bool "Enables EVP_stream type nng on local SDK builds"
+	default n
+	---help---
+		This option allows the use of EVP_streams of type nng when local
+		SDK is enabled. When not set, calls to EVP_streamInputOpen or
+		EVP_streamOutputOpen shall return EVP_NOTSUP. This can help reduce
+		the additional memory footprint required by the nng library.
+
+		Since nng is bundled separately from the agent on remote SDK
+		builds, this option does not affect builds using remote SDK builds.
+
+config EVP_MODULE_INSTANCE_STOP_TIMEOUT
+	int "Maximum time before force stopping spawed instance after stop request"
+	depends on EVP_MODULE_IMPL_SPAWN
+	default 10
+	---help---
+		Defines the timeout value when stopping a spawned instance
+		(spawn & python).
+		If the timeout is reached, the instance will be forced stopped,
+		by killing the spawned instance.

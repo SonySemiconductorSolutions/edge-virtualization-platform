@@ -1,0 +1,39 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-agent",
+            "command": "make",
+            "args": [ "-j" ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "build-test",
+            "command": "make",
+            "args": [
+               "-j12", "${fileDirname}/${fileBasenameNoExtension}.elf"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/test"
+            },
+            "dependsOn":[
+                "build-agent"
+            ]
+        },
+        {
+            "label": "prepare-test",
+            "command": "mkdir",
+            "args": [
+                "-p",
+                "/tmp/evp_data"
+            ],
+            "dependsOn":[
+                "build-test"
+            ]
+        }
+    ]
+}

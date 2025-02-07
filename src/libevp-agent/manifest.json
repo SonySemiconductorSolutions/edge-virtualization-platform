@@ -1,0 +1,45 @@
+{
+    "instanceSpecs": {
+        "PPL": {
+            "version": 2,
+            "moduleId": "PPL-222",
+            "entryPoint": "main",
+            "publish": [
+                {
+                    "topic": "upstream/allowed/topic/path",
+                    "type": "upstream"
+                }
+            ],
+            "restartPolicy": "Always",
+            "subscribe": [
+                {
+                    "topic": "spl-to-ppl",
+                    "type": "local"
+                }
+            ]
+        },
+        "SPL": {
+            "version": 1,
+            "moduleId": "SPL-111",
+            "entryPoint": "main",
+            "publish": [
+                {
+                    "topic": "spl-to-ppl",
+                    "type": "local"
+                }
+            ],
+            "restartPolicy": "Always",
+            "subscribe": []
+        }
+    },
+    "modules": {
+        "PPL-222": {
+            "downloadUrl": "bar",
+            "hash":"barshash"
+        },
+        "SPL-111": {
+            "downloadUrl": "foo",
+            "hash":"foohash"
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "storagetoken-response": {
+        "reqid": "11033",
+        "status": "ok",
+        "URL": "https://evpstoragecontainer.blob.core.windows.net/evpcontainer/blob_test%2Ftravis_6334.10_linux-local_azure_evp_file_20211213-103612%2Fazure_evp_file-1?sv=2019-12-12&se=2021-12-13T11%3A36%3A29Z&sr=b&sp=rcwd&sig=XWLAmEkbDQbSX7Qz5vo3dJC2EjRDpswZmHre61Lpnvk%3D",
+        "headers": {
+            "x-ms-blob-type": "BlockBlob"
+        }
+    }
+}

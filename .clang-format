@@ -1,0 +1,76 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+Language: Cpp
+BasedOnStyle: LLVM
+IndentWidth: 8
+ConstructorInitializerIndentWidth: 8
+ContinuationIndentWidth: 8
+PointerAlignment: Right
+ColumnLimit: 79
+TabWidth: 8
+UseTab: ForContinuationAndIndentation
+AlignConsecutiveMacros: true
+AlwaysBreakAfterReturnType: TopLevelDefinitions
+ForEachMacros: ["TAILQ_FOREACH", "TAILQ_FOREACH_SAFE"]
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterControlStatement: Never
+  AfterCaseLabel: false
+  AfterEnum: false
+  AfterFunction: true
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeElse: false
+  BeforeWhile: false
+  SplitEmptyFunction: true
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SortIncludes: true
+IndentCaseBlocks: true
+IndentCaseLabels: false
+IncludeBlocks: Regroup
+# Disable file-to-main-include by specifying a regex which never match
+IncludeIsMainRegex: '/INEXISTENT$'
+IncludeCategories:
+  - Regex: '<config.h>'
+    Priority: 0
+  - Regex: '<nuttx/.*'
+    Priority: 1
+  - Regex: '<sys/.*'
+    Priority: 2
+  # 3rd party libraries
+  - Regex: '<cmocka\.h>'
+    Priority: 4
+  - Regex: '<mbedtls/.*'
+    Priority: 4
+  - Regex: '<mqtt\.h>'
+    Priority: 4
+  - Regex: '<wasm_export\.h>'
+    Priority: 4
+  - Regex: '<evp/.*'
+    Priority: 4
+  - Regex: '<parson\.h>'
+    Priority: 4
+  # internal headers shared between sdk and agent
+  - Regex: '<internal/.*>'
+    Priority: 5
+  # private fork of 3rd party libraries
+  - Regex: '"webclient/.*'
+    Priority: 6
+  - Regex: '"netlib/.*'
+    Priority: 6
+  - Regex: '"azure/.*'
+    Priority: 6
+  - Regex: '"hash\.h"'
+    Priority: 9
+  - Regex: '<.*'
+    Priority: 3
+  - Regex: '".*'
+    Priority: 7
+  - Regex: '.*'
+    Priority: 8

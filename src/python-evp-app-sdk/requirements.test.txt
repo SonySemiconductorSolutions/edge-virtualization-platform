@@ -1,0 +1,5 @@
+pytest==8.3.3
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+pytest-timeout==2.3.1
+pytest_httpserver==1.1.0

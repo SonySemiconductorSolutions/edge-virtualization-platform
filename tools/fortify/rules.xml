@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!--
+SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
+<RulePack>
+  <RulePackID>94923a24-0582-11ec-b8c0-573a9c68bf17</RulePackID>
+  <Name><![CDATA[
+Custom Fortify Rulepack for midokura/evp-device-agent
+  ]]></Name>
+  <Version>0000.0.0.0000</Version>
+  <Language>cpp</Language>
+  <Description><![CDATA[
+Custom Rules for C language for midokura/evp-device-agent
+  ]]></Description>
+  <Rules version="20.2">
+    <RuleDefinitions>
+      <DataflowCleanseRule formatVersion="20.2" language="cpp">
+        <RuleID>6055cb44-0583-11ec-9cbb-a75116d12c55</RuleID>
+        <FunctionIdentifier>
+          <FunctionName>
+            <Value>validate_module_instance_dir</Value>
+          </FunctionName>
+        </FunctionIdentifier>
+        <OutArguments>return</OutArguments>
+      </DataflowCleanseRule>
+    </RuleDefinitions>
+  </Rules>
+</RulePack>

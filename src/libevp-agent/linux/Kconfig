@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+source "../Kconfig.common"
+
+if EVP_MODULE_IMPL_DOCKER
+
+config EVP_AGENT_MODULE_IMPL_DOCKER_NO_IMAGE_PRUNE
+	bool "Do not prune images"
+	default n
+	depends on EVP_AGENT_EXPERIMENTAL
+
+config EVP_AGENT_MODULE_IMPL_DOCKER_RAW_CONTAINER_SPEC
+	bool "Raw container spec"
+	default n
+	depends on EVP_AGENT_EXPERIMENTAL
+
+config EVP_AGENT_MODULE_IMPL_DOCKER_DUMP_CONTAINER_LOG
+	bool "after stopping a container, dump its log"
+	default n
+
+endif

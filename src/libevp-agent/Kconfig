@@ -1,0 +1,67 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+# a workaroud for Kconfiglib
+# https://github.com/ulfalizer/Kconfiglib/issues/115
+config MODULES
+	bool "MODULES"
+	default BUILD_LOADABLE
+
+config EXTERNALS_EVP_AGENT
+	tristate "EVP agent"
+	default n
+	select EXTERNALS_MBEDTLS
+	select SCHED_WAITPID
+	select CLOCK_MONOTONIC
+	select LIBC_DLFCN
+	# we use a local copy
+	#select NETUTILS_NETLIB_GENERICURLPARSER
+	# main_loop uses pipe()
+	select PIPES
+
+	# Note about MQTT-C:
+	# We have an embedded copy of MQTT-C.
+	# Please disable other copies of MQTT-C to avoid conflicts.
+	#    NETUTILS_MQTTC  (apache/nuttx-apps)
+
+	# Note about libm:
+	# We need working math.h because parson uses fabs().
+	# There are various ways to provide math.h for NuttX.
+	#  * CONFIG_LIBM
+	#  * CONFIG_ARCH_MATH_H
+	#  * toolchain-provided math.h
+	#  * CONFIG_LIBNEWLIBM (midokura/incubator-nuttx specific)
+	# It's the responsibility of the user to enable one of them.
+
+	# For JSON number serialization in parson
+	select LIBC_FLOATINGPOINT
+
+	depends on !DISABLE_PTHREAD
+	depends on !DISABLE_ENVIRON
+
+if EXTERNALS_EVP_AGENT
+config EVP_AGENT_CONFIG_SETTING
+	bool "Use the SETTING framework for some configuration"
+	default n
+	---help---
+		This option is only for a specific integration.
+		For general purpose, do not enable this.
+
+config EVP_AGENT_MAIN_STACKSIZE
+	int "EVP agent main thread stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+config EVP_AGENT_WORKER_STACKSIZE
+	int "EVP agent worker thread stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+# "rsource" is not available with the tool we are using.
+source "$APPSDIR/external/evp_agent/Kconfig.common"
+
+endif

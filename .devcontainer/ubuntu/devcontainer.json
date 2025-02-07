@@ -1,0 +1,13 @@
+{
+    "build": {
+        // Path is relative to the devcontainer.json file.
+        "dockerfile": "Dockerfile",
+    },
+    "remoteUser": "mido",
+    "features": {
+        "ghcr.io/devcontainers-contrib/features/apt-get-packages:1": {
+            "packages": "bash-completion, iputils-ping"
+        },
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    }
+}

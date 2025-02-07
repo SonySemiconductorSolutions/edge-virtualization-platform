@@ -1,0 +1,109 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Excludes all these patterns from all hooks
+exclude: |
+  (?x)^(
+    src/libevp-agent/sdkenc/.*\.[ch]|
+    src/libevp-agent/webclient/.*|
+    src/libevp-agent/MQTT-C/.*|
+    src/libevp-agent/mqtt\.c|
+    src/libevp-agent/netlib/.*|
+    src/libevp-agent/xlog_color.h|
+    src/libevp-agent/azure/.*\.[ch]|
+    include/internal/time\.h|
+    include/internal/cdefs\.h|
+    include/internal/queue\.h|
+    include/evp_mbedtls_config.h|
+    .*/parson\.[ch]|
+    .*/.git/.*|
+    .*/.doc-venv/.*|
+    .*/.venv/.*|
+    .*/stage/.*|
+    .*/build/.*|
+    src/python-evp-app-sdk/evp/app/.*wrap\.c
+  )$
+
+repos:
+- repo: local
+  hooks:
+    - id: check-format
+      name: Check format
+      description: Check that sources comply with clang format
+      entry: clang-format
+      types_or: [c, c++]
+      args:
+        - --dry-run
+        - -Werror
+        - --verbose
+      language: system
+      stages:
+        - pre-commit
+
+    # Manually run hook to format C files
+    # Run as `pre-commit run -a --hook-stage manual`
+    - id: fix-format
+      name: Fix format
+      description: Fix sources to comply with clang format
+      entry: clang-format
+      types_or: [c, c++]
+      args:
+        - -i
+        - --verbose
+      language: system
+      stages:
+        - manual
+
+    - id: check-license
+      name: Check license
+      entry: tools/check-license.sh
+      types_or: [c, c++]
+      language: system
+      stages:
+        - pre-commit
+
+    - id: check-bash
+      name: Check bash
+      language: system
+      entry: bashate
+      files: \.sh$
+      args:
+        - -iE006
+        - -eE005,E042,E043
+      stages:
+        - pre-commit
+
+    - id: black
+      name: Check Black
+      entry: black
+      types_or: [python, pyi]
+      language: python
+      args:
+        - --line-length=79
+        - --verbose
+      stages:
+        - pre-commit
+
+    - id: flake8
+      name: Check Flake8
+      entry: flake8
+      types_or: [python, pyi]
+      language: python
+      args:
+        - --extend-ignore=E203
+        - --max-line-length=79
+        - --verbose
+      stages:
+        - pre-commit
+
+    - id: pycodestyle
+      name: Check PyCodeStyle
+      entry: pycodestyle
+      types_or: [python, pyi]
+      language: python
+      args:
+        - --ignore=E203,W503
+        - --verbose
+      stages:
+        - pre-commit

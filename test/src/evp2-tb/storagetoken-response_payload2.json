@@ -1,0 +1,7 @@
+{
+    "storagetoken-response": {
+        "reqid": "11034",
+        "status": "error",
+	"errorMessage": "NULL key"
+    }
+}

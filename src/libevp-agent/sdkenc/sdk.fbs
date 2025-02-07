@@ -1,0 +1,259 @@
+// SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
+namespace EVP.SDK;
+
+// something like sdk_event
+
+table Config {
+    topic:string (required);
+    blob:[ubyte] (required);
+}
+
+table StateInput {
+    topic:string (required);
+    blob:[ubyte] (required);
+    cb:uint64; // pointer
+    cb_userdata:uint64; // pointer
+}
+
+table StateOutput {
+    cb:uint64; // pointer
+    reason:uint32;
+    cb_userdata:uint64; // pointer
+}
+
+table Exit {
+}
+
+table BlobRequestAzureBlob {
+    url:string (required);
+}
+
+table BlobRequestEvp {
+    remoteName:string (required);
+    storageName:string;
+}
+
+table BlobRequestHttp {
+    url:string (required);
+}
+
+table BlobRequestHttpExt {
+    url:string (required);
+    headers:[string] (required);
+}
+
+union BlobRequestUnion {
+    azureBlob:BlobRequestAzureBlob,
+    evp:BlobRequestEvp,
+    http:BlobRequestHttp,
+    http_ext:BlobRequestHttpExt,
+}
+
+table BlobInput {
+    type:uint32;
+    op:uint32;
+
+    request:BlobRequestUnion (required);
+
+    filename:string (required);
+    cb:uint64; // pointer
+    cb_userdata:uint64; // pointer
+}
+
+table BlobResultAzureBlob {
+    result:uint32;
+    error:uint32;
+    http_status:uint32;
+}
+
+table BlobResultEvp {
+    result:uint32;
+    error:uint32;
+    http_status:uint32;
+}
+
+table BlobResultHttp {
+    result:uint32;
+    error:uint32;
+    http_status:uint32;
+}
+
+table BlobResultHttpExt {
+    result:uint32;
+    error:uint32;
+    http_status:uint32;
+}
+
+union BlobResultUnion {
+    azureBlob:BlobResultAzureBlob,
+    evp:BlobResultEvp,
+    http:BlobResultHttp,
+    http_ext:BlobResultHttpExt,
+}
+
+table BlobOutput {
+    result:BlobResultUnion;
+
+    cb:uint64; // pointer
+    reason:uint32;
+    cb_userdata:uint64; // pointer
+}
+
+table MessageSentInput {
+    topic:string (required);
+    blob:[ubyte] (required);
+    cb:uint64; // pointer
+    cb_userdata:uint64; // pointer
+}
+
+table MessageSentOutput {
+    cb:uint64; // pointer
+    reason:uint32;
+    cb_userdata:uint64; // pointer
+}
+
+table MessageReceived {
+    topic:string (required);
+    blob:[ubyte] (required);
+}
+
+table TelemetryEntry {
+    key:string (required);
+    value:string (required);
+}
+
+table TelemetryInput {
+    entries:[TelemetryEntry];
+    cb:uint64; // pointer
+    cb_userdata:uint64; // pointer
+}
+
+table TelemetryOutput {
+    cb:uint64; // pointer
+    reason:uint32;
+    cb_userdata:uint64; // pointer
+}
+
+table RpcRequest {
+    id:uint64;
+    method:string (required);
+    params:string (required);
+}
+
+table RpcResponseInput {
+    id:uint64;
+    response:string;
+    status:uint32;
+    cb:uint64; // pointer
+    cb_userdata:uint64; // pointer
+}
+
+table RpcResponseOutput {
+    cb:uint64; // pointer
+    reason:uint32;
+    cb_userdata:uint64; // pointer
+}
+
+// -----------
+
+union EventBody {
+    config:Config,
+    state:StateOutput,
+    exit:Exit,
+    blob:BlobOutput,
+    messageSent:MessageSentOutput,
+    messageReceived:MessageReceived,
+    telemetry:TelemetryOutput,
+    rpcRequest:RpcRequest,
+    rpcResponse:RpcResponseOutput
+}
+
+table Event {
+    body:EventBody;
+}
+
+table GetEvent {
+    timeout_sec:uint64; // time_t
+    timeout_nsec:uint64; // long
+}
+
+table RequestResendConfig {
+}
+
+union RequestUnion {
+    getEvent:GetEvent,
+    sendState:StateInput,
+    requestResendConfig:RequestResendConfig,
+    blobOperation:BlobInput,
+    sendTelemetry:TelemetryInput,
+    sendMessage:MessageSentInput,
+    sendRpcResponse:RpcResponseInput,
+    streamParamsRequest:StreamParamsRequest
+}
+
+table Request {
+    body:RequestUnion (required);
+}
+
+// -----------
+
+table Simple {
+    result:uint32; // EVP_RESULT
+}
+
+union ResponseUnion {
+    getEvent:Event,
+    simple:Simple,
+    streamParamsResponse:StreamParamsResponse,
+}
+
+table Response {
+    body:ResponseUnion (required);
+}
+
+table StreamParamsRequest {
+    name:string;
+}
+
+enum StreamNngMode : byte {
+    Dial,
+    Listen
+}
+
+enum StreamNngProtocol : byte {
+    Push,
+    Pull
+}
+
+table StreamNng {
+    mode:StreamNngMode;
+    protocol:StreamNngProtocol;
+    connection:string;
+}
+
+union StreamParams {
+    nng:StreamNng
+}
+
+// This must match the definition in src/stream.h.
+enum StreamType : byte {
+    Null,
+    Nng
+}
+
+// This must match the definition in src/stream.h.
+enum StreamDirection : byte {
+    In,
+    Out
+}
+
+table StreamParamsResponse {
+    result:uint32; // EVP_RESULT
+    // Only valid if EVP_RESULT == EVP_OK
+    type:StreamType;
+    direction:StreamDirection;
+    params:StreamParams;
+}
