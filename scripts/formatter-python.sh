@@ -30,7 +30,6 @@ EXCLUDE_NAMES="${EXCLUDE_NAMES},build"
 # Exclude submodules files
 EXCLUDE_NAMES="${EXCLUDE_NAMES},src/flatcc"
 EXCLUDE_NAMES="${EXCLUDE_NAMES},src/mbedtls"
-EXCLUDE_NAMES="${EXCLUDE_NAMES},src/nng"
 EXCLUDE_NAMES="${EXCLUDE_NAMES},src/nuttx"
 EXCLUDE_NAMES="${EXCLUDE_NAMES},src/nuttx-apps"
 EXCLUDE_NAMES="${EXCLUDE_NAMES},src/wasm-micro-runtime"

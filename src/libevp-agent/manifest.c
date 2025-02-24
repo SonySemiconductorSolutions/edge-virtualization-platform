@@ -324,133 +324,6 @@ failure:
 }
 
 static int
-get_nng_stream_mode(const JSON_Object *o, const struct Stream *stream,
-		    struct StreamNng *snng)
-{
-	const char *mode = json_object_get_string(o, "mode");
-	if (mode == NULL) {
-		xlog_error("could not find stream mode");
-		return -1;
-	}
-
-	if (!strcmp(mode, "dial")) {
-		if (stream->direction != STREAM_DIRECTION_OUT) {
-			xlog_error(
-				"dial mode can only work with output streams");
-			return -1;
-		}
-		snng->mode = STREAM_NNG_MODE_DIAL;
-	} else if (!strcmp(mode, "listen")) {
-		if (stream->direction != STREAM_DIRECTION_IN) {
-			xlog_error("listen mode can only work with input "
-				   "streams");
-			return -1;
-		}
-		snng->mode = STREAM_NNG_MODE_LISTEN;
-	} else {
-		xlog_error("invalid stream mode %s", mode);
-		return -1;
-	}
-
-	return 0;
-}
-
-static int
-get_nng_stream_protocol(const JSON_Object *o, const struct Stream *stream,
-			struct StreamNng *snng)
-{
-	const char *protocol = json_object_get_string(o, "protocol");
-	if (protocol == NULL) {
-		xlog_error("could not find stream protocol");
-		return EINVAL;
-	}
-
-	if (!strcmp(protocol, "push")) {
-		if (stream->direction != STREAM_DIRECTION_OUT) {
-			xlog_error("push protocol can only work with output "
-				   "streams");
-			return EINVAL;
-		}
-		snng->protocol = STREAM_NNG_PROTOCOL_PUSH;
-	} else if (!strcmp(protocol, "pull")) {
-		if (stream->direction != STREAM_DIRECTION_IN) {
-			xlog_error("pull protocol can only work with input "
-				   "streams");
-			return EINVAL;
-		}
-		snng->protocol = STREAM_NNG_PROTOCOL_PULL;
-	} else {
-		xlog_error("invalid stream protocol %s", protocol);
-		return EINVAL;
-	}
-
-	return 0;
-}
-
-static int
-get_nng_stream_connection(const JSON_Object *o, const struct Stream *stream,
-			  struct StreamNng *snng)
-{
-	const char *connection =
-		json_object_get_string(o, "connection_string");
-	if (connection == NULL) {
-		xlog_error("could not find stream connection string");
-		return EINVAL;
-	}
-
-	snng->connection = strdup(connection);
-	if (snng->connection == NULL) {
-		xlog_error("strdup(3) failed with errno %d", errno);
-		return ENOMEM;
-	}
-
-	return 0;
-}
-
-static int
-convert_nng_stream(const JSON_Object *o, struct Stream *s)
-{
-	int ret = EINVAL;
-	const JSON_Value *v = json_object_get_value(o, "parameters");
-	struct StreamNng snng = {0};
-
-	if (v == NULL) {
-		xlog_error("unexpected null parameters");
-		goto end;
-	}
-
-	const JSON_Object *nobj = json_value_get_object(v);
-	if (nobj == NULL) {
-		xlog_error("unexpected null parameters object");
-		goto end;
-	}
-
-	static int (*const params[])(const JSON_Object *,
-				     const struct Stream *,
-				     struct StreamNng *) = {
-		get_nng_stream_mode, get_nng_stream_protocol,
-		get_nng_stream_connection};
-
-	for (size_t i = 0; i < __arraycount(params); i++) {
-		ret = params[i](nobj, s, &snng);
-		if (ret != 0) {
-			goto end;
-		}
-	}
-
-	s->type = STREAM_TYPE_NNG;
-	s->params.nng = snng;
-	ret = 0;
-
-end:
-	if (ret != 0) {
-		free(snng.connection);
-	}
-
-	return ret;
-}
-
-static int
 get_posix_stream_hostname(const JSON_Object *o, const struct Stream *stream,
 			  struct StreamPosix *posix)
 {
@@ -611,12 +484,7 @@ convert_stream(const JSON_Object *o, const char *name, struct Stream *stream)
 		goto end;
 	}
 
-	if (!strcmp(type, "nng")) {
-		ret = convert_nng_stream(o, &s);
-		if (ret != 0) {
-			goto end;
-		}
-	} else if (!strcmp(type, "null")) {
+	if (!strcmp(type, "null")) {
 		s.type = STREAM_TYPE_NULL;
 	} else if (!strcmp(type, "posix")) {
 		ret = convert_posix_stream(o, &s);

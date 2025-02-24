@@ -2,9 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-[submodule "src/nng"]
-	path = src/nng
-	url = https://github.com/nanomsg/nng.git
 [submodule "src/mbedtls"]
 	path = src/mbedtls
 	url = https://github.com/Mbed-TLS/mbedtls.git

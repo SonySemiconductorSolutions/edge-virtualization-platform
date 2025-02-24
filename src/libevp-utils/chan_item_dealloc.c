@@ -19,6 +19,5 @@ chan_item_dealloc(struct chan_item *it)
 	if (!it)
 		return;
 	sem_destroy(&it->sem);
-	pthread_cond_destroy(&it->cond);
 	free(it);
 }

@@ -127,7 +127,6 @@ apply_exceptions()
 	s@(.*/src/flatcc/[^ ]*).*@\1 APACHE-2.0@
 	s@(.*/src/wasm-micro-runtime/.*/sandboxed-system-primitives/[^ ]*).*@\1 APACHE-2.0_WITH_LLVM-EXCEPTION@
 	s@(.*/src/wasm-micro-runtime/core/iwasm/include/wasm_c_api.h).*@\1 APACHE-2.0_WITH_LLVM-EXCEPTION@
-	s@(.*/src/nng/[^ ]*).*@\1 MIT@
 	s@(/usr/include/[^ ]*).*@\1 LPGL-2.1-OR-LATER@
 	s@(/usr/lib/gcc/[^ ]*).*@\1 LPGL-2.1-OR-LATER@
 	s@(/usr/lib/linux/[^ ]*).*@\1 GPL-2.0_WITH_LINUX-SYSCALL-NOTE@

@@ -218,30 +218,9 @@ table StreamParamsRequest {
     name:string;
 }
 
-enum StreamNngMode : byte {
-    Dial,
-    Listen
-}
-
-enum StreamNngProtocol : byte {
-    Push,
-    Pull
-}
-
-table StreamNng {
-    mode:StreamNngMode;
-    protocol:StreamNngProtocol;
-    connection:string;
-}
-
-union StreamParams {
-    nng:StreamNng
-}
-
 // This must match the definition in src/stream.h.
 enum StreamType : byte {
     Null,
-    Nng
 }
 
 // This must match the definition in src/stream.h.
@@ -255,5 +234,4 @@ table StreamParamsResponse {
     // Only valid if EVP_RESULT == EVP_OK
     type:StreamType;
     direction:StreamDirection;
-    params:StreamParams;
 }

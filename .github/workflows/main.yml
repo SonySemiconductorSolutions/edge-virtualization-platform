@@ -1,0 +1,113 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Main
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The ref sha to checkout evp-agent-oss
+        type: string
+        required: false
+        default: main
+
+  schedule:
+    - cron: 0 0 * * 1-5
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.workflow }}@main-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  infos:
+    name: Infos
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Some infos
+        run: |
+          echo github.ref is ${{ github.ref }}
+          echo github.head_ref is ${{ github.head_ref }}
+          echo github.sha is ${{ github.sha }}
+          echo github.event_name is ${{ github.event_name }}
+          echo github.event.pull_request.user.login is ${{ github.event.pull_request.user.login }}
+          echo github.event.action is ${{ github.event.action }}
+          echo github.event.repository_owner is ${{ github.repository_owner }}
+
+  builder:
+    name: Builder
+    uses: ./.github/workflows/builder.yml
+    secrets: inherit
+    with:
+      ref: ${{ inputs.ref || github.sha }}
+
+  checks:
+    name: Checks
+    needs:
+      - builder
+    uses: ./.github/workflows/check.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+
+  test-modules:
+    name: Test-modules
+    needs:
+      - checks
+      - builder
+    uses: ./.github/workflows/test-modules.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+
+  build:
+    name: Build
+    needs:
+      - checks
+      - builder
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+
+  tests:
+    name: Tests
+    needs:
+      - checks
+      - build
+      - test-modules
+      - builder
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+
+  checkpoint-tests-success:
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    needs:
+      - tests
+    steps:
+      - name: Check all previous jobs finished correctly
+        run: |
+          if [ "${{ needs.tests.result }}" = "success" ]; then
+            echo Requested jobs finished successfully. This PR can be merged
+          else
+            echo Requested jobs are failing. This PR can not be merged
+            exit 1
+          fi

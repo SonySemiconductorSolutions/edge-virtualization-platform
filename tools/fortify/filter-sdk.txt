@@ -114,21 +114,6 @@ F86380716072F498F0206FB2ADD37348
 E5BAF7C295BEB651FD2DBB5177CAC5CF
 
 # False positive. Similar to E5BAF7C295BEB651FD2DBB5177CAC5CF.
-# [A7652CC7EE4E2C7FADB3C4DA860B7064 : high : Memory Leak : controlflow ]
-#
-#     libevp-app-sdk/sdk.c(1025) : Branch not taken: (params != NULL)
-#     libevp-app-sdk/sdk.c(1033) : Branch not taken: (connection != NULL)
-#     libevp-app-sdk/sdk.c(1039) : start -> allocated : connectiondup = strdup(...)
-#     libevp-app-sdk/sdk.c(1039) : allocated -> allocated : connectiondup refers to dynamically allocated memory
-#     libevp-app-sdk/sdk.c(1040) : Branch not taken: (connectiondup != NULL)
-#     libevp-app-sdk/sdk.c(1047) : allocated -> allocated : connectiondup refers to dynamically allocated memory
-#     libevp-app-sdk/sdk.c(1055) : Branch not taken: (ret == 0)
-#     libevp-app-sdk/sdk.c(1058) : allocated -> allocated : connectiondup no longer refers to dynamically allocated memory
-#     libevp-app-sdk/sdk.c(1058) : allocated -> allocated : <AnonymousObject>.connection no longer refers to dynamically allocated memory
-#     libevp-app-sdk/sdk.c(1058) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
-A7652CC7EE4E2C7FADB3C4DA860B7064
-
-# False positive. Similar to E5BAF7C295BEB651FD2DBB5177CAC5CF.
 # [EC095B6EAD3150351E9E6E34CE065126 : high : Memory Leak : controlflow ]
 #
 #     libevp-agent/stream/stream.c(329) : Branch not taken: (args != NULL)
@@ -139,37 +124,20 @@ A7652CC7EE4E2C7FADB3C4DA860B7064
 #     libevp-agent/stream/stream.c(361) : allocated -> leak : event end scope : Memory leaked
 EC095B6EAD3150351E9E6E34CE065126
 
-# False positive. Similar to E5BAF7C295BEB651FD2DBB5177CAC5CF.
-# [26FAD77FB5A912E51915B0447E01950B : high : Memory Leak : controlflow ]
+# [6BECED8E31EAFCD29B5E7BC15AAF1FDD : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/stream/stream.c(476) : Branch not taken: (namedup != NULL)
-#     libevp-agent/stream/stream.c(486) : Branch taken: (src->type == 1)
-#     libevp-agent/stream/stream.c(486) : goto
-#     libevp-agent/stream/stream.c(490) : start -> allocated : connectiondup = strdup(...)
-#     libevp-agent/stream/stream.c(490) : allocated -> allocated : connectiondup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(491) : Branch not taken: (connectiondup != NULL)
-#     libevp-agent/stream/stream.c(498) : allocated -> allocated : connectiondup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(503) : allocated -> allocated : connectiondup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(538) : Branch not taken: (ret == 0)
-#     libevp-agent/stream/stream.c(543) : allocated -> allocated : connectiondup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(543) : allocated -> leak : connectiondup end scope : Memory leaked
-26FAD77FB5A912E51915B0447E01950B
-
-#[021918F34229D07C933ED83A05B8936F : high : Memory Leak : controlflow ]
-#
-#     evpmodulesdk/sdk.c(94) : Branch taken: (req != NULL)
-#     evpmodulesdk/sdk.c(96) : Branch taken: (req->resp != NULL)
-#     evpmodulesdk/sdk.c(100) : Branch taken: (h != NULL)
-#     evpmodulesdk/sdk.c(104) : Branch not taken: (ret == 0)
-#     evpmodulesdk/sdk.c(116) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
-#     evpmodulesdk/sdk.c(123) : Branch not taken: (event_type != 3)
-#     evpmodulesdk/sdk.c(133) : Branch taken: (event_type == 1)
-#     evpmodulesdk/sdk.c(133) : goto
-#     evpmodulesdk/sdk.c(136) : start -> allocated : config = xmalloc(...)
-#     evpmodulesdk/sdk.c(136) : allocated -> allocated : config refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(147) : Branch not taken: (*h->events.tqh_last == NULL)
-#     evpmodulesdk/sdk.c(150) : allocated -> allocated : config no longer refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(150) : allocated -> leak : config end scope : Memory leaked
+#     libevp-app-sdk/sdk.c(104) : Branch taken: (req != NULL)
+#     libevp-app-sdk/sdk.c(106) : Branch taken: (req->resp != NULL)
+#     libevp-app-sdk/sdk.c(110) : Branch taken: (h != NULL)
+#     libevp-app-sdk/sdk.c(114) : Branch not taken: (ret == 0)
+#     libevp-app-sdk/sdk.c(126) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
+#     libevp-app-sdk/sdk.c(133) : Branch not taken: (event_type != 3)
+#     libevp-app-sdk/sdk.c(143) : Branch taken: (event_type == 1)
+#     libevp-app-sdk/sdk.c(143) : goto
+#     libevp-app-sdk/sdk.c(146) : start -> allocated : config = xmalloc(...)
+#     libevp-app-sdk/sdk.c(146) : allocated -> allocated : config refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(160) : allocated -> allocated : config no longer refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(160) : allocated -> leak : config end scope : Memory leaked
 #
 # False positive: Fortify does not follow properly our code, when we use queues.
 # In get_event_done, we receive a Response in FlatBuffers format.
@@ -186,158 +154,152 @@ EC095B6EAD3150351E9E6E34CE065126
 # TAILQ_INSERT_TAIL(&h->events, &config->event, q);
 # It is the first element of the struct, so at the end is the same address.
 #
-62BD6CC9A3041FA5D5C28253E85A2E8A
+6BECED8E31EAFCD29B5E7BC15AAF1FDD
 
-# [665DA3BD2C75A9C1BE4FB49B452B9910 : high : Memory Leak : controlflow ]
+# [31573DA6474BF1CCBA709A528D24DBCC : high : Memory Leak : controlflow ]
 #
-#     evpmodulesdk/sdk.c(94) : Branch taken: (req != NULL)
-#     evpmodulesdk/sdk.c(96) : Branch taken: (req->resp != NULL)
-#     evpmodulesdk/sdk.c(100) : Branch taken: (h != NULL)
-#     evpmodulesdk/sdk.c(104) : Branch not taken: (ret == 0)
-#     evpmodulesdk/sdk.c(116) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
-#     evpmodulesdk/sdk.c(123) : Branch not taken: (event_type != 3)
-#     evpmodulesdk/sdk.c(151) : Branch taken: (event_type == 2)
-#     evpmodulesdk/sdk.c(151) : goto
-#     evpmodulesdk/sdk.c(154) : start -> allocated : state = xmalloc(...)
-#     evpmodulesdk/sdk.c(154) : allocated -> allocated : state refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(163) : Branch not taken: (*h->events.tqh_last == NULL)
-#     evpmodulesdk/sdk.c(166) : allocated -> allocated : state no longer refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(166) : allocated -> leak : state end scope : Memory leaked
+#     libevp-app-sdk/sdk.c(104) : Branch taken: (req != NULL)
+#     libevp-app-sdk/sdk.c(106) : Branch taken: (req->resp != NULL)
+#     libevp-app-sdk/sdk.c(110) : Branch taken: (h != NULL)
+#     libevp-app-sdk/sdk.c(114) : Branch not taken: (ret == 0)
+#     libevp-app-sdk/sdk.c(126) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
+#     libevp-app-sdk/sdk.c(133) : Branch not taken: (event_type != 3)
+#     libevp-app-sdk/sdk.c(161) : Branch taken: (event_type == 2)
+#     libevp-app-sdk/sdk.c(161) : goto
+#     libevp-app-sdk/sdk.c(164) : start -> allocated : state = xmalloc(...)
+#     libevp-app-sdk/sdk.c(164) : allocated -> allocated : state refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(176) : allocated -> allocated : state no longer refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(176) : allocated -> leak : state end scope : Memory leaked
 #
-# Same justification than in: 62BD6CC9A3041FA5D5C28253E85A2E8A
-665DA3BD2C75A9C1BE4FB49B452B9910
+# Same justification than in: 6BECED8E31EAFCD29B5E7BC15AAF1FDD
+31573DA6474BF1CCBA709A528D24DBCC
 
-# [B6AEA6E3137DDE6B46E8F66139B21D05 : high : Memory Leak : controlflow ]
+# [1CA522911595C8BABF32803DCDBE2A96 : high : Memory Leak : controlflow ]
 #
-#     libevp-app-sdk/sdk.c(109) : Branch taken: (req != NULL)
-#     libevp-app-sdk/sdk.c(111) : Branch taken: (req->resp != NULL)
-#     libevp-app-sdk/sdk.c(115) : Branch taken: (h != NULL)
-#     libevp-app-sdk/sdk.c(119) : Branch not taken: (ret == 0)
-#     libevp-app-sdk/sdk.c(131) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
-#     libevp-app-sdk/sdk.c(138) : Branch not taken: (event_type != 3)
-#     libevp-app-sdk/sdk.c(182) : Branch taken: (event_type == 4)
-#     libevp-app-sdk/sdk.c(182) : goto
-#     libevp-app-sdk/sdk.c(185) : start -> allocated : blob = xmalloc(...)
-#     libevp-app-sdk/sdk.c(185) : allocated -> allocated : blob refers to dynamically allocated memory
-#     libevp-app-sdk/sdk.c(197) : goto
-#     libevp-app-sdk/sdk.c(265) : allocated -> allocated : blob no longer refers to dynamically allocated memory
-#     libevp-app-sdk/sdk.c(265) : allocated -> leak : blob end scope : Memory leaked
+#     libevp-app-sdk/sdk.c(104) : Branch taken: (req != NULL)
+#     libevp-app-sdk/sdk.c(106) : Branch taken: (req->resp != NULL)
+#     libevp-app-sdk/sdk.c(110) : Branch taken: (h != NULL)
+#     libevp-app-sdk/sdk.c(114) : Branch not taken: (ret == 0)
+#     libevp-app-sdk/sdk.c(126) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
+#     libevp-app-sdk/sdk.c(133) : Branch not taken: (event_type != 3)
+#     libevp-app-sdk/sdk.c(177) : Branch taken: (event_type == 4)
+#     libevp-app-sdk/sdk.c(177) : goto
+#     libevp-app-sdk/sdk.c(180) : start -> allocated : blob = xmalloc(...)
+#     libevp-app-sdk/sdk.c(180) : allocated -> allocated : blob refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(192) : goto
+#     libevp-app-sdk/sdk.c(260) : allocated -> allocated : blob no longer refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(260) : allocated -> leak : blob end scope : Memory leaked
 #
-# Same justification than in: 62BD6CC9A3041FA5D5C28253E85A2E8A
-B6AEA6E3137DDE6B46E8F66139B21D05
+# Same justification than in: 6BECED8E31EAFCD29B5E7BC15AAF1FDD
+1CA522911595C8BABF32803DCDBE2A96
 
-# [3C7581FDD281BA4B93BF86B6A0673FCE : high : Memory Leak : controlflow ]
+# [FE42DC481FA854957010E17498F565ED : high : Memory Leak : controlflow ]
 #
-#     evpmodulesdk/sdk.c(94) : Branch taken: (req != NULL)
-#     evpmodulesdk/sdk.c(96) : Branch taken: (req->resp != NULL)
-#     evpmodulesdk/sdk.c(100) : Branch taken: (h != NULL)
-#     evpmodulesdk/sdk.c(104) : Branch not taken: (ret == 0)
-#     evpmodulesdk/sdk.c(116) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
-#     evpmodulesdk/sdk.c(123) : Branch not taken: (event_type != 3)
-#     evpmodulesdk/sdk.c(251) : Branch taken: (event_type == 7)
-#     evpmodulesdk/sdk.c(251) : goto
-#     evpmodulesdk/sdk.c(255) : start -> allocated : t = xmalloc(...)
-#     evpmodulesdk/sdk.c(255) : allocated -> allocated : t refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(264) : Branch not taken: (*h->events.tqh_last == NULL)
-#     evpmodulesdk/sdk.c(266) : allocated -> allocated : t no longer refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(266) : allocated -> leak : t end scope : Memory leaked
+#     libevp-app-sdk/sdk.c(104) : Branch taken: (req != NULL)
+#     libevp-app-sdk/sdk.c(106) : Branch taken: (req->resp != NULL)
+#     libevp-app-sdk/sdk.c(110) : Branch taken: (h != NULL)
+#     libevp-app-sdk/sdk.c(114) : Branch not taken: (ret == 0)
+#     libevp-app-sdk/sdk.c(126) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
+#     libevp-app-sdk/sdk.c(133) : Branch not taken: (event_type != 3)
+#     libevp-app-sdk/sdk.c(261) : Branch taken: (event_type == 7)
+#     libevp-app-sdk/sdk.c(261) : goto
+#     libevp-app-sdk/sdk.c(265) : start -> allocated : t = xmalloc(...)
+#     libevp-app-sdk/sdk.c(265) : allocated -> allocated : t refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(276) : allocated -> allocated : t no longer refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(276) : allocated -> leak : t end scope : Memory leaked
 #
-# Same justification than in: 62BD6CC9A3041FA5D5C28253E85A2E8A
-3C7581FDD281BA4B93BF86B6A0673FCE
+# Same justification than in: 6BECED8E31EAFCD29B5E7BC15AAF1FDD
+FE42DC481FA854957010E17498F565ED
 
-# [65AD68D88420428179DA394BC062053A : high : Memory Leak : controlflow ]
+# [46E0976A4B4294C72B70D1F52BC94A1A : high : Memory Leak : controlflow ]
 #
-#     evpmodulesdk/sdk.c(94) : Branch taken: (req != NULL)
-#     evpmodulesdk/sdk.c(96) : Branch taken: (req->resp != NULL)
-#     evpmodulesdk/sdk.c(100) : Branch taken: (h != NULL)
-#     evpmodulesdk/sdk.c(104) : Branch not taken: (ret == 0)
-#     evpmodulesdk/sdk.c(116) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
-#     evpmodulesdk/sdk.c(123) : Branch not taken: (event_type != 3)
-#     evpmodulesdk/sdk.c(267) : Branch taken: (event_type == 6)
-#     evpmodulesdk/sdk.c(267) : goto
-#     evpmodulesdk/sdk.c(271) : start -> allocated : m = xmalloc(...)
-#     evpmodulesdk/sdk.c(271) : allocated -> allocated : m refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(282) : Branch not taken: (*h->events.tqh_last == NULL)
-#     evpmodulesdk/sdk.c(284) : allocated -> allocated : m no longer refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(284) : allocated -> leak : m end scope : Memory leaked
+#     libevp-app-sdk/sdk.c(104) : Branch taken: (req != NULL)
+#     libevp-app-sdk/sdk.c(106) : Branch taken: (req->resp != NULL)
+#     libevp-app-sdk/sdk.c(110) : Branch taken: (h != NULL)
+#     libevp-app-sdk/sdk.c(114) : Branch not taken: (ret == 0)
+#     libevp-app-sdk/sdk.c(126) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
+#     libevp-app-sdk/sdk.c(133) : Branch not taken: (event_type != 3)
+#     libevp-app-sdk/sdk.c(277) : Branch taken: (event_type == 6)
+#     libevp-app-sdk/sdk.c(277) : goto
+#     libevp-app-sdk/sdk.c(281) : start -> allocated : m = xmalloc(...)
+#     libevp-app-sdk/sdk.c(281) : allocated -> allocated : m refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(294) : allocated -> allocated : m no longer refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(294) : allocated -> leak : m end scope : Memory leaked
 #
-# Same justification than in: 62BD6CC9A3041FA5D5C28253E85A2E8A
-65AD68D88420428179DA394BC062053A
+# Same justification than in: 6BECED8E31EAFCD29B5E7BC15AAF1FDD
+46E0976A4B4294C72B70D1F52BC94A1A
 
-# [223D718847FF6F14A459589470D14108 : high : Memory Leak : controlflow ]
+# [1D8790E2DFD741E844E1E1CD77D99B85 : high : Memory Leak : controlflow ]
 #
-#     evpmodulesdk/sdk.c(94) : Branch taken: (req != NULL)
-#     evpmodulesdk/sdk.c(96) : Branch taken: (req->resp != NULL)
-#     evpmodulesdk/sdk.c(100) : Branch taken: (h != NULL)
-#     evpmodulesdk/sdk.c(104) : Branch not taken: (ret == 0)
-#     evpmodulesdk/sdk.c(116) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
-#     evpmodulesdk/sdk.c(123) : Branch not taken: (event_type != 3)
-#     evpmodulesdk/sdk.c(285) : Branch taken: (event_type == 5)
-#     evpmodulesdk/sdk.c(285) : goto
-#     evpmodulesdk/sdk.c(289) : start -> allocated : m = xmalloc(...)
-#     evpmodulesdk/sdk.c(289) : allocated -> allocated : m refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(298) : Branch not taken: (*h->events.tqh_last == NULL)
-#     evpmodulesdk/sdk.c(300) : allocated -> allocated : m no longer refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(300) : allocated -> leak : m end scope : Memory leaked
+#     libevp-app-sdk/sdk.c(104) : Branch taken: (req != NULL)
+#     libevp-app-sdk/sdk.c(106) : Branch taken: (req->resp != NULL)
+#     libevp-app-sdk/sdk.c(110) : Branch taken: (h != NULL)
+#     libevp-app-sdk/sdk.c(114) : Branch not taken: (ret == 0)
+#     libevp-app-sdk/sdk.c(126) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
+#     libevp-app-sdk/sdk.c(133) : Branch not taken: (event_type != 3)
+#     libevp-app-sdk/sdk.c(295) : Branch taken: (event_type == 5)
+#     libevp-app-sdk/sdk.c(295) : goto
+#     libevp-app-sdk/sdk.c(299) : start -> allocated : m = xmalloc(...)
+#     libevp-app-sdk/sdk.c(299) : allocated -> allocated : m refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(310) : allocated -> allocated : m no longer refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(310) : allocated -> leak : m end scope : Memory leaked
 #
-# Same justification than in: 62BD6CC9A3041FA5D5C28253E85A2E8A
-223D718847FF6F14A459589470D14108
+# Same justification than in: 6BECED8E31EAFCD29B5E7BC15AAF1FDD
+1D8790E2DFD741E844E1E1CD77D99B85
 
-# [7EE760949B13347BC41DB50D41BFE153 : high : Memory Leak : controlflow ]
+# [6B80B9BB335AA182BA410E34B0044CBF : high : Memory Leak : controlflow ]
 #
-#     evpmodulesdk/sdk.c(94) : Branch taken: (req != NULL)
-#     evpmodulesdk/sdk.c(96) : Branch taken: (req->resp != NULL)
-#     evpmodulesdk/sdk.c(100) : Branch taken: (h != NULL)
-#     evpmodulesdk/sdk.c(104) : Branch not taken: (ret == 0)
-#     evpmodulesdk/sdk.c(116) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
-#     evpmodulesdk/sdk.c(123) : Branch not taken: (event_type != 3)
-#     evpmodulesdk/sdk.c(301) : Branch taken: (event_type == 8)
-#     evpmodulesdk/sdk.c(301) : goto
-#     evpmodulesdk/sdk.c(304) : start -> allocated : r = xmalloc(...)
-#     evpmodulesdk/sdk.c(304) : allocated -> allocated : r refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(312) : Branch not taken: (*h->events.tqh_last == NULL)
-#     evpmodulesdk/sdk.c(314) : allocated -> allocated : r no longer refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(314) : allocated -> leak : r end scope : Memory leaked
+#     libevp-app-sdk/sdk.c(104) : Branch taken: (req != NULL)
+#     libevp-app-sdk/sdk.c(106) : Branch taken: (req->resp != NULL)
+#     libevp-app-sdk/sdk.c(110) : Branch taken: (h != NULL)
+#     libevp-app-sdk/sdk.c(114) : Branch not taken: (ret == 0)
+#     libevp-app-sdk/sdk.c(126) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
+#     libevp-app-sdk/sdk.c(133) : Branch not taken: (event_type != 3)
+#     libevp-app-sdk/sdk.c(311) : Branch taken: (event_type == 8)
+#     libevp-app-sdk/sdk.c(311) : goto
+#     libevp-app-sdk/sdk.c(314) : start -> allocated : r = xmalloc(...)
+#     libevp-app-sdk/sdk.c(314) : allocated -> allocated : r refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(324) : allocated -> allocated : r no longer refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(324) : allocated -> leak : r end scope : Memory leaked
 #
-# Same justification than in: 62BD6CC9A3041FA5D5C28253E85A2E8A
-7EE760949B13347BC41DB50D41BFE153
+# Same justification than in: 6BECED8E31EAFCD29B5E7BC15AAF1FDD
+6B80B9BB335AA182BA410E34B0044CBF
 
-# [1B5DC44A2958BF7578A974B7D1F9CBF8 : high : Memory Leak : controlflow ]
+# [1C8B3D7F573A6BCF4E57146791121F5D : high : Memory Leak : controlflow ]
 #
-#     evpmodulesdk/sdk.c(94) : Branch taken: (req != NULL)
-#     evpmodulesdk/sdk.c(96) : Branch taken: (req->resp != NULL)
-#     evpmodulesdk/sdk.c(100) : Branch taken: (h != NULL)
-#     evpmodulesdk/sdk.c(104) : Branch not taken: (ret == 0)
-#     evpmodulesdk/sdk.c(116) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
-#     evpmodulesdk/sdk.c(123) : Branch not taken: (event_type != 3)
-#     evpmodulesdk/sdk.c(315) : Branch taken: (event_type == 9)
-#     evpmodulesdk/sdk.c(315) : goto
-#     evpmodulesdk/sdk.c(319) : start -> allocated : r = xmalloc(...)
-#     evpmodulesdk/sdk.c(319) : allocated -> allocated : r refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(328) : Branch not taken: (*h->events.tqh_last == NULL)
-#     evpmodulesdk/sdk.c(330) : allocated -> allocated : r no longer refers to dynamically allocated memory
-#     evpmodulesdk/sdk.c(330) : allocated -> leak : r end scope : Memory leaked
+#     libevp-app-sdk/sdk.c(104) : Branch taken: (req != NULL)
+#     libevp-app-sdk/sdk.c(106) : Branch taken: (req->resp != NULL)
+#     libevp-app-sdk/sdk.c(110) : Branch taken: (h != NULL)
+#     libevp-app-sdk/sdk.c(114) : Branch not taken: (ret == 0)
+#     libevp-app-sdk/sdk.c(126) : Branch taken: (EVP_SDK_Response_body_type(resp) == 1)
+#     libevp-app-sdk/sdk.c(133) : Branch not taken: (event_type != 3)
+#     libevp-app-sdk/sdk.c(325) : Branch taken: (event_type == 9)
+#     libevp-app-sdk/sdk.c(325) : goto
+#     libevp-app-sdk/sdk.c(329) : start -> allocated : r = xmalloc(...)
+#     libevp-app-sdk/sdk.c(329) : allocated -> allocated : r refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(340) : allocated -> allocated : r no longer refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(340) : allocated -> leak : r end scope : Memory leaked
 #
-# Same justification than in: 62BD6CC9A3041FA5D5C28253E85A2E8A
-1B5DC44A2958BF7578A974B7D1F9CBF8
+# Same justification than in: 6BECED8E31EAFCD29B5E7BC15AAF1FDD
+1C8B3D7F573A6BCF4E57146791121F5D
 
 # False positive.
 # Yet again, Fortify fails to see the struct Stream compound literal is
 # transferred to "s", which is then transferred to "stream", so no objects
 # are being leaked.
-# [ED473AC9E862F8946CD298692F6C47B7 : high : Memory Leak : controlflow ]
+# [6D9CD92CF4AE13E28081815C47C5B94A : high : Memory Leak : controlflow ]
 #
-#     libevp-app-sdk/sdk.c(1068) : Branch not taken: (error == 0)
-#     libevp-app-sdk/sdk.c(1076) : Branch not taken: (resp != NULL)
-#     libevp-app-sdk/sdk.c(1083) : Branch not taken: (type == 3)
-#     libevp-app-sdk/sdk.c(1091) : Branch not taken: (body != NULL)
-#     libevp-app-sdk/sdk.c(1099) : Branch not taken: (ret == 0)
-#     libevp-app-sdk/sdk.c(1103) : start -> allocated : <AnonymousObject>.name = strdup(...)
-#     libevp-app-sdk/sdk.c(1103) : allocated -> allocated : <AnonymousObject>.name refers to dynamically allocated memory
-#     libevp-app-sdk/sdk.c(1112) : goto
-#     libevp-app-sdk/sdk.c(1138) : allocated -> allocated : <AnonymousObject>.name no longer refers to dynamically allocated memory
-#     libevp-app-sdk/sdk.c(1138) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
-ED473AC9E862F8946CD298692F6C47B7
+#     libevp-app-sdk/sdk.c(1022) : Branch not taken: (error == 0)
+#     libevp-app-sdk/sdk.c(1030) : Branch not taken: (resp != NULL)
+#     libevp-app-sdk/sdk.c(1037) : Branch not taken: (type == 3)
+#     libevp-app-sdk/sdk.c(1045) : Branch not taken: (body != NULL)
+#     libevp-app-sdk/sdk.c(1053) : Branch not taken: (ret == 0)
+#     libevp-app-sdk/sdk.c(1057) : start -> allocated : <AnonymousObject>.name = strdup(...)
+#     libevp-app-sdk/sdk.c(1057) : allocated -> allocated : <AnonymousObject>.name refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(1066) : goto
+#     libevp-app-sdk/sdk.c(1091) : allocated -> allocated : <AnonymousObject>.name no longer refers to dynamically allocated memory
+#     libevp-app-sdk/sdk.c(1091) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
+6D9CD92CF4AE13E28081815C47C5B94A
 
 # False positive.
 # Fortify fails to see the ownership for event is transferred to the
@@ -354,79 +316,6 @@ ED473AC9E862F8946CD298692F6C47B7
 #     libevp-agent/stream/stream.c(361) : allocated -> allocated : <AnonymousObject>.free_args no longer refers to dynamically allocated memory
 #     libevp-agent/stream/stream.c(361) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
 FAB645EE0389BCEEDFF7466521CF7A24
-
-# False positive.
-# Yet again, Fortify fails to see the ownership for nng is transferred to
-# si->params if successful, or freed otherwise.
-# [1A885094842BD658D060434C33161244 : high : Memory Leak : controlflow ]
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(102) : Branch taken: (cfg->protocol == 1)
-#     stream/nng.c(102) : goto
-#     stream/nng.c(104) : Branch taken: (error != 0)
-#     stream/nng.c(107) : allocated -> allocated : return
-#     stream/nng.c(107) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(107) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(93) : Default case
-#     stream/nng.c(112) : Branch taken: (cfg->mode == 0)
-#     stream/nng.c(112) : goto
-#     stream/nng.c(115) : Branch taken: (error != 0)
-#     stream/nng.c(118) : allocated -> allocated : return
-#     stream/nng.c(118) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(118) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(93) : Default case
-#     stream/nng.c(128) : Branch taken: (cfg->mode == 1)
-#     stream/nng.c(128) : goto
-#     stream/nng.c(131) : Branch taken: (error != 0)
-#     stream/nng.c(134) : allocated -> allocated : return
-#     stream/nng.c(134) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(134) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(94) : Branch taken: (cfg->protocol == 0)
-#     stream/nng.c(94) : goto
-#     stream/nng.c(96) : Branch taken: (error != 0)
-#     stream/nng.c(99) : goto
-#     stream/nng.c(148) : Branch not taken: (ret == 0)
-#     stream/nng.c(154) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(154) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(93) : Default case
-#     stream/nng.c(112) : Branch taken: (cfg->mode == 0)
-#     stream/nng.c(112) : goto
-#     stream/nng.c(115) : Branch not taken: (error == 0)
-#     stream/nng.c(122) : Branch taken: (error != 0)
-#     stream/nng.c(125) : allocated -> allocated : return
-#     stream/nng.c(125) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(125) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(93) : Default case
-#     stream/nng.c(128) : Branch taken: (cfg->mode == 1)
-#     stream/nng.c(128) : goto
-#     stream/nng.c(131) : Branch not taken: (error == 0)
-#     stream/nng.c(138) : Branch taken: (error != 0)
-#     stream/nng.c(141) : allocated -> allocated : return
-#     stream/nng.c(141) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(141) : allocated -> leak : nng end scope : Memory leaked
-1A885094842BD658D060434C33161244
 
 # False positive.
 # Yet again, Fortify fails to see the ownership for si is transferred on the
@@ -507,20 +396,20 @@ BA0F36F9B53D08073B3E0230D7DE21EB
 # False positive.
 # Yet again, Fortify fails to see the ownership for hostnamedup is transferred
 # to params.posix when the function is succesful.
-# [E420D9DB4AAAEC85F8B479ADC95EDBF9 : high : Memory Leak : controlflow ]
+# [74169ED2AA3FB0795C28912A9E687D77 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/stream/stream.c(476) : Branch not taken: (namedup != NULL)
-#     libevp-agent/stream/stream.c(505) : Branch taken: (src->type == 2)
-#     libevp-agent/stream/stream.c(505) : goto
-#     libevp-agent/stream/stream.c(509) : start -> allocated : hostnamedup = strdup(...)
-#     libevp-agent/stream/stream.c(509) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(510) : Branch not taken: (hostnamedup != NULL)
-#     libevp-agent/stream/stream.c(519) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(523) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(538) : Branch not taken: (ret == 0)
-#     libevp-agent/stream/stream.c(543) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(543) : allocated -> leak : hostnamedup end scope : Memory leaked
-E420D9DB4AAAEC85F8B479ADC95EDBF9
+#     libevp-agent/stream/stream.c(477) : Branch not taken: (namedup != NULL)
+#     libevp-agent/stream/stream.c(487) : Branch taken: (src->type == 1)
+#     libevp-agent/stream/stream.c(487) : goto
+#     libevp-agent/stream/stream.c(491) : start -> allocated : hostnamedup = strdup(...)
+#     libevp-agent/stream/stream.c(491) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
+#     libevp-agent/stream/stream.c(492) : Branch not taken: (hostnamedup != NULL)
+#     libevp-agent/stream/stream.c(501) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
+#     libevp-agent/stream/stream.c(505) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
+#     libevp-agent/stream/stream.c(520) : Branch not taken: (ret == 0)
+#     libevp-agent/stream/stream.c(525) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
+#     libevp-agent/stream/stream.c(525) : allocated -> leak : hostnamedup end scope : Memory leaked
+74169ED2AA3FB0795C28912A9E687D77
 
 # Not an issue.
 # Even if the data type for sr->id is defined as EVP_STREAM_PEER_ID,
@@ -612,17 +501,3 @@ AB82561AD6FCF66BC65E7AFFCCBCC835
 #     notification.c(86) : allocated -> allocated : <AnonymousObject>.event no longer refers to dynamically allocated memory
 #     notification.c(86) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
 94637FA846AF053377DDFE701AE8B068
-
-# False positive.
-# According to the documentation for NNG_OPT_TCP_BOUND_PORT, on
-# nng_tcp_options(5):
-#
-# 	While the value is of type `int`, it will be a legal TCP port number, that
-# 	is a value between 1 and 65535, inclusive.
-#
-# Therefore, there is no risk when assigning it into an unsigned short.
-# [1F8D42C32A560CD0B51D7CFB4F3D55A3 : high : Type Mismatch : Signed to Unsigned : structural ]
-#     stream/nng.c(168)
-#     FieldAccess: p.port [stream/nng.c(168)]
-#     VariableAccess: port [stream/nng.c(168)]
-1F8D42C32A560CD0B51D7CFB4F3D55A3

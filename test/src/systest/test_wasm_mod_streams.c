@@ -6,9 +6,6 @@
 
 #include <errno.h>
 #include <inttypes.h>
-#include <nng/nng.h>
-#include <nng/protocol/pipeline0/pull.h>
-#include <nng/protocol/pipeline0/push.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,29 +28,23 @@
 enum test_wasm_config_echo_payloads {
 	DEPLOYMENT_MANIFEST_1,
 	DEPLOYMENT_MANIFEST_2,
-	DEPLOYMENT_MANIFEST_3,
-	DEPLOYMENT_MANIFEST_4,
 	EMPTY_DEPLOYMENT_MANIFEST_1,
 	INSTANCE_CONFIG_1
 };
 
-#define TEST_EMPTY_DEPLOYMENT_ID1 "d2862453-f57e-4ddb-90d2-d470c27f6a92"
-#define TEST_DEPLOYMENT_ID1       "4fa905ae-e103-46ab-a8b9-73be07599708"
-#define TEST_DEPLOYMENT_ID2       "0f40626e-5d98-4472-ad4e-a4fb1490b382"
-#define TEST_DEPLOYMENT_ID3       "f5cb7e2d-4e23-4bc3-bd48-845945de3456"
-#define TEST_DEPLOYMENT_ID4       "79e98832-23c7-4733-b656-b49a24e33c89"
+#define TEST_EMPTY_DEPLOYMENT_ID "d2862453-f57e-4ddb-90d2-d470c27f6a92"
+#define TEST_DEPLOYMENT_ID1      "f5cb7e2d-4e23-4bc3-bd48-845945de3456"
+#define TEST_DEPLOYMENT_ID2      "79e98832-23c7-4733-b656-b49a24e33c89"
 
-#define READER_INSTANCE_ID  "10709a54-1d35-4955-b087-2380863f7eea"
-#define READER_INSTANCE_ID2 "1fddfca9-0607-40f6-8e87-661d9f366424"
-#define READER_MODULE_ID    "0329dea0-bd16-4e8a-be29-cd415c1a10ff"
-#define READER_MODULE_PATH  "../test_modules/stream_reader.wasm"
+#define READER_INSTANCE_ID "1fddfca9-0607-40f6-8e87-661d9f366424"
+#define READER_MODULE_ID   "0329dea0-bd16-4e8a-be29-cd415c1a10ff"
+#define READER_MODULE_PATH "../test_modules/stream_reader.wasm"
 #define READER_MODULE_HASH                                                    \
 	"f0464cf80c305261400ebc744571d6cff6968907cc53b24529c1ababfd7aabeb"
 
-#define WRITER_INSTANCE_ID  "4a3737bd-98ea-4675-b9f8-336c59bacf78"
-#define WRITER_INSTANCE_ID2 "bc7b3156-5651-4efe-8743-ca763e0f2b15"
-#define WRITER_MODULE_ID    "a2f149eb-3c53-4d02-88af-d0838aa12dcb"
-#define WRITER_MODULE_PATH  "../test_modules/stream_writer.wasm"
+#define WRITER_INSTANCE_ID "bc7b3156-5651-4efe-8743-ca763e0f2b15"
+#define WRITER_MODULE_ID   "a2f149eb-3c53-4d02-88af-d0838aa12dcb"
+#define WRITER_MODULE_PATH "../test_modules/stream_writer.wasm"
 #define WRITER_MODULE_HASH                                                    \
 	"5b02344d79409668d1da54d50e852380faf98728facbedb0140bb176fe4bdd56"
 
@@ -69,13 +60,12 @@ enum test_wasm_config_echo_payloads {
 	"                    \"direction\": \"in\","                          \
 	"                    \"parameters\": {"                               \
 	"                        "                                            \
-	"\"connection_string\": \"tcp://127.0.0.1:0\","                       \
-	"                        \"mode\": "                                  \
-	"\"listen\","                                                         \
-	"                        \"protocol\": "                              \
-	"\"pull\""                                                            \
+	"\"hostname\": \"127.0.0.1\","                                        \
+	"\"port\": \"0\","                                                    \
+	"\"domain\": \"IPv4\","                                               \
+	"\"type\": \"tcp\""                                                   \
 	"                    },"                                              \
-	"                    \"type\": \"nng\""                               \
+	"                    \"type\": \"posix\""                             \
 	"                }"                                                   \
 	"            },"                                                      \
 	"            \"subscribe\": {}"                                       \
@@ -105,112 +95,17 @@ enum test_wasm_config_echo_payloads {
 	"                    \"direction\": \"in\","                          \
 	"                    \"parameters\": {"                               \
 	"                        "                                            \
-	"\"connection_string\": \"tcp://127.0.0.1:0\","                       \
-	"                        \"mode\": "                                  \
-	"\"listen\","                                                         \
-	"                        \"protocol\": "                              \
-	"\"pull\""                                                            \
+	"\"hostname\": \"127.0.0.1\","                                        \
+	"\"port\": \"0\","                                                    \
+	"\"domain\": \"IPv4\","                                               \
+	"\"type\": \"tcp\""                                                   \
 	"                    },"                                              \
-	"                    \"type\": \"nng\""                               \
+	"                    \"type\": \"posix\""                             \
 	"                }"                                                   \
 	"            },"                                                      \
 	"            \"subscribe\": {}"                                       \
 	"        },"                                                          \
 	"        \"" WRITER_INSTANCE_ID "\": {"                               \
-	"            \"moduleId\": \"" WRITER_MODULE_ID "\","                 \
-	"            \"publish\": {},"                                        \
-	"            \"streams\": {"                                          \
-	"                \"out-video-stream\": {"                             \
-	"                    \"direction\": \"out\","                         \
-	"                    \"parameters\": {"                               \
-	"                        "                                            \
-	"\"connection_string\": \"tcp://127.0.0.1:%hu\","                     \
-	"                        \"mode\": \"dial\","                         \
-	"                        \"protocol\": "                              \
-	"\"push\""                                                            \
-	"                    },"                                              \
-	"                    \"type\": \"nng\""                               \
-	"                }"                                                   \
-	"            },"                                                      \
-	"            \"subscribe\": {}"                                       \
-	"        }"                                                           \
-	"    },"                                                              \
-	"    \"modules\": {"                                                  \
-	"        \"" READER_MODULE_ID "\": {"                                 \
-	"            \"downloadUrl\": \"file://" READER_MODULE_PATH "\","     \
-	"            \"entryPoint\": \"main\","                               \
-	"            \"hash\": \"" READER_MODULE_HASH "\","                   \
-	"            \"moduleImpl\": \"wasm\""                                \
-	"        },"                                                          \
-	"        \"" WRITER_MODULE_ID "\": {"                                 \
-	"            \"downloadUrl\": \"file://" WRITER_MODULE_PATH "\","     \
-	"            \"entryPoint\": \"main\","                               \
-	"            \"hash\": \"" WRITER_MODULE_HASH "\","                   \
-	"            \"moduleImpl\": \"wasm\""                                \
-	"        }"                                                           \
-	"    },"                                                              \
-	"    \"publishTopics\": {},"                                          \
-	"    \"subscribeTopics\": {}"                                         \
-	"}"
-
-#define EVP2_DEPLOYMENT_MANIFEST_3                                            \
-	"{"                                                                   \
-	"    \"deploymentId\": \"" TEST_DEPLOYMENT_ID3 "\","                  \
-	"    \"instanceSpecs\": {"                                            \
-	"        \"" READER_INSTANCE_ID2 "\": {"                              \
-	"            \"moduleId\": \"" READER_MODULE_ID "\","                 \
-	"            \"publish\": {},"                                        \
-	"            \"streams\": {"                                          \
-	"                \"in-video-stream\": {"                              \
-	"                    \"direction\": \"in\","                          \
-	"                    \"parameters\": {"                               \
-	"                        "                                            \
-	"\"hostname\": \"127.0.0.1\","                                        \
-	"\"port\": \"0\","                                                    \
-	"\"domain\": \"IPv4\","                                               \
-	"\"type\": \"tcp\""                                                   \
-	"                    },"                                              \
-	"                    \"type\": \"posix\""                             \
-	"                }"                                                   \
-	"            },"                                                      \
-	"            \"subscribe\": {}"                                       \
-	"        }"                                                           \
-	"    },"                                                              \
-	"    \"modules\": {"                                                  \
-	"        \"" READER_MODULE_ID "\": {"                                 \
-	"            \"downloadUrl\": \"file://" READER_MODULE_PATH "\","     \
-	"            \"entryPoint\": \"main\","                               \
-	"            \"hash\": \"" READER_MODULE_HASH "\","                   \
-	"            \"moduleImpl\": \"wasm\""                                \
-	"        }"                                                           \
-	"    },"                                                              \
-	"    \"publishTopics\": {},"                                          \
-	"    \"subscribeTopics\": {}"                                         \
-	"}"
-
-#define EVP2_DEPLOYMENT_MANIFEST_4                                            \
-	"{"                                                                   \
-	"    \"deploymentId\": \"" TEST_DEPLOYMENT_ID4 "\","                  \
-	"    \"instanceSpecs\": {"                                            \
-	"        \"" READER_INSTANCE_ID2 "\": {"                              \
-	"            \"moduleId\": \"" READER_MODULE_ID "\","                 \
-	"            \"publish\": {},"                                        \
-	"            \"streams\": {"                                          \
-	"                \"in-video-stream\": {"                              \
-	"                    \"direction\": \"in\","                          \
-	"                    \"parameters\": {"                               \
-	"                        "                                            \
-	"\"hostname\": \"127.0.0.1\","                                        \
-	"\"port\": \"0\","                                                    \
-	"\"domain\": \"IPv4\","                                               \
-	"\"type\": \"tcp\""                                                   \
-	"                    },"                                              \
-	"                    \"type\": \"posix\""                             \
-	"                }"                                                   \
-	"            },"                                                      \
-	"            \"subscribe\": {}"                                       \
-	"        },"                                                          \
-	"        \"" WRITER_INSTANCE_ID2 "\": {"                              \
 	"            \"moduleId\": \"" WRITER_MODULE_ID "\","                 \
 	"            \"publish\": {},"                                        \
 	"            \"streams\": {"                                          \
@@ -249,7 +144,7 @@ enum test_wasm_config_echo_payloads {
 
 #define EVP2_EMPTY_DEPLOYMENT_MANIFEST_1                                      \
 	"{"                                                                   \
-	"        \"deploymentId\": \"" TEST_EMPTY_DEPLOYMENT_ID1 "\","        \
+	"        \"deploymentId\": \"" TEST_EMPTY_DEPLOYMENT_ID "\","         \
 	"        \"instanceSpecs\": {},"                                      \
 	"        \"modules\": {},"                                            \
 	"        \"publishTopics\": {},"                                      \
@@ -276,10 +171,10 @@ send_deployment(struct evp_agent_context *ctxt, const char *payload)
 	}
 }
 
-static char *evp2_deployment2;
+static char *evp2_deployment;
 
 static void
-test_wasm_mod_streams_nng(void **state)
+test_wasm_mod_streams_posix(void **state)
 {
 	struct evp_agent_context *ctxt = *state;
 	const char *iot = getenv("EVP_IOT_PLATFORM");
@@ -309,15 +204,16 @@ test_wasm_mod_streams_nng(void **state)
 	sdk_unlock();
 
 	assert_non_null(h);
+
 	struct stream_impl *si = stream_from_name(h, "in-video-stream");
 
 	assert_non_null(si);
 	assert_ptr_equal(si, p.si);
 
-	xasprintf(&evp2_deployment2, EVP2_DEPLOYMENT_MANIFEST_2, p.port);
+	xasprintf(&evp2_deployment, EVP2_DEPLOYMENT_MANIFEST_2, p.port);
 
 	agent_register_payload(DEPLOYMENT_MANIFEST_2, EVP_HUB_TYPE_EVP2_TB,
-			       evp2_deployment2);
+			       evp2_deployment);
 
 	agent_send_deployment(ctxt, agent_get_payload(DEPLOYMENT_MANIFEST_2));
 
@@ -335,70 +231,7 @@ test_wasm_mod_streams_nng(void **state)
 	agent_poll(verify_json,
 		   "deploymentStatus.deploymentId=%s,"
 		   "deploymentStatus.reconcileStatus=%s",
-		   TEST_EMPTY_DEPLOYMENT_ID1, "ok");
-}
-
-static char *evp2_deployment4;
-
-static void
-test_wasm_mod_streams_posix(void **state)
-{
-	struct evp_agent_context *ctxt = *state;
-	const char *iot = getenv("EVP_IOT_PLATFORM");
-	assert_non_null(iot);
-
-	if (!strcmp(iot, "EVP1")) {
-		skip();
-	}
-
-	struct stream_port p;
-	struct notification_entry *e;
-	struct notification *n = stream_notification();
-
-	assert_non_null(n);
-	assert_int_equal(
-		notification_subscribe(n, "init/port", on_port, &p, &e), 0);
-
-	send_deployment(ctxt, agent_get_payload(DEPLOYMENT_MANIFEST_3));
-
-	agent_poll(verify_json,
-		   "deploymentStatus.deploymentId=%s,"
-		   "deploymentStatus.reconcileStatus=%s",
-		   TEST_DEPLOYMENT_ID3, "ok");
-
-	sdk_lock();
-	struct EVP_client *h = sdk_handle_from_name(READER_INSTANCE_ID2);
-	sdk_unlock();
-
-	assert_non_null(h);
-
-	struct stream_impl *si = stream_from_name(h, "in-video-stream");
-
-	assert_non_null(si);
-	assert_ptr_equal(si, p.si);
-
-	xasprintf(&evp2_deployment4, EVP2_DEPLOYMENT_MANIFEST_4, p.port);
-
-	agent_register_payload(DEPLOYMENT_MANIFEST_4, EVP_HUB_TYPE_EVP2_TB,
-			       evp2_deployment4);
-
-	agent_send_deployment(ctxt, agent_get_payload(DEPLOYMENT_MANIFEST_4));
-
-	agent_poll(verify_json,
-		   "deploymentStatus.deploymentId=%s,"
-		   "deploymentStatus.reconcileStatus=%s",
-		   TEST_DEPLOYMENT_ID4, "ok");
-
-	agent_poll(verify_contains, "stream-read-ok");
-	assert_int_equal(notification_unsubscribe(n, e), 0);
-
-	// send empty deployment
-	send_deployment(ctxt, agent_get_payload(EMPTY_DEPLOYMENT_MANIFEST_1));
-
-	agent_poll(verify_json,
-		   "deploymentStatus.deploymentId=%s,"
-		   "deploymentStatus.reconcileStatus=%s",
-		   TEST_EMPTY_DEPLOYMENT_ID1, "ok");
+		   TEST_EMPTY_DEPLOYMENT_ID, "ok");
 }
 
 static int
@@ -407,8 +240,7 @@ teardown(void **state)
 	// wait for agent to finish
 	agent_test_exit();
 
-	free(evp2_deployment2);
-	free(evp2_deployment4);
+	free(evp2_deployment);
 	return 0;
 }
 
@@ -444,9 +276,6 @@ setup(void **state)
 
 	agent_register_payload(DEPLOYMENT_MANIFEST_1, EVP_HUB_TYPE_EVP2_TB,
 			       EVP2_DEPLOYMENT_MANIFEST_1);
-
-	agent_register_payload(DEPLOYMENT_MANIFEST_3, EVP_HUB_TYPE_EVP2_TB,
-			       EVP2_DEPLOYMENT_MANIFEST_3);
 	return 0;
 }
 
@@ -455,7 +284,6 @@ main(void)
 {
 	// define tests
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test(test_wasm_mod_streams_nng),
 		cmocka_unit_test(test_wasm_mod_streams_posix),
 	};
 	// setup, run tests and teardown

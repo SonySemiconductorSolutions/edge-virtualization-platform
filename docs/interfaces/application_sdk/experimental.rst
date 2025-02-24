@@ -38,7 +38,7 @@ provides the semantics required by its public interface, described below:
 Where:
 
 *
-  ``EVP_streamInputOpen`` sets up a stream that must be configured with direction
+  :c:func:`EVP_streamInputOpen` sets up a stream that must be configured with direction
   ``in`` and name ``name`` from the ``deploymentManifest``. ``cb`` refers to a
   user-defined callback that will be triggered by the implementation as soon
   as input data is available. ``user`` is an opaque pointer that is passed to the
@@ -47,27 +47,27 @@ Where:
   pointer.
 
 *
-  ``EVP_streamOutputOpen`` sets up a stream that must be configured with
+  :c:func:`EVP_streamOutputOpen` sets up a stream that must be configured with
   direction ``out`` and name ``name`` from the ``deploymentManifest``.
 
 *
-  ``EVP_streamClose`` releases the resources allocated by a stream opened
-  with ``EVP_streamInputOpen`` or ``EVP_streamOutputOpen``. For streams opened with
-  ``EVP_streamOutputOpen``\ , ``EVP_streamClose`` shall flush any pending outgoing
+  :c:func:`EVP_streamClose` releases the resources allocated by a stream opened
+  with :c:func:`EVP_streamInputOpen` or :c:func:`EVP_streamOutputOpen`. For streams opened with
+  :c:func:`EVP_streamOutputOpen`\ , :c:func:`EVP_streamClose` shall flush any pending outgoing
   messages before closing the stream.
 
 *
-  ``EVP_streamWrite`` must queue the request defined by the ``const void *``\ ,
+  :c:func:`EVP_streamWrite` must queue the request defined by the ``const void *``\ ,
   which is the user payload, and the ``size_t``\ , which defines its size. This
   function must return immediately, and therefore is not required to send data
   over the network. This should be done asynchronously, for example, via a separate
   thread. This function can only be used with streams previously opened with
-  ``EVP_streamOutputOpen``.
+  :c:func:`EVP_streamOutputOpen`.
 
 Another significant difference between POSIX sockets and EVP streams is
 their direction: while POSIX sockets can be bidirectional, EVP streams are
 *only* unidirectional. In other words, EVP streams can be either ``in`` or
-``out``\ , but never both. As a consequence, using ``EVP_streamWrite`` on an
+``out``\ , but never both. As a consequence, using :c:func:`EVP_streamWrite` on an
 ``in`` stream will return an error.
 
 Bidirectional streams are currently not planned, but it should still be
@@ -116,15 +116,9 @@ might as well not exist if the stream type does not require it.
 
 The following stream types are supported:
 
-* ``nng``\ : based on the `nng`_ library. In
-  the case of an agent using a local SDK implementation, ``nng`` streams are
-  only available if ``EVP_AGENT_LOCAL_SDK_NNG_STREAMS`` is defined. Moreover,
-  ``nng`` are known to have issues on NuttX + ESP32; issues that have not been
-  investigated.
 * ``null``\ : a placeholder implementation only meant for testing purposes.
   ``null`` streams are always supported by the agent.
-* ``posix``\ : only uses the POSIX C standard library, which makes it a more
-  lightweight and convenient choice, compared to ``nng`` streams.
+* ``posix``\ : only uses the POSIX C standard library.
 
 Take into account that, if a module does not use any stream, the ``streams``
 object must not exist.
@@ -133,7 +127,7 @@ Open the stream from the module instance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When a module instance has been started with a set of configured streams, a
-call to ``EVP_streamInputOpen`` or ``EVP_streamOutputOpen`` will look up the
+call to :c:func:`EVP_streamInputOpen` or :c:func:`EVP_streamOutputOpen` will look up the
 current ``deploymentManifest`` to check whether the stream was defined
 accordingly.
 
@@ -157,14 +151,14 @@ The example module below shows how to open an output stream called
    }
 
 If ``my-stream`` could not be found on the ``streams`` JSON object belonging to
-the calling module instance, ``EVP_INVAL`` will be returned. See the
-documentation for ``EVP_streamInputOpen`` and ``EVP_streamOutputOpen`` for a list of possible error values.
+the calling module instance, :c:enumerator:`~EVP_RESULT.EVP_INVAL` will be returned. See the
+documentation for :c:func:`EVP_streamInputOpen` and :c:func:`EVP_streamOutputOpen` for a list of possible error values.
 
 Once a stream has been opened successfully:
 
 * Input streams shall get their user-defined callback triggered once input
   data is available.
-* Output streams can call ``EVP_streamWrite``.
+* Output streams can call :c:func:`EVP_streamWrite`.
 
 High-level design
 -----------------
@@ -199,7 +193,6 @@ However, this implementation must be complemented with:
 
 * Stream type-specific implementation:
 
-  * `nng.c <https://github.com/SonySemiconductorSolutions/edge-virtualization-platform/tree/main/src/libevp-agent/stream/nng.c>`_.
   * `null.c <https://github.com/SonySemiconductorSolutions/edge-virtualization-platform/tree/main/src/libevp-agent/stream/null.c>`_.
   * `posix.c <https://github.com/SonySemiconductorSolutions/edge-virtualization-platform/tree/main/src/libevp-agent/stream/posix.c>`_.
 
@@ -251,7 +244,7 @@ where:
 * ``init`` performs the required type-specific initialization of a stream.
   The desired stream configuration is contained inside the ``cfg`` member on
   the ``struct stream_impl`` passed to this function. A status code as defined
-  by ``EVP_RESULT`` must be returned. If not ``EVP_OK``\ , the status code shall be
+  by :c:enum:`~EVP_RESULT` must be returned. If not ``EVP_OK``\ , the status code shall be
   propagated to the user.
 * ``close`` must deallocate any resources previously allocated by a call
   to ``init``. Returns zero if successful, non-zero otherwise.
@@ -268,9 +261,6 @@ where:
 * ``atexit`` defines a function handler that will be registered to the
   standard ``atexit(3)`` function. It can be a null pointer if no actions are
   required.
-
-  * Note: ``atexit`` was required by ``nng`` streams so as to avoid a false
-    positive from ``valgrind(1)`` when closing the agent.
 
 Input streams
 -------------
@@ -336,7 +326,7 @@ how the event should be stored in the event queue.
 Local SDK
 ^^^^^^^^^
 
-Since ``EVP_client`` was already designed to be accessed from multiple threads
+Since :c:struct:`EVP_client` was already designed to be accessed from multiple threads
 in the case of local SDK, the implementation for ``stream_insert_read_event``
 was relatively straightforward: the ``struct sdk_event_stream_read_available``
 instance can be safely appended into the queue as long as the ``sdk_{un}lock``
@@ -406,7 +396,7 @@ are never meant to be available to users in any case.
 
 As a consequence of this, ``process_stream_in`` has no way to retrieve the
 ``struct EVP_client`` related to the stream, since its caller is only limited
-to a ``struct sdk_client`` instance. This forces ``EVP_initialize`` to set up
+to a ``struct sdk_client`` instance. This forces :c:func:`EVP_initialize` to set up
 a callback/opaque-pointer pair that allows `sdk.c`_
 to insert the new event into ``struct EVP_client`` member ``events``, which must
 be assigned to its ``struct sdk_transport`` instance, which is the only data
@@ -447,7 +437,6 @@ users.
 
 --------
 
-.. _nng: https://github.com/nanomsg/nng
 .. _streams: https://github.com/SonySemiconductorSolutions/edge-virtualization-platform/tree/main/src/libevp-agent/stream
 .. _stream.c: https://github.com/SonySemiconductorSolutions/edge-virtualization-platform/tree/main/src/libevp-agent/stream/stream.c
 .. _stream.h: https://github.com/SonySemiconductorSolutions/edge-virtualization-platform/tree/main/src/libevp-agent/stream/stream.h

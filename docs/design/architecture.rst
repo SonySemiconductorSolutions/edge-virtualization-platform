@@ -2,6 +2,8 @@
 ..
 .. SPDX-License-Identifier: Apache-2.0
 
+.. _design/architecture:
+
 Architecture of the agent
 #########################
 
@@ -95,7 +97,7 @@ Config
 The agent supports definining key/value pairs
 to configure EVP module instances.
 Module instances can subscribe to configurations
-via ``EVP_setConfigurationCallback``.
+via :c:func:`EVP_setConfigurationCallback`.
 Module instance configuration is implemented
 by ``src/libevp-agent/instance_config.c``,
 and is processed according to the configured version of the EVP protocol.
