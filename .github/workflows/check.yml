@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+on:
+  workflow_call:
+    inputs:
+      builder-tag:
+        description: The builder tag to be used
+        default: latest
+        required: false
+        type: string
+      ref:
+        type: string
+        required: true
+      package-namespace:
+        description: The package namespace for docker images
+        default: ${{ github.repository }}
+        required: false
+        type: string
+
+jobs:
+  check:
+    name: Formatting
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ inputs.builder-tag}}
+      options: --user 1001:127
+    timeout-minutes: 3 # the worst case is < 1 minute
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Prepare venv
+        run: |
+          python3 -m venv .venv
+          . .venv/bin/activate && \
+            pip install -r docs/requirements.txt
+
+      - name: Check formatting
+        run: |
+          . .venv/bin/activate && \
+            make -f check.mk check check-docs -j

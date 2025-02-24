@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: EVP Agent OSS error notification
+
+on:
+
+  workflow_run:
+    workflows:
+      - "Main"
+    branches:
+      - main
+    types:
+      - completed
+
+jobs:
+  slack-notify:
+    name: Notify workflow results in slack
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Send message to Slack
+        uses: archive/github-actions-slack@v2.9.0
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        id: notify
+        with:
+          slack-bot-user-oauth-access-token: "${{ secrets.SLACK_BOT_TOKEN_NOTIFICATIONS }}"
+          slack-channel: C038BC0RCLC
+          slack-text: ${{ github.repository }} - ${{ github.event.workflow.name }} its broken in ${{ github.event.workflow_run.html_url}}
+          slack-optional-icon_emoji: ":fire:"
+
+      - name: Result from "Send message to Slack"
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        run: echo "The result was ${{ steps.notify.outputs.slack-result }}"

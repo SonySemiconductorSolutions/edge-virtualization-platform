@@ -48,7 +48,7 @@ sys_add_headers(struct EVP_BlobRequestHttpExt *req,
 		if (result != EVP_OK) {
 			xlog_error("EVP_BlobRequestHttpExt_addHeader failed "
 				   "with %u",
-				   (int)result);
+				   (unsigned int)result);
 			return -1;
 		}
 	}

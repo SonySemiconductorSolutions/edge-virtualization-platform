@@ -51,7 +51,6 @@ Key directories and files
     - ``libevp-app-sdk/``: EVP Application SDK for modules.
     - ``libevp-utils/``: Utility functions for the EVP project.
     - ``mbedtls/``: Lightweight cryptographic library (git module).
-    - ``nng/``: Lightweight messaging library (git module).
     - ``python-evp-app-sdk/``: Python version sources of the EVP Application SDK.
     - ``wasm-micro-runtime/``: WebAssembly Micro Runtime integration (git module).
     - ``evp-agent/``: The runtime of the default EVP Agent.

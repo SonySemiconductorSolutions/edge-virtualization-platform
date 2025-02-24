@@ -179,7 +179,3 @@ endif
 ifeq ($(CONFIG_EVP_AGENT_MODULE_IMPL_DOCKER_RAW_CONTAINER_SPEC),y)
 CSRCS += container_spec.c
 endif
-
-ifeq ($(CONFIG_EVP_AGENT_LOCAL_SDK_NNG_STREAMS),y)
-CSRCS += stream/nng.c
-endif

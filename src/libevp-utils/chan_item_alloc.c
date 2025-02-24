@@ -20,12 +20,9 @@ chan_item_alloc(void)
 	if ((it = malloc(sizeof(*it))) == NULL)
 		return NULL;
 
-	*it = (struct chan_item){
-		.cond = PTHREAD_COND_INITIALIZER,
-	};
+	*it = (struct chan_item){0};
 
 	if (sem_init(&it->sem, 0, 0)) {
-		pthread_cond_destroy(&it->cond);
 		free(it);
 		return NULL;
 	}

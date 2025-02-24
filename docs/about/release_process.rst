@@ -22,7 +22,7 @@ In order to create a new release,
 firstly it is necessary to bump the version
 of the different relevant artifacts:
 
-- ``scripts/rules.mk`` (agent)
+- ``scripts/rules.mk`` (agent and C SDK)
 - ``version.mk`` (agent deprecated)
 - ``src/python-evp-app-sdk/setup.py`` (Python App SDK)
 
@@ -31,7 +31,7 @@ targetting the ``main`` branch.
 The tag ``releases/v<version>``
 with the same value from ``scripts/rules.mk`` must be created.
 The field version is the value defined in ``rules.mk``
-where ``version`` must following `semantic versioning`_.
+where ``version`` must follow `semantic versioning`_.
 
 The release process is thoroughly documented by `GitHub`_.
 

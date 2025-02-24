@@ -5,3 +5,4 @@
 SYS_CFLAGS = -pthread -DMBEDTLS_USER_CONFIG_FILE="<evp_mbedtls_config.h>"
 SYS_LDFLAGS = -pthread
 SYS_LDLIBS = -lpthread -lrt -ldl
+MBEDTLS_USER_CONFIG_FILE = $(PWD)/$(INCDIR)/evp_mbedtls_config.h

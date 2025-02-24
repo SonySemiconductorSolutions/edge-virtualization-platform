@@ -40,18 +40,16 @@
 /*
  * Labels for docker containers.
  */
-#define EVP_LABEL_MANAGED "com.midokura.evp.managed-by-evp-agent"
+#define EVP_LABEL_MANAGED "com.sss.evp.managed-by-evp-agent"
 
 /*
- * XXX the filters is hardcoded because I don't want to implement
- * url quoting.
  *
- * >>> d={'label':['com.midokura.evp.managed-by-evp-agent']}
+ * >>> d={'label':['com.sss.evp.managed-by-evp-agent']}
  * >>> urllib.parse.quote(json.dumps(d))
- * '%7B%22label%22%3A%20%5B%22com.midokura.evp.managed-by-evp-agent%22%5D%7D'
+ * '%7B%22label%22%3A%20%5B%22com.sss.evp.managed-by-evp-agent%22%5D%7D'
  */
 static const char *evp_label_managed_filters =
-	"%7B%22label%22%3A%20%5B%22com.midokura.evp.managed-by-evp-agent%22%"
+	"%7B%22label%22%3A%20%5B%22" EVP_LABEL_MANAGED "%22%"
 	"5D%7D";
 
 struct docker {
@@ -417,7 +415,7 @@ docker_get_registry_auth_var_name(const char *fromImage)
 	 * for the image "xxx/yyy:zzz",
 	 * look at the "EVP_REGISTRY_AUTH_xxx" environment variable.
 	 *
-	 * e.g. for the image "ghcr.io/midokura/sdktest:latest",
+	 * e.g. for the image "ghcr.io/aaa/bbb:latest",
 	 * use "EVP_REGISTRY_AUTH_ghcr.io".
 	 *
 	 * REVISIT: maybe it's simpler to reject non-fully-qualified names.

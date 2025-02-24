@@ -9,12 +9,12 @@ SPDX-License-Identifier: Apache-2.0
 <RulePack>
   <RulePackID>94923a24-0582-11ec-b8c0-573a9c68bf17</RulePackID>
   <Name><![CDATA[
-Custom Fortify Rulepack for midokura/evp-device-agent
+Custom Fortify Rulepack for SonySemiconductorSolutions/edge-virtualization-platform
   ]]></Name>
   <Version>0000.0.0.0000</Version>
   <Language>cpp</Language>
   <Description><![CDATA[
-Custom Rules for C language for midokura/evp-device-agent
+Custom Rules for C language for SonySemiconductorSolutions/edge-virtualization-platform
   ]]></Description>
   <Rules version="20.2">
     <RuleDefinitions>

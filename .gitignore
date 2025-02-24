@@ -16,6 +16,7 @@ __pycache__
 *.a
 *.so
 *.d
+*.su
 /*.tar.gz
 /*.deb
 *.whl
@@ -52,3 +53,6 @@ analysis.txt
 .venv/
 *.core
 /dist
+/src/sdkenc/stamp
+/src/sdkenc/*.h
+/include/sdkenc/*.h
