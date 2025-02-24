@@ -12,11 +12,20 @@ on:
         type: string
         required: false
         default: main
+      package-namespace:
+        description: The package namespace for docker images
+        required: true
+        type: string
   workflow_call:
     inputs:
       ref:
         type: string
         required: false
+      package-namespace:
+        description: The package namespace for docker images
+        default: ${{ github.repository }}
+        required: false
+        type: string
     outputs:
       builder-tag:
         description: tag
@@ -89,7 +98,7 @@ jobs:
           context: .devcontainer/raspi
           file: .devcontainer/raspi/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/builder-raspios-bookworm:${{ needs.builder-necessary.outputs.builder-tag }}
+          tags: ghcr.io/${{ inputs.package-namespace }}/builder-raspios-bookworm:${{ needs.builder-necessary.outputs.builder-tag }}
 
   build-push-ubuntu:
     name: Build and push ubuntu noble (${{ matrix.platform }})
@@ -127,7 +136,7 @@ jobs:
           file: .devcontainer/ubuntu/Dockerfile
           push: true
           provenance: false
-          tags: ghcr.io/${{ github.repository }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-${{ matrix.platform }}
+          tags: ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-${{ matrix.platform }}
 
   manifest-ubuntu:
     if: ${{ needs.builder-necessary.outputs.build == 'true' }}
@@ -148,7 +157,7 @@ jobs:
       - name: Create and push multiarch manifests
         run: |
           docker manifest create \
-            ghcr.io/${{ github.repository }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }} \
-            ghcr.io/${{ github.repository }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-amd64 \
-            ghcr.io/${{ github.repository }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-arm64
-            docker manifest push ghcr.io/${{ github.repository }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}
+            ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }} \
+            ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-amd64 \
+            ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-arm64
+            docker manifest push ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}

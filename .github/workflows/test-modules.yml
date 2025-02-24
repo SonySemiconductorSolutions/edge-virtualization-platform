@@ -26,13 +26,18 @@ on:
         default: latest
         required: false
         type: string
+      package-namespace:
+        description: The package namespace for docker images
+        default: ${{ github.repository }}
+        required: false
+        type: string
 
 jobs:
   build-modules:
     name: Build modules (${{ matrix.name }}, ${{ matrix.platform }})
     runs-on: ${{ matrix.runner }}
     container:
-      image: ghcr.io/${{ github.repository }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ github.token }}

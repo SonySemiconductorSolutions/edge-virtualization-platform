@@ -10,6 +10,11 @@ on:
         default: latest
         required: false
         type: string
+      package-namespace:
+        description: The package namespace for docker images
+        default: ${{ github.repository }}
+        required: false
+        type: string
       ref:
         type: string
         required: true
@@ -19,7 +24,7 @@ jobs:
     name: Agent (${{ matrix.name }}, ${{ matrix.platform }})
     runs-on: ${{ matrix.runner }}
     container:
-      image: ghcr.io/${{ github.repository }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ github.token }}
@@ -82,7 +87,7 @@ jobs:
     name: SDK (${{ matrix.name }}, ${{ matrix.platform }})
     runs-on: ${{ matrix.runner }}
     container:
-      image: ghcr.io/${{ github.repository }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ github.token }}
@@ -170,7 +175,7 @@ jobs:
     name: Static Code Analysis
     runs-on: ubuntu-24.04
     container:
-      image: ghcr.io/${{ github.repository }}/builder-ubuntu-noble:${{ inputs.builder-tag }}
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ inputs.builder-tag }}
       options: --user 1001:127
     timeout-minutes: 8 # the worst case is 3 minutes
 

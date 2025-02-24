@@ -13,13 +13,18 @@ on:
       ref:
         type: string
         required: true
+      package-namespace:
+        description: The package namespace for docker images
+        default: ${{ github.repository }}
+        required: false
+        type: string
 
 jobs:
   check:
     name: Formatting
     runs-on: ubuntu-24.04
     container:
-      image: ghcr.io/${{ github.repository }}/builder-ubuntu-noble:${{ inputs.builder-tag}}
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ inputs.builder-tag}}
       options: --user 1001:127
     timeout-minutes: 3 # the worst case is < 1 minute
     steps:
