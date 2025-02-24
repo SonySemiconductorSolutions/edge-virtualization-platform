@@ -62,7 +62,6 @@ It also requires the following libraries:
 
 	* `WAMR`_ 2.1.2
 	* `MbedTLS`_ 3.6.2
-	* `Nanomsg-ng`_ 1.7.3
 	* `Flatcc`_ 0.6.1
 
 All these libraries are shipped as :ref:`git_submodules` within
@@ -144,7 +143,6 @@ repository, that can be cloned using:
 .. _Python3: https://www.python.org
 .. _WAMR: https://bytecodealliance.github.io/wamr.dev
 .. _MbedTLS: https://www.trustedfirmware.org/projects/mbed-tls
-.. _Nanomsg-ng: https://nng.nanomsg.org
 .. _Flatcc: https://github.com/dvidelabs/flatcc
 .. _Github: https://www.github.com
 .. _WASI-SDK: https://github.com/WebAssembly/wasi-sdk

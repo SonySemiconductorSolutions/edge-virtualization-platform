@@ -14,7 +14,6 @@
 
 struct chan_item {
 	sem_t sem;
-	pthread_cond_t cond;
 	struct chan_msg msg;
 	struct chan_item *next;
 };

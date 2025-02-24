@@ -1,0 +1,153 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Release Artifacts
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  release-artifacts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get last successful run id
+        id: run-id
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          last_run_id=$(gh run list -w main.yml -c ${{ github.sha }} -b main -s completed --json databaseId -L 1 | jq -r .[].databaseId)
+          test -z $last_run_id && echo "cannot find last successful run_id" && exit 1 || echo "last_run_id=$last_run_id" && echo "last_run_id=$last_run_id" >> $GITHUB_OUTPUT
+
+      - name: Download Python SDK (RaspiOS bookworm ARM64)
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          name: python-sdk-raspios-bookworm-arm64-${{ env.LAST_RUN_ID }}
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: dist-raspios-bookworm-arm64
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
+      - name: Download Python SDK deb (RaspiOS bookworm ARM64)
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          name: python-sdk-deb-raspios-bookworm-arm64-${{ env.LAST_RUN_ID }}
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: dist-raspios-bookworm-arm64
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
+      - name: Download Agent deb (RaspiOS bookworm ARM64)
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          name: agent-deb-raspios-bookworm-arm64-${{ env.LAST_RUN_ID }}
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: dist-raspios-bookworm-arm64
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
+      - name: Download Python SDK (Ubuntu noble ARM64)
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          name: python-sdk-ubuntu-noble-arm64-${{ env.LAST_RUN_ID }}
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: dist-ubuntu-noble-arm64
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
+      - name: Download Python SDK deb (Ubuntu noble ARM64)
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          name: python-sdk-deb-ubuntu-noble-arm64-${{ env.LAST_RUN_ID }}
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: dist-ubuntu-noble-arm64
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
+      - name: Download Agent deb (Ubuntu noble ARM64)
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          name: agent-deb-ubuntu-noble-arm64-${{ env.LAST_RUN_ID }}
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: dist-ubuntu-noble-arm64
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
+      - name: Download Python SDK (Ubuntu noble AMD64)
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          name: python-sdk-ubuntu-noble-amd64-${{ env.LAST_RUN_ID }}
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: dist-ubuntu-noble-amd64
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
+      - name: Download Python SDK deb (Ubuntu noble AMD64)
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          name: python-sdk-deb-ubuntu-noble-amd64-${{ env.LAST_RUN_ID }}
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: dist-ubuntu-noble-amd64
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
+      - name: Download Agent deb (Ubuntu noble AMD64)
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          name: agent-deb-ubuntu-noble-amd64-${{ env.LAST_RUN_ID }}
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: dist-ubuntu-noble-amd64
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
+      - name: Rename deb artifacts
+        run: |
+          set -x
+          for deb in dist-ubuntu-noble-*/*.deb; do
+            mv $deb $(echo $deb | sed -E 's/(.*)_([^_]*).deb/\1-ubuntu-noble_\2.deb/');
+          done
+
+          for deb in dist-raspios-bookworm-*/*.deb; do
+            mv $deb $(echo $deb | sed -E 's/(.*)_([^_]*).deb/\1-raspios-bookworm_\2.deb/');
+          done
+
+      - name: Rename whl artifacts
+        run: |
+          set -x
+          for whl in dist-ubuntu-noble-*/*.whl; do
+            mv $whl $(echo $whl | sed -E 's/(.*)-([^-]*).whl/\1-ubuntu_noble-\2.whl/');
+          done
+
+          for whl in dist-raspios-bookworm-*/*.whl; do
+            mv $whl $(echo $whl | sed -E 's/(.*)-([^-]*).whl/\1-raspios_bookworm-\2.whl/');
+          done
+
+      - name: List files in dist-ubuntu-noble-amd64
+        run: ls -la dist-ubuntu-noble-amd64
+
+      - name: List files in dist-ubuntu-noble-arm64
+        run: ls -la dist-ubuntu-noble-arm64
+
+      - name: List files in dist-raspios-bookworm-arm64
+        run: ls -la dist-raspios-bookworm-arm64
+
+      - name: Push artifacts to release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: false
+          files: |
+            dist-*/*.deb
+            dist-*/*.whl

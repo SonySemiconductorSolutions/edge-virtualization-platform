@@ -19,3 +19,6 @@ for building EVP applications.
     features
     usage
     experimental
+    base
+    blob
+    

@@ -5,6 +5,9 @@
  */
 
 #include <flatcc/support/hexdump.h>
+#include <sdkenc/sdk_builder.h>
+#include <sdkenc/sdk_reader.h>
+#include <sdkenc/sdk_verifier.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -15,9 +18,6 @@
 #include <cmocka.h>
 
 #include "hub.h"
-#include "sdk_builder.h"
-#include "sdk_reader.h"
-#include "sdk_verifier.h"
 
 #undef ns
 #define ns(a) FLATBUFFERS_WRAP_NAMESPACE(EVP_SDK, a)

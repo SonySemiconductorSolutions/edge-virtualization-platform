@@ -9,7 +9,7 @@ Most of the features described below
 are available to module instances via
 the use of an opaque handle.
 In the C EVP Application SDK,
-``struct EVP_client`` is the opaque pointer type
+:c:struct:`EVP_client` is the opaque pointer type
 exposed to users.
 In the Python EVP SDK,
 the ``evp.client`` module
@@ -38,11 +38,7 @@ whenever a given configuration topic is received.
 In the C EVP Application SDK,
 module instances can subscribe
 to a given configuration
-via the ``EVP_setConfigurationCallback`` function:
-
-.. code:: C
-
-	EVP_RESULT EVP_setConfigurationCallback(struct EVP_client *h, EVP_CONFIGURATION_CALLBACK cb, void *userData);
+via the :c:func:`EVP_setConfigurationCallback` function.
 
 In the Python EVP SDK,
 module instances can subscribe
@@ -86,11 +82,7 @@ by the EVP Agent.
 
 In the C EVP SDK,
 states can be sent
-using the ``EVP_sendState`` function:
-
-.. code:: C
-
-	EVP_RESULT EVP_sendState(struct EVP_client *h, const char *topic, const void *state, size_t statelen, EVP_STATE_CALLBACK cb, void *userData);
+using the :c:func:`EVP_sendState` function.
 
 In the Python EVP SDK,
 the ``evp.state`` module
@@ -115,7 +107,7 @@ using the ``State.send`` method:
 
 The ``State.send`` method
 shall raise an exception
-if the underlying call to ``EVP_sendState`` fails.
+if the underlying call to :c:func:`EVP_sendState` fails.
 
 Telemetries
 ===========
@@ -136,11 +128,7 @@ where all telemetries for each module instance are defined.
 	blob operations should be used instead.
 
 In the C EVP SDK, telemetries can be sent
-using the ``EVP_sendTelemetry`` function:
-
-.. code:: C
-
-	EVP_RESULT EVP_sendTelemetry(struct EVP_client *h, const struct EVP_telemetry_entry *entries, size_t nentries, EVP_TELEMETRY_CALLBACK cb, void *userData);
+using the :c:func:`EVP_sendTelemetry` function.
 
 Where ``entries`` refers to
 an arbitrary number of telemetry entries,
@@ -150,7 +138,7 @@ is defined by the ``nentries`` parameter.
 
 .. note::
 
-	Since ``EVP_sendTelemetry`` takes
+	Since :c:func:`EVP_sendTelemetry` takes
 	a read-only pointer to such entries,
 	it is advisable that the user-defined callback
 	pointed to by ``user``
@@ -207,29 +195,17 @@ which are both defined as strings.
 In the C EVP SDK,
 a module can subscribe
 to module direct command requests
-via the ``EVP_setRpcCallback`` function:
-
-.. code:: C
-
-	EVP_RESULT EVP_setRpcCallback(struct EVP_client *h, EVP_RPC_REQUEST_CALLBACK cb, void *userData);
+via the :c:func:`EVP_setRpcCallback` function.
 
 All module direct commands
 are then mapped
 to a single, user-defined callback
-with the following signature:
-
-.. code:: C
-
-	typedef void (*EVP_RPC_REQUEST_CALLBACK)(EVP_RPC_ID id, const char *methodName, const char *params, void *userData);
+with the :c:type:`EVP_RPC_REQUEST_CALLBACK` signature.
 
 ``id`` is an opaque identifier
 dedicated to match a request against a response,
 which is passed
-via the ``EVP_sendRpcResponse``:
-
-.. code:: C
-
-	EVP_RESULT EVP_sendRpcResponse(struct EVP_client *h, EVP_RPC_ID id, const char *response, EVP_RPC_RESPONSE_STATUS status, EVP_RPC_RESPONSE_CALLBACK cb, void *userData);
+via the :c:func:`EVP_sendRpcResponse`.
 
 In the Python EVP SDK,
 modules can subscribe
@@ -274,11 +250,7 @@ using a variety of protocols.
 
 In the C EVP SDK,
 all these operations are performed
-by the :c:func:`EVP_blobOperation` function:
-
-.. code:: C
-
-	EVP_RESULT EVP_blobOperation(struct EVP_client *h, EVP_BLOB_TYPE type, EVP_BLOB_OPERATION op, const void *request, struct EVP_BlobLocalStore *localStore, EVP_BLOB_CALLBACK cb, void *userData);
+by the :c:func:`EVP_blobOperation` function.
 
 Every blob operation consumes a user-defined callback
 that will be executed by the agent

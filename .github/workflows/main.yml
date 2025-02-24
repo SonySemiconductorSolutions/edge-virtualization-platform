@@ -1,0 +1,104 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Main
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The ref sha to checkout evp-agent-oss
+        type: string
+        required: false
+        default: main
+      package-namespace:
+        description: The package namespace for docker images
+        required: true
+        type: string
+
+  schedule:
+    - cron: 0 0 * * 1-5
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.workflow }}@main-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  infos:
+    name: Infos
+    runs-on: ubuntu-24.04
+    outputs:
+      package-namespace: ${{ steps.infos.outputs.namespace }}
+    steps:
+      - name: Some infos
+        id: infos
+        run: |
+          echo github.ref is ${{ github.ref }}
+          echo github.head_ref is ${{ github.head_ref }}
+          echo github.sha is ${{ github.sha }}
+          echo github.event_name is ${{ github.event_name }}
+          echo github.event.pull_request.user.login is ${{ github.event.pull_request.user.login }}
+          echo github.event.action is ${{ github.event.action }}
+          echo github.event.repository_owner is ${{ github.repository_owner }}
+          NAMESPACE=${{ github.repository || github.event.repository }}
+          NAMESPACE_LC=${NAMESPACE@L}
+          echo "namespace=${NAMESPACE_LC}" >> $GITHUB_OUTPUT
+          echo namespace is ${NAMESPACE_LC}
+
+  builder:
+    name: Builder
+    needs:
+      - infos
+    uses: ./.github/workflows/builder.yml
+    secrets: inherit
+    with:
+      ref: ${{ inputs.ref || github.sha }}
+      package-namespace: ${{ needs.infos.outputs.package-namespace }}
+
+  checks:
+    name: Checks
+    needs:
+      - builder
+      - infos
+    uses: ./.github/workflows/check.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+      package-namespace: ${{ needs.infos.outputs.package-namespace }}
+
+  test-modules:
+    name: Test-modules
+    needs:
+      - checks
+      - builder
+      - infos
+    uses: ./.github/workflows/test-modules.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+      package-namespace: ${{ needs.infos.outputs.package-namespace }}
+
+  build:
+    name: Build
+    needs:
+      - checks
+      - builder
+      - infos
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+      package-namespace: ${{ needs.infos.outputs.package-namespace }}

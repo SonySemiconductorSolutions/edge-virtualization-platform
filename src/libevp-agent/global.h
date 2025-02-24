@@ -7,6 +7,7 @@
 #include <parson.h>
 
 #include "path.h"
+#include "xpthread.h"
 
 struct map;
 
@@ -29,7 +30,8 @@ struct global {
 	JSON_Value *desired;         // shared attributes
 	JSON_Value *current;         // client attributes (our current state)
 	JSON_Value *instance_states; // Module instance states
-
+	size_t instance_states_len;
+	struct evp_lock instance_states_lock;
 	/*
 	 * Reconcile status
 	 */

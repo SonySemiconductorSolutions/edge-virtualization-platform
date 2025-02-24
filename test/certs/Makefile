@@ -23,7 +23,7 @@ ca-cert.pem: ca-key.pem
 		-out $@ \
 		-sha256 \
 		-noenc \
-		-subj "/C=XX/ST=Barcelona/L=Barcelona/O=Midokura/CN=CA"
+		-subj "/C=XX/ST=Barcelona/L=Barcelona/O=SSS/CN=CA"
 
 server-key.pem:
 	@echo Generating $@
@@ -41,7 +41,7 @@ server.csr: server-key.pem
 		-key server-key.pem \
 		-sha256 \
 		-noenc \
-		-subj "/C=XX/ST=Barcelona/L=Barcelona/O=Midokura/CN=localhost"
+		-subj "/C=XX/ST=Barcelona/L=Barcelona/O=SSS/CN=localhost"
 
 server-cert.pem: server.csr ca-cert.pem ca-key.pem
 	@echo Generating $@

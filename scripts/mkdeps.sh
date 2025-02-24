@@ -30,18 +30,6 @@ then
     git submodule update --init --recursive src/mbedtls
 fi
 
-# In the NuttX build, NNG is not built by us but is included and built
-# by nuttx build system. In those cases, CONFIG_NETUTILS_NNG is selected,
-# so we skip our build
-if test "$CONFIG_EVP_AGENT_LOCAL_SDK_NNG_STREAMS" = y &&
-    test "$CONFIG_NETUTILS_NNG" != y
-then
-    libs="$libs -lnng"
-    dirs="$dirs nng"
-    files="$files \$(LIBDIR)/libnng.a"
-    git submodule update --init src/nng
-fi
-
 # In the NuttX build, WAMR is not built by us but is included and built by
 # nuttx build system. In those cases, CONFIG_INTERPRETERS_WAMR is selected,
 # so we skip our build
@@ -57,7 +45,7 @@ fi
 if test "$CONFIG_EVP_SDK_SOCKET" = y
 then
     libs="$libs -lflatccrt"
-    dirs="$dirs flatcc"
+    dirs="$dirs flatcc sdkenc"
     files="$files \$(LIBDIR)/libflatccrt.a"
     git submodule update --init src/flatcc
 fi

@@ -188,79 +188,6 @@ F4BC0DB59A449AD000146D1FF3F6A717
 EC3A8A0AD55E3A2C4FF67D7A5EB5A853
 
 # False positive.
-# Yet again, Fortify fails to see the ownership for nng is transferred to
-# si->params if successful, or freed otherwise.
-# [1A885094842BD658D060434C33161244 : high : Memory Leak : controlflow ]
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(102) : Branch taken: (cfg->protocol == 1)
-#     stream/nng.c(102) : goto
-#     stream/nng.c(104) : Branch taken: (error != 0)
-#     stream/nng.c(107) : allocated -> allocated : return
-#     stream/nng.c(107) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(107) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(93) : Default case
-#     stream/nng.c(112) : Branch taken: (cfg->mode == 0)
-#     stream/nng.c(112) : goto
-#     stream/nng.c(115) : Branch taken: (error != 0)
-#     stream/nng.c(118) : allocated -> allocated : return
-#     stream/nng.c(118) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(118) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(93) : Default case
-#     stream/nng.c(128) : Branch taken: (cfg->mode == 1)
-#     stream/nng.c(128) : goto
-#     stream/nng.c(131) : Branch taken: (error != 0)
-#     stream/nng.c(134) : allocated -> allocated : return
-#     stream/nng.c(134) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(134) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(94) : Branch taken: (cfg->protocol == 0)
-#     stream/nng.c(94) : goto
-#     stream/nng.c(96) : Branch taken: (error != 0)
-#     stream/nng.c(99) : goto
-#     stream/nng.c(148) : Branch not taken: (ret == 0)
-#     stream/nng.c(154) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(154) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(93) : Default case
-#     stream/nng.c(112) : Branch taken: (cfg->mode == 0)
-#     stream/nng.c(112) : goto
-#     stream/nng.c(115) : Branch not taken: (error == 0)
-#     stream/nng.c(122) : Branch taken: (error != 0)
-#     stream/nng.c(125) : allocated -> allocated : return
-#     stream/nng.c(125) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(125) : allocated -> leak : nng end scope : Memory leaked
-#
-#     stream/nng.c(81) : start -> allocated : nng = malloc(...)
-#     stream/nng.c(81) : allocated -> allocated : nng refers to dynamically allocated memory
-#     stream/nng.c(83) : Branch not taken: (nng != NULL)
-#     stream/nng.c(93) : Default case
-#     stream/nng.c(128) : Branch taken: (cfg->mode == 1)
-#     stream/nng.c(128) : goto
-#     stream/nng.c(131) : Branch not taken: (error == 0)
-#     stream/nng.c(138) : Branch taken: (error != 0)
-#     stream/nng.c(141) : allocated -> allocated : return
-#     stream/nng.c(141) : allocated -> allocated : nng no longer refers to dynamically allocated memory
-#     stream/nng.c(141) : allocated -> leak : nng end scope : Memory leaked
-1A885094842BD658D060434C33161244
-
-# False positive.
 # Yet again, Fortify fails to see the ownership for si is transferred on the
 # call to stream_insert when successful, or freed otherwise.
 # [9DCB3298A90BBC02F9C3EAB914E75FB3 : high : Memory Leak : controlflow ]
@@ -305,65 +232,69 @@ EC3A8A0AD55E3A2C4FF67D7A5EB5A853
 # Filtering flatbuffers issues                           #
 ##########################################################
 
-# [6EBADB667319025D962EA0A1E48D58DC : high : Integer Overflow : dataflow ]
-# libevp-agent/sdk_remote.c(559) :  ->malloc(0)
-#     libevp-agent/sdk_remote.c(554) : <=> (nentries)
-#         libevp-agent/sdkenc/sdk_reader.h(897) : return
-#             flatcc/include/flatcc/flatcc_endian.h(87) : return
-#                 flatcc/include/flatcc/flatcc_endian.h(87) : return
+# [994C38F53DC53FA3194741CAC501D7A2 : high : Integer Overflow : dataflow ]
+# sdk_remote.c(567) :  ->malloc(0)
+#     sdk_remote.c(562) : <=> (nentries)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(832) : return
+#             /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : return
+#                 /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : return
 #                     /usr/include/x86_64-linux-gnu/bits/uintn-identity.h(41) : return (__x)
-#                 flatcc/include/flatcc/flatcc_endian.h(87) : <->__uint32_identity(0->return)
-#             flatcc/include/flatcc/flatcc_endian.h(87) : <->__flatbuffers_uoffset_cast_from_pe(0->return)
-#         libevp-agent/sdkenc/sdk_reader.h(897) : <->__flatbuffers_uoffset_read_from_pe(0->return)
-#     libevp-agent/sdk_remote.c(554) : <->EVP_SDK_TelemetryEntry_vec_len(0->return)
-#     libevp-agent/sdk_remote.c(553) : <=> (vec)
-#         libevp-agent/sdkenc/sdk_reader.h(913) : return
-#         libevp-agent/sdkenc/sdk_reader.h(913) : <=> (elem__tmp)
-#     libevp-agent/sdk_remote.c(553) : <->EVP_SDK_TelemetryInput_entries(0->return)
-#     libevp-agent/sdk_remote.c(550) : <=> (t)
-#         libevp-agent/sdkenc/sdk_reader.h(1098) : return
-#         libevp-agent/sdkenc/sdk_reader.h(1098) : <=> (elem__tmp)
-#     libevp-agent/sdk_remote.c(550) : <->EVP_SDK_Request_body(0->return)
-#     libevp-agent/sdk_remote.c(969) :  ->process_send_telemetry(1)
-#     libevp-agent/sdk_remote.c(926) : <=> (req)
-#         libevp-agent/sdkenc/sdk_reader.h(1096) : return
-#     libevp-agent/sdk_remote.c(926) : <->EVP_SDK_Request_as_root(0->return)
-#     libevp-agent/sdkrpc/server.c(96) :  ->sdk_process_request(0)
-#     libevp-agent/sdkrpc/server.c(85) : <- readall(1)
-#     libevp-agent/ioutil.c(28) : <- read(1)
-6EBADB667319025D962EA0A1E48D58DC
+#                 /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : <->__uint32_identity(0->return)
+#             /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : <->__flatbuffers_uoffset_cast_from_pe(0->return)
+#                 /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : return (p)
+#             /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : <->__flatbuffers_uoffset_read(0->return)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(832) : <->__flatbuffers_uoffset_read_from_pe(0->return)
+#     sdk_remote.c(562) : <->EVP_SDK_TelemetryEntry_vec_len(0->return)
+#     sdk_remote.c(561) : <=> (vec)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(848) : return
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(848) : <=> (elem__tmp)
+#     sdk_remote.c(561) : <->EVP_SDK_TelemetryInput_entries(0->return)
+#     sdk_remote.c(558) : <=> (t)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : return
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : <=> (elem__tmp)
+#     sdk_remote.c(558) : <->EVP_SDK_Request_body(0->return)
+#     sdk_remote.c(952) :  ->process_send_telemetry(1)
+#     sdk_remote.c(909) : <=> (req)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1031) : return
+#     sdk_remote.c(909) : <->EVP_SDK_Request_as_root(0->return)
+#     sdkrpc/server.c(96) :  ->sdk_process_request(0)
+#     sdkrpc/server.c(85) : <- readall(1)
+#     ioutil.c(22) : <- read(1)
+994C38F53DC53FA3194741CAC501D7A2
 
-# [974D927872FA4C2E2EBCCFD5EFAD10E6 : high : Integer Overflow : dataflow ]
-# libevp-agent/sdk_remote.c(496) :  ->calloc(0)
-#     libevp-agent/sdk_remote.c(493) : <=> (http_ext_request.nheaders)
-#         libevp-agent/sdkenc/flatbuffers_common_reader.h(135) : return
-#             flatcc/include/flatcc/flatcc_endian.h(87) : return
-#                 flatcc/include/flatcc/flatcc_endian.h(87) : return
+# [C4E975D3F24A6B555BDF5CAB0D8F241B : high : Integer Overflow : dataflow ]
+# sdk_remote.c(504) :  ->calloc(0)
+#     sdk_remote.c(501) : <=> (http_ext_request.nheaders)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/flatbuffers_common_reader.h(135) : return
+#             /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : return
+#                 /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : return
 #                     /usr/include/x86_64-linux-gnu/bits/uintn-identity.h(41) : return (__x)
-#                 flatcc/include/flatcc/flatcc_endian.h(87) : <->__uint32_identity(0->return)
-#             flatcc/include/flatcc/flatcc_endian.h(87) : <->__flatbuffers_uoffset_cast_from_pe(0->return)
-#         libevp-agent/sdkenc/flatbuffers_common_reader.h(135) : <->__flatbuffers_uoffset_read_from_pe(0->return)
-#     libevp-agent/sdk_remote.c(494) : <->flatbuffers_string_vec_len(0->return)
-#     libevp-agent/sdk_remote.c(491) : <=> (headers_vec)
-#         libevp-agent/sdkenc/sdk_reader.h(714) : return
-#         libevp-agent/sdkenc/sdk_reader.h(714) : <=> (elem__tmp)
-#     libevp-agent/sdk_remote.c(492) : <->EVP_SDK_BlobRequestHttpExt_headers(0->return)
-#     libevp-agent/sdk_remote.c(483) : <=> (http_ext)
-#         libevp-agent/sdkenc/sdk_reader.h(759) : return
-#         libevp-agent/sdkenc/sdk_reader.h(759) : <=> (elem__tmp)
-#     libevp-agent/sdk_remote.c(484) : <->EVP_SDK_BlobInput_request(0->return)
-#     libevp-agent/sdk_remote.c(414) : <=> (blob)
-#         libevp-agent/sdkenc/sdk_reader.h(1098) : return
-#         libevp-agent/sdkenc/sdk_reader.h(1098) : <=> (elem__tmp)
-#     libevp-agent/sdk_remote.c(414) : <->EVP_SDK_Request_body(0->return)
-#     libevp-agent/sdk_remote.c(969) :  ->process_blob_operation(1)
-#     libevp-agent/sdk_remote.c(926) : <=> (req)
-#         libevp-agent/sdkenc/sdk_reader.h(1096) : return
-#     libevp-agent/sdk_remote.c(926) : <->EVP_SDK_Request_as_root(0->return)
-#     libevp-agent/sdkrpc/server.c(96) :  ->sdk_process_request(0)
-#     libevp-agent/sdkrpc/server.c(85) : <- readall(1)
-#     libevp-agent/ioutil.c(28) : <- read(1)
-974D927872FA4C2E2EBCCFD5EFAD10E6
+#                 /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : <->__uint32_identity(0->return)
+#             /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : <->__flatbuffers_uoffset_cast_from_pe(0->return)
+#                 /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : return (p)
+#             /__w/wedge-agent/wedge-agent/include/flatcc/flatcc_endian.h(87) : <->__flatbuffers_uoffset_read(0->return)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/flatbuffers_common_reader.h(135) : <->__flatbuffers_uoffset_read_from_pe(0->return)
+#     sdk_remote.c(502) : <->flatbuffers_string_vec_len(0->return)
+#     sdk_remote.c(499) : <=> (headers_vec)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(649) : return
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(649) : <=> (elem__tmp)
+#     sdk_remote.c(500) : <->EVP_SDK_BlobRequestHttpExt_headers(0->return)
+#     sdk_remote.c(491) : <=> (http_ext)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(694) : return
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(694) : <=> (elem__tmp)
+#     sdk_remote.c(492) : <->EVP_SDK_BlobInput_request(0->return)
+#     sdk_remote.c(422) : <=> (blob)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : return
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : <=> (elem__tmp)
+#     sdk_remote.c(422) : <->EVP_SDK_Request_body(0->return)
+#     sdk_remote.c(952) :  ->process_blob_operation(1)
+#     sdk_remote.c(909) : <=> (req)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1031) : return
+#     sdk_remote.c(909) : <->EVP_SDK_Request_as_root(0->return)
+#     sdkrpc/server.c(96) :  ->sdk_process_request(0)
+#     sdkrpc/server.c(85) : <- readall(1)
+#     ioutil.c(22) : <- read(1)
+C4E975D3F24A6B555BDF5CAB0D8F241B
 
 ##################
 # MQTT-C related #
@@ -592,16 +523,16 @@ B838E55D9366945FE643B14028366303
 # And in this branch there is the free
 #       sdk_remote.c(491) ==> free(entries);
 #
-# [6BAB7EEBA1E6EBF51D76071F2CBF4A74 : high : Memory Leak : controlflow ]
+# [52F5843BA1269E1A5925D903D288954D : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/sdk_remote.c(552) : Branch taken: (t != NULL)
-#     libevp-agent/sdk_remote.c(558) : start -> allocated : entries = malloc(...)
-#     libevp-agent/sdk_remote.c(558) : allocated -> allocated : entries refers to dynamically allocated memory
-#     libevp-agent/sdk_remote.c(560) : Branch not taken: (entries != NULL)
-#     libevp-agent/sdk_remote.c(579) : Branch not taken: (0 == ret)
-#     libevp-agent/sdk_remote.c(596) : allocated -> allocated : entries no longer refers to dynamically allocated memory
-#     libevp-agent/sdk_remote.c(596) : allocated -> leak : entries end scope : Memory leaked
-6BAB7EEBA1E6EBF51D76071F2CBF4A74
+#     sdk_remote.c(560) : Branch taken: (t != NULL)
+#     sdk_remote.c(566) : start -> allocated : entries = malloc(...)
+#     sdk_remote.c(566) : allocated -> allocated : entries refers to dynamically allocated memory
+#     sdk_remote.c(568) : Branch not taken: (entries != NULL)
+#     sdk_remote.c(587) : Branch not taken: (0 == ret)
+#     sdk_remote.c(604) : allocated -> allocated : entries no longer refers to dynamically allocated memory
+#     sdk_remote.c(604) : allocated -> leak : entries end scope : Memory leaked
+52F5843BA1269E1A5925D903D288954D
 
 # The EVP SDK (agent side) allocates memory for each event (event is any action,
 # like RPC, telemetry, ...) and put in queue and wait feedback from the agent.
@@ -612,100 +543,127 @@ B838E55D9366945FE643B14028366303
 # This one frees the allocated fields and the event itself.
 # So the all issues related with sdk when a event is enqued is a false positive
 # 8 issues 8 type of events (so it matches)
-# [067C59367AD524EC4D6133BE4D62A0AC : high : Memory Leak : controlflow ]
+#[753C80AA0C46D7EFF76F1EF35D45EAA6 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(244) : Branch taken: (h != NULL)
-#     sdk.c(244) : Branch taken: (h->exiting == 0)
-#     sdk.c(255) : Branch not taken: (event == NULL)
-#     sdk.c(259) : start -> allocated : config = xcalloc_internal(...)
-#         util.c(188) : start -> allocated : vp = calloc(...)
-#         util.c(188) : allocated -> allocated : vp refers to dynamically allocated memory
-#         util.c(189) : Branch not taken: (vp != NULL)
-#         util.c(192) : allocated -> allocated : return
-#     sdk.c(259) : allocated -> allocated : config refers to dynamically allocated memory
-#     sdk.c(267) : allocated -> allocated : config no longer refers to dynamically allocated memory
-#     sdk.c(267) : allocated -> leak : config end scope : Memory leaked
-067C59367AD524EC4D6133BE4D62A0AC
+#    sdk.c(245) : Branch taken: (h != NULL)
+#    sdk.c(245) : Branch taken: (h->exiting == 0)
+#    sdk.c(256) : Branch not taken: (event == NULL)
+#    sdk.c(260) : start -> allocated : config = xcalloc_internal(...)
+#        util.c(188) : start -> allocated : vp = calloc(...)
+#        util.c(188) : allocated -> allocated : vp refers to dynamically allocated memory
+#        util.c(189) : Branch not taken: (vp != NULL)
+#        util.c(192) : allocated -> allocated : return
+#    sdk.c(260) : allocated -> allocated : config refers to dynamically allocated memory
+#    sdk.c(268) : allocated -> allocated : config no longer refers to dynamically allocated memory
+#    sdk.c(268) : allocated -> leak : config end scope : Memory leaked
+753C80AA0C46D7EFF76F1EF35D45EAA6
 
-# [DCAD7EB558B6D37BA468C58E7B1385D7 : high : Memory Leak : controlflow ]
+#[7E30001FB07717CFF2FE5B13587B01B0 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(301) : Branch taken: (h != NULL)
-#     sdk.c(301) : Branch taken: (h->exiting == 0)
-#     sdk.c(302) : start -> allocated : r = xcalloc_internal(...)
-#         util.c(188) : start -> allocated : vp = calloc(...)
-#         util.c(188) : allocated -> allocated : vp refers to dynamically allocated memory
-#         util.c(189) : Branch not taken: (vp != NULL)
-#         util.c(192) : allocated -> allocated : return
-#     sdk.c(302) : allocated -> allocated : r refers to dynamically allocated memory
-#     sdk.c(309) : allocated -> allocated : r no longer refers to dynamically allocated memory
-#     sdk.c(309) : allocated -> leak : r end scope : Memory leaked
-DCAD7EB558B6D37BA468C58E7B1385D7
+#    sdk.c(302) : Branch taken: (h != NULL)
+#    sdk.c(302) : Branch taken: (h->exiting == 0)
+#    sdk.c(303) : start -> allocated : r = xcalloc_internal(...)
+#        util.c(188) : start -> allocated : vp = calloc(...)
+#        util.c(188) : allocated -> allocated : vp refers to dynamically allocated memory
+#        util.c(189) : Branch not taken: (vp != NULL)
+#        util.c(192) : allocated -> allocated : return
+#    sdk.c(303) : allocated -> allocated : r refers to dynamically allocated memory
+#    sdk.c(310) : allocated -> allocated : r no longer refers to dynamically allocated memory
+#    sdk.c(310) : allocated -> leak : r end scope : Memory leaked
+7E30001FB07717CFF2FE5B13587B01B0
 
-# [0225114F0DD658B78203F1590A4D491A : high : Memory Leak : controlflow ]
+#[753C80AA0C46D7EFF76F1EF35D45EAA6 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(244) : Branch taken: (h != NULL)
-#     sdk.c(244) : Branch taken: (h->exiting == 0)
-#     sdk.c(264) : start -> allocated : config->topic = xstrdup_internal(...)
-#         util.c(221) : start -> allocated : cp = strdup(...)
-#         util.c(221) : allocated -> allocated : cp refers to dynamically allocated memory
-#         util.c(222) : Branch not taken: (cp != NULL)
-#         util.c(225) : allocated -> allocated : return
-#     sdk.c(264) : allocated -> allocated : config->topic refers to dynamically allocated memory
-#     sdk.c(267) : allocated -> allocated : config->topic no longer refers to dynamically allocated memory
-#     sdk.c(267) : allocated -> leak : config end scope : Memory leaked
-0225114F0DD658B78203F1590A4D491A
+#    sdk.c(245) : Branch taken: (h != NULL)
+#    sdk.c(245) : Branch taken: (h->exiting == 0)
+#    sdk.c(256) : Branch not taken: (event == NULL)
+#    sdk.c(260) : start -> allocated : config = xcalloc_internal(...)
+#        util.c(188) : start -> allocated : vp = calloc(...)
+#        util.c(188) : allocated -> allocated : vp refers to dynamically allocated memory
+#        util.c(189) : Branch not taken: (vp != NULL)
+#        util.c(192) : allocated -> allocated : return
+#    sdk.c(260) : allocated -> allocated : config refers to dynamically allocated memory
+#    sdk.c(268) : allocated -> allocated : config no longer refers to dynamically allocated memory
+#    sdk.c(268) : allocated -> leak : config end scope : Memory leaked
+753C80AA0C46D7EFF76F1EF35D45EAA6
 
 # False positive. The ownership for instance_name is transferred to the
 # caller when successful. Otherwise, the memory is released via free(3).
-# [2875963782EF8F6D3886C98861CEC80A : high : Memory Leak : controlflow ]
+#[BC68A3AE07F66F3EA7F344AA1CF6B9E1 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(1340) : start -> allocated : instance_name = strdup(...)
-#     sdk.c(1340) : allocated -> allocated : instance_name refers to dynamically allocated memory
-#     sdk.c(1343) : Branch not taken: (instance_name != NULL)
-#     sdk.c(1343) : Branch taken: (remote_name == NULL)
-#     sdk.c(1345) : goto
-#     sdk.c(1355) : Branch not taken: (ret == 0)
-#     sdk.c(1360) : allocated -> allocated : instance_name no longer refers to dynamically allocated memory
-#     sdk.c(1360) : allocated -> leak : instance_name end scope : Memory leaked
-2875963782EF8F6D3886C98861CEC80A
+#    sdk.c(1351) : start -> allocated : instance_name = strdup(...)
+#    sdk.c(1351) : allocated -> allocated : instance_name refers to dynamically allocated memory
+#    sdk.c(1353) : Branch taken: (evp_ext->storage_name != NULL)
+#    sdk.c(1356) : Branch taken: (storage_name == NULL)
+#    sdk.c(1358) : goto
+#    sdk.c(1372) : Branch not taken: (ret == 0)
+#    sdk.c(1377) : allocated -> allocated : instance_name no longer refers to dynamically allocated memory
+#    sdk.c(1377) : allocated -> leak : instance_name end scope : Memory leaked
+BC68A3AE07F66F3EA7F344AA1CF6B9E1
+
+# False positive.
+#[88FACBFC4F408F7012D2315A7D788BF9 : high : Memory Leak : controlflow ]
+#
+#    sdk.c(1321) : start -> allocated : remote_name = strdup(...)
+#    sdk.c(1321) : allocated -> allocated : remote_name refers to dynamically allocated memory
+#    sdk.c(1323) : Branch taken: (instance_name == NULL)
+#    sdk.c(1325) : goto
+#    sdk.c(1335) : Branch not taken: (ret == 0)
+#    sdk.c(1340) : allocated -> allocated : remote_name no longer refers to dynamically allocated memory
+#    sdk.c(1340) : allocated -> leak : remote_name end scope : Memory leaked
+88FACBFC4F408F7012D2315A7D788BF9
 
 # False positive. Similar to 2875963782EF8F6D3886C98861CEC80A.
-# [3D0F88E4D11DF8FC1CE7FBEA5FDCA9FC : high : Memory Leak : controlflow ]
+#[05D749459E2661F49E9A2800A98323B3 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(1341) : start -> allocated : remote_name = strdup(...)
-#     sdk.c(1341) : allocated -> allocated : remote_name refers to dynamically allocated memory
-#     sdk.c(1343) : Branch taken: (instance_name == NULL)
-#     sdk.c(1345) : goto
-#     sdk.c(1355) : Branch not taken: (ret == 0)
-#     sdk.c(1360) : allocated -> allocated : remote_name no longer refers to dynamically allocated memory
-#     sdk.c(1360) : allocated -> leak : remote_name end scope : Memory leaked
-3D0F88E4D11DF8FC1CE7FBEA5FDCA9FC
+#    sdk.c(1350) : start -> allocated : remote_name = strdup(...)
+#    sdk.c(1350) : allocated -> allocated : remote_name refers to dynamically allocated memory
+#    sdk.c(1353) : Branch taken: (evp_ext->storage_name != NULL)
+#    sdk.c(1356) : Branch taken: (storage_name == NULL)
+#    sdk.c(1358) : goto
+#    sdk.c(1372) : Branch not taken: (ret == 0)
+#    sdk.c(1377) : allocated -> allocated : remote_name no longer refers to dynamically allocated memory
+#    sdk.c(1377) : allocated -> leak : remote_name end scope : Memory leaked
+05D749459E2661F49E9A2800A98323B3
 
-# False positive. Similar to 2875963782EF8F6D3886C98861CEC80A.
-# [00327D8809D0B8577E45D1A736AD8420 : high : Memory Leak : controlflow ]
+#[13DD2A203C18A517C7B4840513317DB0 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(1370) : start -> allocated : remote_name = strdup(...)
-#     sdk.c(1370) : allocated -> allocated : remote_name refers to dynamically allocated memory
-#     sdk.c(1373) : Branch taken: (evp_ext->storage_name != NULL)
-#     sdk.c(1376) : Branch taken: (storage_name == NULL)
-#     sdk.c(1378) : goto
-#     sdk.c(1392) : Branch not taken: (ret == 0)
-#     sdk.c(1397) : allocated -> allocated : remote_name no longer refers to dynamically allocated memory
-#     sdk.c(1397) : allocated -> leak : remote_name end scope : Memory leaked
-00327D8809D0B8577E45D1A736AD8420
+#    sdk.c(245) : Branch taken: (h != NULL)
+#    sdk.c(245) : Branch taken: (h->exiting == 0)
+#    sdk.c(265) : start -> allocated : config->topic = xstrdup_internal(...)
+#        util.c(221) : start -> allocated : cp = strdup(...)
+#        util.c(221) : allocated -> allocated : cp refers to dynamically allocated memory
+#        util.c(222) : Branch not taken: (cp != NULL)
+#        util.c(225) : allocated -> allocated : return
+#    sdk.c(265) : allocated -> allocated : config->topic refers to dynamically allocated memory
+#    sdk.c(268) : allocated -> allocated : config->topic no longer refers to dynamically allocated memory
+#    sdk.c(268) : allocated -> leak : config end scope : Memory leaked
+13DD2A203C18A517C7B4840513317DB0
 
-# False positive. Similar to 2875963782EF8F6D3886C98861CEC80A.
-# [3CA40910073FFCA06B9FA2F3D81DA617 : high : Memory Leak : controlflow ]
+#[89E9B42F5C5AF6377B59C48DE9E785F7 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(1371) : start -> allocated : instance_name = strdup(...)
-#     sdk.c(1371) : allocated -> allocated : instance_name refers to dynamically allocated memory
-#     sdk.c(1373) : Branch taken: (evp_ext->storage_name != NULL)
-#     sdk.c(1376) : Branch taken: (storage_name == NULL)
-#     sdk.c(1378) : goto
-#     sdk.c(1392) : Branch not taken: (ret == 0)
-#     sdk.c(1397) : allocated -> allocated : instance_name no longer refers to dynamically allocated memory
-#     sdk.c(1397) : allocated -> leak : instance_name end scope : Memory leaked
-3CA40910073FFCA06B9FA2F3D81DA617
+#    sdk.c(1016) : Branch not taken: (g_mqtt_client != NULL)
+#    sdk.c(1022) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, len) != 0)
+#    sdk.c(1033) : start -> allocated : state = malloc(...)
+#    sdk.c(1033) : allocated -> allocated : state refers to dynamically allocated memory
+#    sdk.c(1034) : Branch not taken: (state != NULL)
+#    sdk.c(1054) : Branch not taken: (oevent == NULL)
+#    sdk.c(1082) : Branch not taken: (ret == 0)
+#    sdk.c(1085) : allocated -> allocated : state no longer refers to dynamically allocated memory
+#    sdk.c(1085) : allocated -> leak : state end scope : Memory leaked
+89E9B42F5C5AF6377B59C48DE9E785F7
+
+#[4E89E0F5591AA8A38639E4FE6EB0A8B2 : high : Memory Leak : controlflow ]
+#
+#    sdk.c(1320) : start -> allocated : instance_name = strdup(...)
+#    sdk.c(1320) : allocated -> allocated : instance_name refers to dynamically allocated memory
+#    sdk.c(1323) : Branch not taken: (instance_name != NULL)
+#    sdk.c(1323) : Branch taken: (remote_name == NULL)
+#    sdk.c(1325) : goto
+#    sdk.c(1335) : Branch not taken: (ret == 0)
+#    sdk.c(1340) : allocated -> allocated : instance_name no longer refers to dynamically allocated memory
+#    sdk.c(1340) : allocated -> leak : instance_name end scope : Memory leaked
+4E89E0F5591AA8A38639E4FE6EB0A8B2
 
 # False positive
 #
@@ -718,14 +676,14 @@ DCAD7EB558B6D37BA468C58E7B1385D7
 #       gets each element in the queue
 #       cast to specific event.
 #       free at the end of each event by sdk_free_event
-# [B0CE5CE3545B4A42DE7B936450EFBF70 : high : Memory Leak : controlflow ]
+#[3E1476C1E6658229EE0E5AF63E7786B7 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(1679) : start -> allocated : event_message = malloc(...)
-#     sdk.c(1679) : allocated -> allocated : event_message refers to dynamically allocated memory
-#     sdk.c(1681) : Branch not taken: (event_message != NULL)
-#     sdk.c(1712) : allocated -> allocated : event_message no longer refers to dynamically allocated memory
-#     sdk.c(1712) : allocated -> leak : event_message end scope : Memory leaked
-B0CE5CE3545B4A42DE7B936450EFBF70
+#    sdk.c(1659) : start -> allocated : event_message = malloc(...)
+#    sdk.c(1659) : allocated -> allocated : event_message refers to dynamically allocated memory
+#    sdk.c(1661) : Branch not taken: (event_message != NULL)
+#    sdk.c(1692) : allocated -> allocated : event_message no longer refers to dynamically allocated memory
+#    sdk.c(1692) : allocated -> leak : event_message end scope : Memory leaked
+3E1476C1E6658229EE0E5AF63E7786B7
 
 # False positive (idem of previous)
 #
@@ -738,28 +696,28 @@ B0CE5CE3545B4A42DE7B936450EFBF70
 #       gets each element in the queue
 #       cast to specific event.
 #       free at the end of each event by sdk_free_event
-# [7E018F765E3B9D243BFD58974619AB3E : high : Memory Leak : controlflow ]
+#[B3B20F3988D18CC8CA5C28514719C705 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(1741) : Branch not taken: (g_mqtt_client != NULL)
-#     sdk.c(1745) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, total_size) != 0)
-#     sdk.c(1749) : start -> allocated : t = malloc(...)
-#     sdk.c(1749) : allocated -> allocated : t refers to dynamically allocated memory
-#     sdk.c(1750) : Branch not taken: (t != NULL)
-#     sdk.c(1780) : allocated -> allocated : t no longer refers to dynamically allocated memory
-#     sdk.c(1780) : allocated -> leak : t end scope : Memory leaked
-7E018F765E3B9D243BFD58974619AB3E
+#    sdk.c(1721) : Branch not taken: (g_mqtt_client != NULL)
+#    sdk.c(1725) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, total_size) != 0)
+#    sdk.c(1729) : start -> allocated : t = malloc(...)
+#    sdk.c(1729) : allocated -> allocated : t refers to dynamically allocated memory
+#    sdk.c(1730) : Branch not taken: (t != NULL)
+#    sdk.c(1760) : allocated -> allocated : t no longer refers to dynamically allocated memory
+#    sdk.c(1760) : allocated -> leak : t end scope : Memory leaked
+B3B20F3988D18CC8CA5C28514719C705
 
-# [508BA8845299DD5DDF222FB8FABDB985 : high : Memory Leak : controlflow ]
+#[D0731D514166A49C8FFB53F1F9FD92A2 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(1837) : Branch not taken: (response != NULL)
-#     sdk.c(1846) : Branch not taken: (g_mqtt_client != NULL)
-#     sdk.c(1851) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, outsz) != 0)
-#     sdk.c(1855) : start -> allocated : r = malloc(...)
-#     sdk.c(1855) : allocated -> allocated : r refers to dynamically allocated memory
-#     sdk.c(1856) : Branch not taken: (r != NULL)
-#     sdk.c(1884) : allocated -> allocated : r no longer refers to dynamically allocated memory
-#     sdk.c(1884) : allocated -> leak : r end scope : Memory leaked
-508BA8845299DD5DDF222FB8FABDB985
+#    sdk.c(1817) : Branch not taken: (response != NULL)
+#    sdk.c(1826) : Branch not taken: (g_mqtt_client != NULL)
+#    sdk.c(1831) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, outsz) != 0)
+#    sdk.c(1835) : start -> allocated : r = malloc(...)
+#    sdk.c(1835) : allocated -> allocated : r refers to dynamically allocated memory
+#    sdk.c(1836) : Branch not taken: (r != NULL)
+#    sdk.c(1864) : allocated -> allocated : r no longer refers to dynamically allocated memory
+#    sdk.c(1864) : allocated -> leak : r end scope : Memory leaked
+D0731D514166A49C8FFB53F1F9FD92A2
 
 # It is true response might not be a null-terminated string, as it is
 # read from user input. However, this same assumption is made in a few
@@ -788,15 +746,15 @@ B0CE5CE3545B4A42DE7B936450EFBF70
 # False positive.
 # s.name is transferred to stream when the function is succesful.
 # Otherwise, it is freed via free_stream.
-# [7DD7E3EDFC6A656A6A38B155B81127FB : high : Memory Leak : controlflow ]
+# [0A6344F4769EBC172A111620056A0739 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/manifest.c(597) : start -> allocated : s.name = strdup(...)
-#     libevp-agent/manifest.c(597) : allocated -> allocated : s.name refers to dynamically allocated memory
-#     libevp-agent/manifest.c(599) : Branch not taken: (s.name != NULL)
-#     libevp-agent/manifest.c(607) : goto
-#     libevp-agent/manifest.c(644) : allocated -> allocated : s.name no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(644) : allocated -> leak : s end scope : Memory leaked
-7DD7E3EDFC6A656A6A38B155B81127FB
+#     manifest.c(465) : start -> allocated : s.name = strdup(...)
+#     manifest.c(465) : allocated -> allocated : s.name refers to dynamically allocated memory
+#     manifest.c(467) : Branch not taken: (s.name != NULL)
+#     manifest.c(475) : goto
+#     manifest.c(507) : allocated -> allocated : s.name no longer refers to dynamically allocated memory
+#     manifest.c(507) : allocated -> leak : s end scope : Memory leaked
+0A6344F4769EBC172A111620056A0739
 
 # False positive.
 # namedup is transferred to a compound literal, which is then
@@ -825,22 +783,6 @@ B0CE5CE3545B4A42DE7B936450EFBF70
 #     libevp-agent/stream/stream.c(543) : allocated -> allocated : namedup no longer refers to dynamically allocated memory
 #     libevp-agent/stream/stream.c(543) : allocated -> leak : namedup end scope : Memory leaked
 E5BAF7C295BEB651FD2DBB5177CAC5CF
-
-# False positive. Similar to E5BAF7C295BEB651FD2DBB5177CAC5CF.
-# [26FAD77FB5A912E51915B0447E01950B : high : Memory Leak : controlflow ]
-#
-#     libevp-agent/stream/stream.c(476) : Branch not taken: (namedup != NULL)
-#     libevp-agent/stream/stream.c(486) : Branch taken: (src->type == 1)
-#     libevp-agent/stream/stream.c(486) : goto
-#     libevp-agent/stream/stream.c(490) : start -> allocated : connectiondup = strdup(...)
-#     libevp-agent/stream/stream.c(490) : allocated -> allocated : connectiondup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(491) : Branch not taken: (connectiondup != NULL)
-#     libevp-agent/stream/stream.c(498) : allocated -> allocated : connectiondup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(503) : allocated -> allocated : connectiondup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(538) : Branch not taken: (ret == 0)
-#     libevp-agent/stream/stream.c(543) : allocated -> allocated : connectiondup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(543) : allocated -> leak : connectiondup end scope : Memory leaked
-26FAD77FB5A912E51915B0447E01950B
 
 # False positive.
 # list is transferred to *dst if successful. Otherwise, it is free(3)d.
@@ -886,16 +828,16 @@ EC095B6EAD3150351E9E6E34CE065126
 # False positive.
 # Fortify fails to see sem is a semaphore that would block until
 # the event is handled (and free(3)d) by the module instance thread.
-# [8BA0A1D5D111E79758AE1C485172AF1F : high : Memory Leak : controlflow ]
+#[16C3E81F20D2E967B9D97592D8968F69 : high : Memory Leak : controlflow ]
 #
-#     sdk.c(1119) : Branch not taken: (sem_init((&sem), 0, 0) == 0)
-#     sdk.c(1126) : Branch taken: (h->exiting == 0)
-#     sdk.c(1127) : start -> allocated : event = malloc(...)
-#     sdk.c(1127) : allocated -> allocated : event refers to dynamically allocated memory
-#     sdk.c(1129) : Branch not taken: (event != NULL)
-#     sdk.c(1153) : allocated -> allocated : event no longer refers to dynamically allocated memory
-#     sdk.c(1153) : allocated -> leak : event end scope : Memory leaked
-8BA0A1D5D111E79758AE1C485172AF1F
+#    sdk.c(1099) : Branch not taken: (sem_init((&sem), 0, 0) == 0)
+#    sdk.c(1106) : Branch taken: (h->exiting == 0)
+#    sdk.c(1107) : start -> allocated : event = malloc(...)
+#    sdk.c(1107) : allocated -> allocated : event refers to dynamically allocated memory
+#    sdk.c(1109) : Branch not taken: (event != NULL)
+#    sdk.c(1133) : allocated -> allocated : event no longer refers to dynamically allocated memory
+#    sdk.c(1133) : allocated -> leak : event end scope : Memory leaked
+16C3E81F20D2E967B9D97592D8968F69
 
 # IMPORTANT NOTE: This is an actual memory leak (!)
 # For implementations using sdk_local_wasm.c, response_copy is never freed.
@@ -1033,53 +975,34 @@ D5DDC692344473E0E239F218E33EF21D
 #       - process_send_rpc_response (buf -> rawbuf)
 #           - EVP_impl_sendRpcResponse assigns it to event
 #           - The event is enqueued in the events queue (idem as above)
-# [7B535B7E1D5134638028FCA6838736C8 : high : Memory Leak : controlflow ]
+# [9AD20D74459F476EC44B35052092111A : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/sdkrpc/server.c(56) : Branch not taken: (ssz != -1)
-#     libevp-agent/sdkrpc/server.c(59) : Branch not taken: (ssz >= 16)
-#     libevp-agent/sdkrpc/server.c(63) : Branch not taken: (hdr.zero == 0)
-#     libevp-agent/sdkrpc/server.c(69) : Branch not taken: (sz != 0)
-#     libevp-agent/sdkrpc/server.c(74) : Branch not taken: (sz <= 131072)
-#     libevp-agent/sdkrpc/server.c(84) : start -> allocated : buf = xcalloc_internal(...)
-#         libevp-agent/util.c(194) : start -> allocated : vp = calloc(...)
-#         libevp-agent/util.c(194) : allocated -> allocated : vp refers to dynamically allocated memory
-#         libevp-agent/util.c(195) : Branch not taken: (vp != NULL)
-#         libevp-agent/util.c(198) : allocated -> allocated : return
-#     libevp-agent/sdkrpc/server.c(84) : allocated -> allocated : buf refers to dynamically allocated memory
-#     libevp-agent/sdkrpc/server.c(86) : Branch not taken: (ssz != -1)
-#     libevp-agent/sdkrpc/server.c(89) : Branch not taken: (ssz >= sz)
-#     libevp-agent/sdkrpc/server.c(96) : allocated -> allocated : sdk_process_request(buf, ?, ?, ?)
-#         libevp-agent/sdk_remote.c(916) : allocated -> allocated : buf refers to dynamically allocated memory
-#         libevp-agent/sdk_remote.c(920) : Branch not taken: (ret == 0)
-#         libevp-agent/sdk_remote.c(929) : Branch taken: (h != NULL)
-#         libevp-agent/sdk_remote.c(931) : Branch taken: (req != NULL)
-#         libevp-agent/sdk_remote.c(941) : goto
-#         libevp-agent/sdk_remote.c(967) : Branch taken: (fn != NULL)
-#         libevp-agent/sdk_remote.c(970) : Branch not taken: (error == 0)
-#         libevp-agent/sdk_remote.c(975) : Branch taken: (resp->buf != NULL)
-#         libevp-agent/sdk_remote.c(977) : Branch taken: (resp->buflen > 0)
-#     libevp-agent/sdkrpc/server.c(97) : allocated -> allocated : buf no longer refers to dynamically allocated memory
-#     libevp-agent/sdkrpc/server.c(97) : allocated -> leak : buf end scope : Memory leaked
-7B535B7E1D5134638028FCA6838736C8
-
-# A false positive.
-# The allocated object is attached to another object.
-# [EFB49A2723D07EE736C615C0F79F438E : high : Memory Leak : controlflow ]
-#
-#     sdk.c(1010) : Branch not taken: (iret == 0)
-#     sdk.c(1017) : Branch not taken: (v != NULL)
-#     sdk.c(1022) : Branch not taken: (o != NULL)
-#     sdk.c(1026) : Branch not taken: (json_object_set_string(o, name, base64) == 0)
-#     sdk.c(1033) : Branch not taken: (g_mqtt_client != NULL)
-#     sdk.c(1039) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, len) != 0)
-#     sdk.c(1050) : start -> allocated : state = malloc(...)
-#     sdk.c(1050) : allocated -> allocated : state refers to dynamically allocated memory
-#     sdk.c(1051) : Branch not taken: (state != NULL)
-#     sdk.c(1071) : Branch not taken: (oevent == NULL)
-#     sdk.c(1102) : Branch not taken: (ret == 0)
-#     sdk.c(1105) : allocated -> allocated : state no longer refers to dynamically allocated memory
-#     sdk.c(1105) : allocated -> leak : state end scope : Memory leaked
-EFB49A2723D07EE736C615C0F79F438E
+#     sdkrpc/server.c(51) : Branch not taken: (ssz >= 0)
+#     sdkrpc/server.c(54) : Branch not taken: (ssz >= 16)
+#     sdkrpc/server.c(58) : Branch not taken: (hdr.zero == 0)
+#     sdkrpc/server.c(64) : Branch not taken: (sz != 0)
+#     sdkrpc/server.c(69) : Branch not taken: (sz <= 131072)
+#     sdkrpc/server.c(84) : start -> allocated : buf = xcalloc_internal(...)
+#         util.c(188) : start -> allocated : vp = calloc(...)
+#         util.c(188) : allocated -> allocated : vp refers to dynamically allocated memory
+#         util.c(189) : Branch not taken: (vp != NULL)
+#         util.c(192) : allocated -> allocated : return
+#     sdkrpc/server.c(84) : allocated -> allocated : buf refers to dynamically allocated memory
+#     sdkrpc/server.c(86) : Branch not taken: (ssz >= 0)
+#     sdkrpc/server.c(89) : Branch not taken: (ssz >= sz)
+#     sdkrpc/server.c(96) : allocated -> allocated : sdk_process_request(buf, ?, ?, ?)
+#         sdk_remote.c(899) : allocated -> allocated : buf refers to dynamically allocated memory
+#         sdk_remote.c(903) : Branch not taken: (ret == 0)
+#         sdk_remote.c(912) : Branch taken: (h != NULL)
+#         sdk_remote.c(914) : Branch taken: (req != NULL)
+#         sdk_remote.c(924) : goto
+#         sdk_remote.c(950) : Branch taken: (fn != NULL)
+#         sdk_remote.c(953) : Branch not taken: (error == 0)
+#         sdk_remote.c(958) : Branch taken: (resp->buf != NULL)
+#         sdk_remote.c(960) : Branch taken: (resp->buflen > 0)
+#     sdkrpc/server.c(97) : allocated -> allocated : buf no longer refers to dynamically allocated memory
+#     sdkrpc/server.c(97) : allocated -> leak : buf end scope : Memory leaked
+9AD20D74459F476EC44B35052092111A
 
 # False positive.
 # Yet again, Fortify fails to see the ownership for eventdup is transferred
@@ -1445,217 +1368,223 @@ C1AF649FEDEB4229BFC18C509C83E800
 # False positive.
 # Fortify fails to see that, in case of failure, instance.entryPoint
 # is free(3)d by free_module_instance_spec.
-# [A9783E58C961156441ACFD57F3739B4D : high : Memory Leak : controlflow ]
+# [F99AECBB87090FBF69CAE4BB005C57E2 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/manifest.c(862) : Branch not taken: (v != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(871) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(878) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(883) : start -> allocated : instance.entryPoint = strdup(...)
-#     libevp-agent/manifest.c(883) : allocated -> allocated : instance.entryPoint refers to dynamically allocated memory
-#     libevp-agent/manifest.c(885) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(893) : Branch taken: (ret != 0)
-#     libevp-agent/manifest.c(896) : goto
-#     libevp-agent/manifest.c(938) : allocated -> allocated : instance.entryPoint no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(938) : allocated -> leak : instance end scope : Memory leaked
+#     manifest.c(725) : Branch not taken: (v != NULL)
+#     manifest.c(733) : Branch not taken: (o != NULL)
+#     manifest.c(733) : Branch not taken: (moduleId != NULL)
+#     manifest.c(734) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(741) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(746) : start -> allocated : instance.entryPoint = strdup(...)
+#     manifest.c(746) : allocated -> allocated : instance.entryPoint refers to dynamically allocated memory
+#     manifest.c(748) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(756) : Branch taken: (ret != 0)
+#     manifest.c(759) : goto
+#     manifest.c(801) : allocated -> allocated : instance.entryPoint no longer refers to dynamically allocated memory
+#     manifest.c(801) : allocated -> leak : instance end scope : Memory leaked
 #
-#     libevp-agent/manifest.c(862) : Branch not taken: (v != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(871) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(878) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(883) : start -> allocated : instance.entryPoint = strdup(...)
-#     libevp-agent/manifest.c(883) : allocated -> allocated : instance.entryPoint refers to dynamically allocated memory
-#     libevp-agent/manifest.c(885) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(893) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(901) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(909) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(917) : Branch not taken: (instance.moduleId != NULL)
-#     libevp-agent/manifest.c(929) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(934) : allocated -> allocated : return
-#     libevp-agent/manifest.c(934) : allocated -> allocated : instance.entryPoint no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(934) : allocated -> leak : instance end scope : Memory leaked
-A9783E58C961156441ACFD57F3739B4D
+#     manifest.c(725) : Branch not taken: (v != NULL)
+#     manifest.c(733) : Branch not taken: (o != NULL)
+#     manifest.c(733) : Branch not taken: (moduleId != NULL)
+#     manifest.c(734) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(741) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(746) : start -> allocated : instance.entryPoint = strdup(...)
+#     manifest.c(746) : allocated -> allocated : instance.entryPoint refers to dynamically allocated memory
+#     manifest.c(748) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(756) : Branch not taken: (ret == 0)
+#     manifest.c(764) : Branch not taken: (ret == 0)
+#     manifest.c(772) : Branch not taken: (instance.name != NULL)
+#     manifest.c(780) : Branch not taken: (instance.moduleId != NULL)
+#     manifest.c(792) : Branch not taken: (ret == 0)
+#     manifest.c(797) : allocated -> allocated : return
+#     manifest.c(797) : allocated -> allocated : instance.entryPoint no longer refers to dynamically allocated memory
+#     manifest.c(797) : allocated -> leak : instance end scope : Memory leaked
+F99AECBB87090FBF69CAE4BB005C57E2
 
-# False positive. Similar to A9783E58C961156441ACFD57F3739B4D.
-# [02417191CBB22D04481F86C433D27E69 : high : Memory Leak : controlflow ]
+# False positive. Similar to F99AECBB87090FBF69CAE4BB005C57E2.
+# [79ED26DD8F3723080A20179B526D8E78 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/manifest.c(862) : Branch not taken: (v != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(871) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(878) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(885) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(893) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(901) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(907) : start -> allocated : instance.name = strdup(...)
-#     libevp-agent/manifest.c(907) : allocated -> allocated : instance.name refers to dynamically allocated memory
-#     libevp-agent/manifest.c(909) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(917) : Branch taken: (instance.moduleId == NULL)
-#     libevp-agent/manifest.c(920) : goto
-#     libevp-agent/manifest.c(938) : allocated -> allocated : instance.name no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(938) : allocated -> leak : instance end scope : Memory leaked
+#     manifest.c(725) : Branch not taken: (v != NULL)
+#     manifest.c(733) : Branch not taken: (o != NULL)
+#     manifest.c(733) : Branch not taken: (moduleId != NULL)
+#     manifest.c(734) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(741) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(748) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(756) : Branch not taken: (ret == 0)
+#     manifest.c(764) : Branch not taken: (ret == 0)
+#     manifest.c(770) : start -> allocated : instance.name = strdup(...)
+#     manifest.c(770) : allocated -> allocated : instance.name refers to dynamically allocated memory
+#     manifest.c(772) : Branch not taken: (instance.name != NULL)
+#     manifest.c(780) : Branch taken: (instance.moduleId == NULL)
+#     manifest.c(783) : goto
+#     manifest.c(801) : allocated -> allocated : instance.name no longer refers to dynamically allocated memory
+#     manifest.c(801) : allocated -> leak : instance end scope : Memory leaked
 #
-#     libevp-agent/manifest.c(862) : Branch not taken: (v != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(871) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(878) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(885) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(893) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(901) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(907) : start -> allocated : instance.name = strdup(...)
-#     libevp-agent/manifest.c(907) : allocated -> allocated : instance.name refers to dynamically allocated memory
-#     libevp-agent/manifest.c(909) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(917) : Branch not taken: (instance.moduleId != NULL)
-#     libevp-agent/manifest.c(929) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(934) : allocated -> allocated : return
-#     libevp-agent/manifest.c(934) : allocated -> allocated : instance.name no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(934) : allocated -> leak : instance end scope : Memory leaked
-02417191CBB22D04481F86C433D27E69
+#     manifest.c(725) : Branch not taken: (v != NULL)
+#     manifest.c(733) : Branch not taken: (o != NULL)
+#     manifest.c(733) : Branch not taken: (moduleId != NULL)
+#     manifest.c(734) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(741) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(748) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(756) : Branch not taken: (ret == 0)
+#     manifest.c(764) : Branch not taken: (ret == 0)
+#     manifest.c(770) : start -> allocated : instance.name = strdup(...)
+#     manifest.c(770) : allocated -> allocated : instance.name refers to dynamically allocated memory
+#     manifest.c(772) : Branch not taken: (instance.name != NULL)
+#     manifest.c(780) : Branch not taken: (instance.moduleId != NULL)
+#     manifest.c(792) : Branch not taken: (ret == 0)
+#     manifest.c(797) : allocated -> allocated : return
+#     manifest.c(797) : allocated -> allocated : instance.name no longer refers to dynamically allocated memory
+#     manifest.c(797) : allocated -> leak : instance end scope : Memory leaked
+79ED26DD8F3723080A20179B526D8E78
 
-# False positive. Similar to A9783E58C961156441ACFD57F3739B4D.
-# [345E5BE7C1620FD439159C04DC190011 : high : Memory Leak : controlflow ]
+# False positive. Similar to F99AECBB87090FBF69CAE4BB005C57E2.
+# [556B4D067C64D486F428850F49F2AFF1 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/manifest.c(862) : Branch not taken: (v != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(871) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(878) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(885) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(893) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(901) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(909) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(915) : start -> allocated : instance.moduleId = strdup(...)
-#     libevp-agent/manifest.c(915) : allocated -> allocated : instance.moduleId refers to dynamically allocated memory
-#     libevp-agent/manifest.c(917) : Branch not taken: (instance.moduleId != NULL)
-#     libevp-agent/manifest.c(929) : Branch taken: (ret != 0)
-#     libevp-agent/manifest.c(930) : goto
-#     libevp-agent/manifest.c(938) : allocated -> allocated : instance.moduleId no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(938) : allocated -> leak : instance end scope : Memory leaked
+#     manifest.c(725) : Branch not taken: (v != NULL)
+#     manifest.c(733) : Branch not taken: (o != NULL)
+#     manifest.c(733) : Branch not taken: (moduleId != NULL)
+#     manifest.c(734) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(741) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(748) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(756) : Branch not taken: (ret == 0)
+#     manifest.c(764) : Branch not taken: (ret == 0)
+#     manifest.c(772) : Branch not taken: (instance.name != NULL)
+#     manifest.c(778) : start -> allocated : instance.moduleId = strdup(...)
+#     manifest.c(778) : allocated -> allocated : instance.moduleId refers to dynamically allocated memory
+#     manifest.c(780) : Branch not taken: (instance.moduleId != NULL)
+#     manifest.c(792) : Branch taken: (ret != 0)
+#     manifest.c(793) : goto
+#     manifest.c(801) : allocated -> allocated : instance.moduleId no longer refers to dynamically allocated memory
+#     manifest.c(801) : allocated -> leak : instance end scope : Memory leaked
 #
-#     libevp-agent/manifest.c(862) : Branch not taken: (v != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(870) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(871) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(878) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(885) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(893) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(901) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(909) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(915) : start -> allocated : instance.moduleId = strdup(...)
-#     libevp-agent/manifest.c(915) : allocated -> allocated : instance.moduleId refers to dynamically allocated memory
-#     libevp-agent/manifest.c(917) : Branch not taken: (instance.moduleId != NULL)
-#     libevp-agent/manifest.c(929) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(934) : allocated -> allocated : return
-#     libevp-agent/manifest.c(934) : allocated -> allocated : instance.moduleId no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(934) : allocated -> leak : instance end scope : Memory leaked
-345E5BE7C1620FD439159C04DC190011
+#     manifest.c(725) : Branch not taken: (v != NULL)
+#     manifest.c(733) : Branch not taken: (o != NULL)
+#     manifest.c(733) : Branch not taken: (moduleId != NULL)
+#     manifest.c(734) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(741) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(748) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(756) : Branch not taken: (ret == 0)
+#     manifest.c(764) : Branch not taken: (ret == 0)
+#     manifest.c(772) : Branch not taken: (instance.name != NULL)
+#     manifest.c(778) : start -> allocated : instance.moduleId = strdup(...)
+#     manifest.c(778) : allocated -> allocated : instance.moduleId refers to dynamically allocated memory
+#     manifest.c(780) : Branch not taken: (instance.moduleId != NULL)
+#     manifest.c(792) : Branch not taken: (ret == 0)
+#     manifest.c(797) : allocated -> allocated : return
+#     manifest.c(797) : allocated -> allocated : instance.moduleId no longer refers to dynamically allocated memory
+#     manifest.c(797) : allocated -> leak : instance end scope : Memory leaked
+556B4D067C64D486F428850F49F2AFF1
 
-# False positive. Similar to A9783E58C961156441ACFD57F3739B4D.
-# [0AE3683072C00C18D5DBCD59A9D9911F : high : Memory Leak : controlflow ]
+# False positive. Similar to F99AECBB87090FBF69CAE4BB005C57E2.
+# [F6C075848518BB810DD22EA06389658F : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/manifest.c(1053) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(1053) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(1054) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(1061) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(1066) : start -> allocated : instance.entryPoint = strdup(...)
-#     libevp-agent/manifest.c(1066) : allocated -> allocated : instance.entryPoint refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1068) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(1076) : Branch taken: (ret != 0)
-#     libevp-agent/manifest.c(1079) : goto
-#     libevp-agent/manifest.c(1132) : allocated -> allocated : instance.entryPoint no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1132) : allocated -> leak : instance end scope : Memory leaked
+#     manifest.c(916) : Branch not taken: (o != NULL)
+#     manifest.c(916) : Branch not taken: (moduleId != NULL)
+#     manifest.c(917) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(924) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(929) : Branch not taken: (strlen(entryPoint) != 0)
+#     manifest.c(936) : start -> allocated : instance.entryPoint = strdup(...)
+#     manifest.c(936) : allocated -> allocated : instance.entryPoint refers to dynamically allocated memory
+#     manifest.c(938) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(946) : Branch taken: (ret != 0)
+#     manifest.c(949) : goto
+#     manifest.c(1002) : allocated -> allocated : instance.entryPoint no longer refers to dynamically allocated memory
+#     manifest.c(1002) : allocated -> leak : instance end scope : Memory leaked
 #
-#     libevp-agent/manifest.c(1053) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(1053) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(1054) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(1061) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(1066) : start -> allocated : instance.entryPoint = strdup(...)
-#     libevp-agent/manifest.c(1066) : allocated -> allocated : instance.entryPoint refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1068) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(1076) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1084) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1092) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(1100) : Branch not taken: (instance.moduleId != NULL)
-#     libevp-agent/manifest.c(1117) : Branch not taken: (streams == NULL)
-#     libevp-agent/manifest.c(1128) : allocated -> allocated : return
-#     libevp-agent/manifest.c(1128) : allocated -> allocated : instance.entryPoint no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1128) : allocated -> leak : instance end scope : Memory leaked
-0AE3683072C00C18D5DBCD59A9D9911F
+#     manifest.c(916) : Branch not taken: (o != NULL)
+#     manifest.c(916) : Branch not taken: (moduleId != NULL)
+#     manifest.c(917) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(924) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(929) : Branch not taken: (strlen(entryPoint) != 0)
+#     manifest.c(936) : start -> allocated : instance.entryPoint = strdup(...)
+#     manifest.c(936) : allocated -> allocated : instance.entryPoint refers to dynamically allocated memory
+#     manifest.c(938) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(946) : Branch not taken: (ret == 0)
+#     manifest.c(954) : Branch not taken: (ret == 0)
+#     manifest.c(962) : Branch not taken: (instance.name != NULL)
+#     manifest.c(970) : Branch not taken: (instance.moduleId != NULL)
+#     manifest.c(987) : Branch not taken: (streams == NULL)
+#     manifest.c(998) : allocated -> allocated : return
+#     manifest.c(998) : allocated -> allocated : instance.entryPoint no longer refers to dynamically allocated memory
+#     manifest.c(998) : allocated -> leak : instance end scope : Memory leaked
+F6C075848518BB810DD22EA06389658F
 
-# False positive. Similar to A9783E58C961156441ACFD57F3739B4D.
-# [9762EE270A23868FD534DA82DD8C7AEB : high : Memory Leak : controlflow ]
+# False positive. Similar to F99AECBB87090FBF69CAE4BB005C57E2.
+# [00C342C2029E138DA2C4C403DD0136D4 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/manifest.c(1053) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(1053) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(1054) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(1061) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(1068) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(1076) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1084) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1090) : start -> allocated : instance.name = strdup(...)
-#     libevp-agent/manifest.c(1090) : allocated -> allocated : instance.name refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1092) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(1100) : Branch taken: (instance.moduleId == NULL)
-#     libevp-agent/manifest.c(1103) : goto
-#     libevp-agent/manifest.c(1132) : allocated -> allocated : instance.name no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1132) : allocated -> leak : instance end scope : Memory leaked
+#     manifest.c(916) : Branch not taken: (o != NULL)
+#     manifest.c(916) : Branch not taken: (moduleId != NULL)
+#     manifest.c(917) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(924) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(929) : Branch not taken: (strlen(entryPoint) != 0)
+#     manifest.c(938) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(946) : Branch not taken: (ret == 0)
+#     manifest.c(954) : Branch not taken: (ret == 0)
+#     manifest.c(960) : start -> allocated : instance.name = strdup(...)
+#     manifest.c(960) : allocated -> allocated : instance.name refers to dynamically allocated memory
+#     manifest.c(962) : Branch not taken: (instance.name != NULL)
+#     manifest.c(970) : Branch taken: (instance.moduleId == NULL)
+#     manifest.c(973) : goto
+#     manifest.c(1002) : allocated -> allocated : instance.name no longer refers to dynamically allocated memory
+#     manifest.c(1002) : allocated -> leak : instance end scope : Memory leaked
 #
-#     libevp-agent/manifest.c(1053) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(1053) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(1054) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(1061) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(1068) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(1076) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1084) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1090) : start -> allocated : instance.name = strdup(...)
-#     libevp-agent/manifest.c(1090) : allocated -> allocated : instance.name refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1092) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(1100) : Branch not taken: (instance.moduleId != NULL)
-#     libevp-agent/manifest.c(1117) : Branch not taken: (streams == NULL)
-#     libevp-agent/manifest.c(1128) : allocated -> allocated : return
-#     libevp-agent/manifest.c(1128) : allocated -> allocated : instance.name no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1128) : allocated -> leak : instance end scope : Memory leaked
-9762EE270A23868FD534DA82DD8C7AEB
+#     manifest.c(916) : Branch not taken: (o != NULL)
+#     manifest.c(916) : Branch not taken: (moduleId != NULL)
+#     manifest.c(917) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(924) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(929) : Branch not taken: (strlen(entryPoint) != 0)
+#     manifest.c(938) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(946) : Branch not taken: (ret == 0)
+#     manifest.c(954) : Branch not taken: (ret == 0)
+#     manifest.c(960) : start -> allocated : instance.name = strdup(...)
+#     manifest.c(960) : allocated -> allocated : instance.name refers to dynamically allocated memory
+#     manifest.c(962) : Branch not taken: (instance.name != NULL)
+#     manifest.c(970) : Branch not taken: (instance.moduleId != NULL)
+#     manifest.c(987) : Branch not taken: (streams == NULL)
+#     manifest.c(998) : allocated -> allocated : return
+#     manifest.c(998) : allocated -> allocated : instance.name no longer refers to dynamically allocated memory
+#     manifest.c(998) : allocated -> leak : instance end scope : Memory leaked
+00C342C2029E138DA2C4C403DD0136D4
 
-# False positive. Similar to A9783E58C961156441ACFD57F3739B4D.
-# [B32C402AEF8096D587CBE9E630A4BFD0 : high : Memory Leak : controlflow ]
+# False positive. Similar to F99AECBB87090FBF69CAE4BB005C57E2.
+# [1CE832BFD1FAEC22F58A5C5030F0E9C8 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/manifest.c(1053) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(1053) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(1054) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(1061) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(1068) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(1076) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1084) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1092) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(1098) : start -> allocated : instance.moduleId = strdup(...)
-#     libevp-agent/manifest.c(1098) : allocated -> allocated : instance.moduleId refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1100) : Branch not taken: (instance.moduleId != NULL)
-#     libevp-agent/manifest.c(1117) : Branch not taken: (streams == NULL)
-#     libevp-agent/manifest.c(1128) : allocated -> allocated : return
-#     libevp-agent/manifest.c(1128) : allocated -> allocated : instance.moduleId no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1128) : allocated -> leak : instance end scope : Memory leaked
+#     manifest.c(916) : Branch not taken: (o != NULL)
+#     manifest.c(916) : Branch not taken: (moduleId != NULL)
+#     manifest.c(917) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(924) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(929) : Branch not taken: (strlen(entryPoint) != 0)
+#     manifest.c(938) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(946) : Branch not taken: (ret == 0)
+#     manifest.c(954) : Branch not taken: (ret == 0)
+#     manifest.c(962) : Branch not taken: (instance.name != NULL)
+#     manifest.c(968) : start -> allocated : instance.moduleId = strdup(...)
+#     manifest.c(968) : allocated -> allocated : instance.moduleId refers to dynamically allocated memory
+#     manifest.c(970) : Branch not taken: (instance.moduleId != NULL)
+#     manifest.c(987) : Branch not taken: (streams == NULL)
+#     manifest.c(998) : allocated -> allocated : return
+#     manifest.c(998) : allocated -> allocated : instance.moduleId no longer refers to dynamically allocated memory
+#     manifest.c(998) : allocated -> leak : instance end scope : Memory leaked
 #
-#     libevp-agent/manifest.c(1053) : Branch not taken: (o != NULL)
-#     libevp-agent/manifest.c(1053) : Branch not taken: (moduleId != NULL)
-#     libevp-agent/manifest.c(1054) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
-#     libevp-agent/manifest.c(1061) : Branch not taken: (entryPoint != NULL)
-#     libevp-agent/manifest.c(1068) : Branch not taken: (instance.entryPoint != NULL)
-#     libevp-agent/manifest.c(1076) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1084) : Branch not taken: (ret == 0)
-#     libevp-agent/manifest.c(1092) : Branch not taken: (instance.name != NULL)
-#     libevp-agent/manifest.c(1098) : start -> allocated : instance.moduleId = strdup(...)
-#     libevp-agent/manifest.c(1098) : allocated -> allocated : instance.moduleId refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1100) : Branch not taken: (instance.moduleId != NULL)
-#     libevp-agent/manifest.c(1117) : Branch taken: (streams != NULL)
-#     libevp-agent/manifest.c(1119) : Branch taken: (ret != 0)
-#     libevp-agent/manifest.c(1121) : goto
-#     libevp-agent/manifest.c(1132) : allocated -> allocated : instance.moduleId no longer refers to dynamically allocated memory
-#     libevp-agent/manifest.c(1132) : allocated -> leak : instance end scope : Memory leaked
-B32C402AEF8096D587CBE9E630A4BFD0
+#     manifest.c(916) : Branch not taken: (o != NULL)
+#     manifest.c(916) : Branch not taken: (moduleId != NULL)
+#     manifest.c(917) : Branch not taken: (strncmp(name, g_reserved_prefix, strlen(g_reserved_prefix)) != 0)
+#     manifest.c(924) : Branch not taken: (entryPoint != NULL)
+#     manifest.c(929) : Branch not taken: (strlen(entryPoint) != 0)
+#     manifest.c(938) : Branch not taken: (instance.entryPoint != NULL)
+#     manifest.c(946) : Branch not taken: (ret == 0)
+#     manifest.c(954) : Branch not taken: (ret == 0)
+#     manifest.c(962) : Branch not taken: (instance.name != NULL)
+#     manifest.c(968) : start -> allocated : instance.moduleId = strdup(...)
+#     manifest.c(968) : allocated -> allocated : instance.moduleId refers to dynamically allocated memory
+#     manifest.c(970) : Branch not taken: (instance.moduleId != NULL)
+#     manifest.c(987) : Branch taken: (streams != NULL)
+#     manifest.c(989) : Branch taken: (ret != 0)
+#     manifest.c(991) : goto
+#     manifest.c(1002) : allocated -> allocated : instance.moduleId no longer refers to dynamically allocated memory
+#     manifest.c(1002) : allocated -> leak : instance end scope : Memory leaked
+1CE832BFD1FAEC22F58A5C5030F0E9C8
 
 # False positive.
 # Yet again, Fortify fails to see the ownership for `topicdup` is transferred
@@ -2748,52 +2677,50 @@ C382DF34B7262C9187069ABBC7FEEDCF
 # The string gets a final zero termination regardless, not counted in the
 # string length (in compliance with the FlatBuffers format)."
 
-# [62B60C2E17194F11BC81E06AFE6A99F4 : high : String Termination Error : dataflow ]
-# sdk.c(1076) :  ->strcmp(1)
-#     sdk_remote.c(403) :  ->EVP_impl_sendState(2)
-#     sdk_remote.c(397) : <=> (topic)
-#         sdkenc/sdk_reader.h(654) : return
-#         sdkenc/sdk_reader.h(654) : <=> (elem__tmp)
-#     sdk_remote.c(397) : <->EVP_SDK_StateInput_topic(0->return)
-#     sdk_remote.c(394) : <=> (state)
-#         sdkenc/sdk_reader.h(1104) : return
-#         sdkenc/sdk_reader.h(1104) : <=> (elem__tmp)
-#     sdk_remote.c(394) : <->EVP_SDK_Request_body(0->return)
-#     sdk_remote.c(982) :  ->process_send_state(1)
-#     sdk_remote.c(939) : <=> (req)
-#         sdkenc/sdk_reader.h(1102) : return
-#     sdk_remote.c(939) : <->EVP_SDK_Request_as_root(0->return)
-#     sdkrpc/server.c(96) :  ->sdk_process_request(0)
-#     sdkrpc/server.c(85) : <- readall(1)
-#     ioutil.c(22) : <- read(1)
+#[3397B3B424EF87DF712DEFD26B45C7AC : high : String Termination Error : dataflow ]
+#sdk.c(1059) :  ->strcmp(1)
+#    sdk_remote.c(403) :  ->EVP_impl_sendState(2)
+#    sdk_remote.c(397) : <=> (topic)
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(583) : return
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(583) : <=> (elem__tmp)
+#    sdk_remote.c(397) : <->EVP_SDK_StateInput_topic(0->return)
+#    sdk_remote.c(394) : <=> (state)
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : return
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : <=> (elem__tmp)
+#    sdk_remote.c(394) : <->EVP_SDK_Request_body(0->return)
+#    sdk_remote.c(952) :  ->process_send_state(1)
+#    sdk_remote.c(909) : <=> (req)
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1031) : return
+#    sdk_remote.c(909) : <->EVP_SDK_Request_as_root(0->return)
+#    sdkrpc/server.c(96) :  ->sdk_process_request(0)
+#    sdkrpc/server.c(85) : <- readall(1)
+#    ioutil.c(22) : <- read(1)
 #
-#
-# StateInput_topic is a Flatbuffer String. In sdkenc/sdk.fbs:
+## StateInput_topic is a Flatbuffer String. In sdkenc/sdk.fbs:
 # table StateInput {
 #     topic:string (required);
-62B60C2E17194F11BC81E06AFE6A99F4
+3397B3B424EF87DF712DEFD26B45C7AC
 
 # StateInput_topic is a Flatbuffer String. In sdkenc/sdk.fbs:
-#[CBC0774DF49EAD8C2B5A11C4FACD6362 : high : Format String : dataflow ]
-#libevp-agent/util.c(294) :  ->vasprintf(1)
-#    libevp-agent/sdk.c(987) :  ->xasprintf_internal(5)
-#    libevp-agent/sdk_remote.c(386) :  ->EVP_impl_sendState(2)
-#    libevp-agent/sdk_remote.c(380) : <=> (topic)
-#        libevp-agent/sdkenc/sdk_reader.h(648) : return
-#        libevp-agent/sdkenc/sdk_reader.h(648) : <=> (elem__tmp)
-#    libevp-agent/sdk_remote.c(380) : <->EVP_SDK_StateInput_topic(0->return)
-#    libevp-agent/sdk_remote.c(377) : <=> (state)
-#        libevp-agent/sdkenc/sdk_reader.h(1098) : return
-#        libevp-agent/sdkenc/sdk_reader.h(1098) : <=> (elem__tmp)
-#    libevp-agent/sdk_remote.c(377) : <->EVP_SDK_Request_body(0->return)
-#    libevp-agent/sdk_remote.c(914) :  ->process_send_state(1)
-#    libevp-agent/sdk_remote.c(871) : <=> (req)
-#        libevp-agent/sdkenc/sdk_reader.h(1096) : return
-#    libevp-agent/sdk_remote.c(871) : <->EVP_SDK_Request_as_root(0->return)
-#    libevp-agent/sdkrpc/server.c(116) :  ->sdk_process_request(0)
-#    libevp-agent/sdkrpc/server.c(105) : <- readall(1)
-#    libevp-agent/ioutil.c(28) : <- read(1)
-CBC0774DF49EAD8C2B5A11C4FACD6362
+#[263E550BDAD8048B7714327862E5FA4B : high : String Termination Error : dataflow ]
+#sdk.c(1008) :  ->snprintf(4)
+#    sdk_remote.c(403) :  ->EVP_impl_sendState(2)
+#    sdk_remote.c(397) : <=> (topic)
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(583) : return
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(583) : <=> (elem__tmp)
+#    sdk_remote.c(397) : <->EVP_SDK_StateInput_topic(0->return)
+#    sdk_remote.c(394) : <=> (state)
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : return
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : <=> (elem__tmp)
+#    sdk_remote.c(394) : <->EVP_SDK_Request_body(0->return)
+#    sdk_remote.c(952) :  ->process_send_state(1)
+#    sdk_remote.c(909) : <=> (req)
+#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1031) : return
+#    sdk_remote.c(909) : <->EVP_SDK_Request_as_root(0->return)
+#    sdkrpc/server.c(96) :  ->sdk_process_request(0)
+#    sdkrpc/server.c(85) : <- readall(1)
+#    ioutil.c(22) : <- read(1)
+263E550BDAD8048B7714327862E5FA4B
 
 # Seemingly false-positive
 # The buffer is big enough to store any possible values of uint16_t
@@ -3247,20 +3174,20 @@ BA0F36F9B53D08073B3E0230D7DE21EB
 # False positive.
 # Yet again, Fortify fails to see the ownership for hostnamedup is transferred
 # to params.posix when the function is succesful.
-# [E420D9DB4AAAEC85F8B479ADC95EDBF9 : high : Memory Leak : controlflow ]
+# [74169ED2AA3FB0795C28912A9E687D77 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/stream/stream.c(476) : Branch not taken: (namedup != NULL)
-#     libevp-agent/stream/stream.c(505) : Branch taken: (src->type == 2)
-#     libevp-agent/stream/stream.c(505) : goto
-#     libevp-agent/stream/stream.c(509) : start -> allocated : hostnamedup = strdup(...)
-#     libevp-agent/stream/stream.c(509) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(510) : Branch not taken: (hostnamedup != NULL)
-#     libevp-agent/stream/stream.c(519) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(523) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(538) : Branch not taken: (ret == 0)
-#     libevp-agent/stream/stream.c(543) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(543) : allocated -> leak : hostnamedup end scope : Memory leaked
-E420D9DB4AAAEC85F8B479ADC95EDBF9
+#     stream/stream.c(477) : Branch not taken: (namedup != NULL)
+#     stream/stream.c(487) : Branch taken: (src->type == 1)
+#     stream/stream.c(487) : goto
+#     stream/stream.c(491) : start -> allocated : hostnamedup = strdup(...)
+#     stream/stream.c(491) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
+#     stream/stream.c(492) : Branch not taken: (hostnamedup != NULL)
+#     stream/stream.c(501) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
+#     stream/stream.c(505) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
+#     stream/stream.c(520) : Branch not taken: (ret == 0)
+#     stream/stream.c(525) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
+#     stream/stream.c(525) : allocated -> leak : hostnamedup end scope : Memory leaked
+74169ED2AA3FB0795C28912A9E687D77
 
 # Not an issue.
 # Even if the data type for sr->id is defined as EVP_STREAM_PEER_ID,
@@ -3406,20 +3333,6 @@ B6EA5D109BFEAA89BA2B58FCEAF41E47
 #     libevp-agent/main_loop.c(105) : <=> (pipe_name)
 #     libevp-agent/main_loop.c(105) : <- getenv(return)
 2292946D6DF27B0D6C5BFEDE04EBB3DA
-
-# False positive.
-# According to the documentation for NNG_OPT_TCP_BOUND_PORT, on
-# nng_tcp_options(5):
-#
-# 	While the value is of type `int`, it will be a legal TCP port number, that
-# 	is a value between 1 and 65535, inclusive.
-#
-# Therefore, there is no risk when assigning it into an unsigned short.
-# [1F8D42C32A560CD0B51D7CFB4F3D55A3 : high : Type Mismatch : Signed to Unsigned : structural ]
-#     stream/nng.c(168)
-#     FieldAccess: p.port [stream/nng.c(168)]
-#     VariableAccess: port [stream/nng.c(168)]
-1F8D42C32A560CD0B51D7CFB4F3D55A3
 
 # False positive
 # Fortify fails to see the ownership for `req` is

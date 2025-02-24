@@ -127,6 +127,7 @@ report_refresh_instance_state(const struct evp_agent_context *agent,
 			      const struct evp_hub_context *hub, void *cb_data,
 			      intmax_t *qos, enum req_priority *priority)
 {
+	size_t len;
 	JSON_Object *states_obj =
 		json_value_get_object(g_evp_global.instance_states);
 	bool *state_updated = cb_data;
@@ -138,6 +139,12 @@ report_refresh_instance_state(const struct evp_agent_context *agent,
 	sdk_collect_states(convert_state, &args);
 	sys_collect_states(agent->sys, convert_state, &args);
 	*state_updated = args.states_updated;
+
+	len = json_serialization_size(g_evp_global.instance_states);
+
+	xpthread_mutex_lock(&g_evp_global.instance_states_lock);
+	g_evp_global.instance_states_len = len;
+	xpthread_mutex_unlock(&g_evp_global.instance_states_lock);
 
 	*qos = 0;
 	*priority = REQ_PRIORITY_LOW;

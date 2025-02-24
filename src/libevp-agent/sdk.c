@@ -16,6 +16,7 @@
 #include <time.h>
 
 #include <evp/sdk.h>
+#include <mbedtls/base64.h>
 
 #include <internal/queue.h>
 #include <internal/util.h>
@@ -990,12 +991,9 @@ EVP_impl_sendState(struct EVP_client *h, const void *rawbuf, const char *topic,
 		   void *userData)
 {
 	EVP_RESULT ret;
-	char *name = NULL, *base64 = NULL;
 	size_t len, base64len;
 	bool needs_main_wakeup = false;
 	struct sdk_event_state *state = NULL;
-	JSON_Value *v = NULL;
-	JSON_Object *o;
 
 	/*
 	 * FIXME: We check that this new state inserted in the current object
@@ -1005,30 +1003,15 @@ EVP_impl_sendState(struct EVP_client *h, const void *rawbuf, const char *topic,
 	 * The check is done using a base64 encoding because it is the worst
 	 * case between EVP1 and EVP2 way of encoding the state.
 	 */
-	xasprintf(&name, "state/%s/%s", h->name, topic);
-	int iret = base64_encode(blob, bloblen, &base64, &base64len);
-	if (iret != 0) {
-		xlog_error("Failed to base64-encode blob of length %zu",
-			   bloblen);
-		free(name);
-		return EVP_ERROR;
-	}
-	v = json_value_deep_copy(g_evp_global.instance_states);
-	if (v == NULL) {
-		ret = EVP_NOMEM;
-		goto end;
-	}
-	o = json_value_get_object(v);
-	if (o == NULL) {
-		ret = EVP_ERROR;
-		goto end;
-	}
-	if (json_object_set_string(o, name, base64) != JSONSuccess) {
-		ret = EVP_ERROR;
-		goto end;
-	}
+	base64len = 0;
+	len = snprintf(NULL, 0, "{ \"state/%s/%s\" : \"\" },\n", h->name,
+		       topic);
+	mbedtls_base64_encode(NULL, 0, &base64len, blob, bloblen);
+	len += base64len;
 
-	len = json_serialization_size(v);
+	xpthread_mutex_lock(&g_evp_global.instance_states_lock);
+	len += g_evp_global.instance_states_len;
+	xpthread_mutex_unlock(&g_evp_global.instance_states_lock);
 
 	if (g_mqtt_client == NULL) {
 		ret = EVP_ERROR;
@@ -1096,9 +1079,6 @@ EVP_impl_sendState(struct EVP_client *h, const void *rawbuf, const char *topic,
 	ret = EVP_OK;
 	sdk_unlock();
 end:
-	free(base64);
-	free(name);
-	json_value_free(v);
 	if (ret) {
 		free(state);
 	}
