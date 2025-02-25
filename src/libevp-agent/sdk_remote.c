@@ -6,6 +6,9 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <sdkenc/sdk_builder.h>
+#include <sdkenc/sdk_reader.h>
+#include <sdkenc/sdk_verifier.h>
 #include <stdio.h>
 
 #include <internal/request.h>
@@ -16,9 +19,6 @@
 #include "main_loop.h"
 #include "module_instance.h"
 #include "sdk_impl.h"
-#include "sdkenc/sdk_builder.h"
-#include "sdkenc/sdk_reader.h"
-#include "sdkenc/sdk_verifier.h"
 #include "xlog.h"
 #include "xpthread.h"
 
@@ -753,35 +753,6 @@ add_null_stream_params(const struct Stream *stream, flatcc_builder_t *b)
 }
 
 static int
-add_nng_stream_params(const struct Stream *stream, flatcc_builder_t *b)
-{
-	const struct StreamNng *nng = &stream->params.nng;
-	flatbuffers_ref_t connection = 0;
-
-	connection = flatcc_builder_create_string_str(b, nng->connection);
-	if (connection == 0) {
-		xlog_error("flatcc_builder_create_string_str failed");
-		return -1;
-	}
-
-	EVP_SDK_StreamNng_ref_t ref =
-		ns(StreamNng_create(b, nng->mode, nng->protocol, connection));
-	if (ref == 0) {
-		xlog_warning("StreamNng_create failed");
-		return -1;
-	}
-
-	int error = ns(StreamParamsResponse_params_nng_add(b, ref));
-	if (error != 0) {
-		xlog_warning("StreamParamsResponse_params_add failed: %s",
-			     flatcc_verify_error_string(error));
-		return -1;
-	}
-
-	return 0;
-}
-
-static int
 add_stream_params(const struct Stream *stream, flatcc_builder_t *b)
 {
 	int error = ns(StreamParamsResponse_type_add(b, stream->type));
@@ -801,7 +772,6 @@ add_stream_params(const struct Stream *stream, flatcc_builder_t *b)
 
 	static int (*const f[])(const struct Stream *, flatcc_builder_t *) = {
 		[STREAM_TYPE_NULL] = add_null_stream_params,
-		[STREAM_TYPE_NNG] = add_nng_stream_params,
 	};
 
 	return f[stream->type](stream, b);

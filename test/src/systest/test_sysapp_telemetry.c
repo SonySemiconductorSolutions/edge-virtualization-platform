@@ -30,6 +30,7 @@
 struct test {
 	struct evp_agent_context *ctxt;
 	pthread_t thread;
+	pthread_mutex_t mtx;
 	enum SYS_result result;
 	struct SYS_client *c;
 	sem_t sem;
@@ -121,8 +122,13 @@ void *
 __wrap_strdup(const char *s)
 {
 	void *__real_strdup(const char *);
+	bool fail;
 
-	if (g_test.strdup_fail)
+	assert(!pthread_mutex_lock(&g_test.mtx));
+	fail = g_test.strdup_fail;
+	assert(!pthread_mutex_unlock(&g_test.mtx));
+
+	if (fail)
 		return NULL;
 
 	return __real_strdup(s);
@@ -136,6 +142,7 @@ __wrap_sys_collect_telemetry(struct sys_group *gr, sys_telemetry_collect cb,
 					 sys_telemetry_collect, void *);
 	int ret;
 
+	assert(!pthread_mutex_lock(&g_test.mtx));
 	if (g_test.fail) {
 		g_test.strdup_fail = true;
 	}
@@ -145,6 +152,7 @@ __wrap_sys_collect_telemetry(struct sys_group *gr, sys_telemetry_collect cb,
 	ret = __real_sys_collect_telemetry(gr, cb, user);
 
 	g_test.strdup_fail = false;
+	assert(!pthread_mutex_unlock(&g_test.mtx));
 	return ret;
 }
 
@@ -167,7 +175,9 @@ setup(void **state)
 {
 	struct test *test = *state;
 
+	assert(!pthread_mutex_lock(&g_test.mtx));
 	test->fail = false;
+	assert(!pthread_mutex_unlock(&g_test.mtx));
 	return setup_common(test);
 }
 
@@ -176,7 +186,9 @@ setup_error(void **state)
 {
 	struct test *test = *state;
 
+	assert(!pthread_mutex_lock(&g_test.mtx));
 	test->fail = true;
+	assert(!pthread_mutex_unlock(&g_test.mtx));
 	return setup_common(test);
 }
 
@@ -184,10 +196,31 @@ static int
 suite_setup(void **state)
 {
 	struct test *test = &g_test;
+	int error;
+	pthread_mutexattr_t attr;
 
 	if (sem_init(&test->sem, 0, 0)) {
 		fprintf(stderr, "%s: sem_init(3): %s\n", __func__,
 			strerror(errno));
+		return -1;
+	}
+
+	if ((error = pthread_mutexattr_init(&attr))) {
+		fprintf(stderr, "%s: pthread_mutexattr_init(3): %s\n",
+			__func__, strerror(error));
+		return -1;
+	}
+
+	if ((error = pthread_mutexattr_settype(&attr,
+					       PTHREAD_MUTEX_RECURSIVE))) {
+		fprintf(stderr, "%s: pthread_mutexattr_settype(3): %s\n",
+			__func__, strerror(error));
+		return -1;
+	}
+
+	if ((error = pthread_mutex_init(&test->mtx, &attr))) {
+		fprintf(stderr, "%s: pthread_mutex_init(3): %s\n", __func__,
+			strerror(error));
 		return -1;
 	}
 
@@ -207,6 +240,7 @@ static int
 suite_teardown(void **state)
 {
 	struct test *test = *state;
+	int error;
 
 	if (sem_destroy(&test->sem)) {
 		fprintf(stderr, "%s: sem_destroy(3): %s\n", __func__,
@@ -215,6 +249,13 @@ suite_teardown(void **state)
 	}
 
 	agent_test_exit();
+
+	if ((error = pthread_mutex_destroy(&test->mtx))) {
+		fprintf(stderr, "%s: pthread_mutex_destroy(3): %s\n", __func__,
+			strerror(error));
+		return -1;
+	}
+
 	return 0;
 }
 

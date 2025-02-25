@@ -27,9 +27,6 @@
 static const struct stream_ops *stream_ops[NR_STREAM_TYPE] = {
 	[STREAM_TYPE_NULL] = &stream_null_ops,
 	[STREAM_TYPE_POSIX] = &stream_posix_ops,
-#ifdef CONFIG_EVP_AGENT_LOCAL_SDK_NNG_STREAMS
-	[STREAM_TYPE_NNG] = &stream_nng_ops,
-#endif
 };
 
 static struct notification notification =
@@ -487,25 +484,6 @@ stream_duplicate(const struct Stream *src, struct Stream *dst)
 	switch (src->type) {
 	case STREAM_TYPE_NULL:
 		break;
-	case STREAM_TYPE_NNG:
-		{
-			const struct StreamNng *nng = &src->params.nng;
-
-			connectiondup = strdup(nng->connection);
-			if (connectiondup == NULL) {
-				fprintf(stderr,
-					"strdup(3) failed with errno %d\n",
-					errno);
-				ret = errno;
-				goto end;
-			}
-			params.nng = (struct StreamNng){
-				.connection = connectiondup,
-				.mode = nng->mode,
-				.protocol = nng->protocol,
-			};
-		}
-		break;
 	case STREAM_TYPE_POSIX:
 		{
 			const struct StreamPosix *posix = &src->params.posix;
@@ -557,9 +535,6 @@ stream_free(struct Stream *s)
 
 	/* TODO: Create virtual function instead of switch */
 	switch (s->type) {
-	case STREAM_TYPE_NNG:
-		free(s->params.nng.connection);
-		break;
 	case STREAM_TYPE_NULL:
 		break;
 	case STREAM_TYPE_POSIX:

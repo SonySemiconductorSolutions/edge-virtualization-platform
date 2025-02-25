@@ -20,7 +20,6 @@ struct Stream {
 	char *name;
 	enum StreamType {
 		STREAM_TYPE_NULL,
-		STREAM_TYPE_NNG,
 		STREAM_TYPE_POSIX,
 		NR_STREAM_TYPE
 	} type;
@@ -29,17 +28,6 @@ struct Stream {
 		STREAM_DIRECTION_OUT
 	} direction;
 	union StreamParams {
-		struct StreamNng {
-			enum {
-				STREAM_NNG_MODE_DIAL,
-				STREAM_NNG_MODE_LISTEN
-			} mode;
-			enum {
-				STREAM_NNG_PROTOCOL_PUSH,
-				STREAM_NNG_PROTOCOL_PULL
-			} protocol;
-			char *connection;
-		} nng;
 		struct StreamPosix {
 			enum { STREAM_POSIX_TYPE_TCP } type;
 			enum {
@@ -140,7 +128,6 @@ EVP_RESULT EVP_impl_streamWrite(struct EVP_client *h, EVP_STREAM stream,
 				const void *buf, size_t n);
 
 extern const struct stream_ops stream_null_ops;
-extern const struct stream_ops stream_nng_ops;
 extern const struct stream_ops stream_posix_ops;
 
 #endif /* STREAM_H */

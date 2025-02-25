@@ -36,7 +36,6 @@ config EXTERNALS_EVP_AGENT
 	#  * CONFIG_LIBM
 	#  * CONFIG_ARCH_MATH_H
 	#  * toolchain-provided math.h
-	#  * CONFIG_LIBNEWLIBM (midokura/incubator-nuttx specific)
 	# It's the responsibility of the user to enable one of them.
 
 	# For JSON number serialization in parson

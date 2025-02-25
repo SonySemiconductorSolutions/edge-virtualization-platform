@@ -5,6 +5,7 @@
 PROJECTDIR = ../..
 
 include $(PROJECTDIR)/scripts/rules.mk
+-include $(PROJECTDIR)/.config
 
 MORE_CPPFLAGS = \
 	-IMQTT-C/include\
@@ -156,7 +157,6 @@ obj-$(CONFIG_EVP_MODULE_IMPL_OBJ) += module_impl_obj.o
 obj-$(CONFIG_EVP_MODULE_IMPL_SPAWN) += module_impl_spawn.o module_instance_impl_spawn.o
 obj-$(CONFIG_EVP_MODULE_IMPL_PYTHON) += module_impl_python.o module_instance_impl_python.o
 obj-$(CONFIG_EVP_AGENT_MODULE_IMPL_DOCKER_RAW_CONTAINER_SPEC) += container_spec.o
-obj-$(CONFIG_EVP_AGENT_LOCAL_SDK_NNG_STREAMS) += stream/nng.o
 
 obj-$(CONFIG_EVP_TWINS_PERSISTENCE) += persist.o
 obj-$(CONFIG_EVP_TWINS_NO_PERSISTANCE) += nopersist.o

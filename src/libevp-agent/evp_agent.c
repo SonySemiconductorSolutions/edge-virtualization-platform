@@ -188,6 +188,9 @@ evp_agent_start(struct evp_agent_context *ctxt)
 	/* initialize the https singleton */
 	https_ssl_config_init(&ctxt->tls_context->https.ssl_conf);
 
+	/* initialize state len lock */
+	xpthread_mutex_init(&g_evp_global.instance_states_lock);
+
 	/* Configure data directory paths */
 	path_init(getenv("EVP_DATA_DIR"));
 
@@ -357,6 +360,7 @@ evp_agent_stop(struct evp_agent_context *ctxt)
 
 	module_instance_deinit();
 
+	xpthread_mutex_destroy(&g_evp_global.instance_states_lock);
 	path_free();
 	deinit_local_twins_db();
 	module_log_cap_stop();

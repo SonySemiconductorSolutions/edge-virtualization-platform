@@ -1,0 +1,163 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Build and push builders (if necessary)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The ref sha to checkout evp-agent
+        type: string
+        required: false
+        default: main
+      package-namespace:
+        description: The package namespace for docker images
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: false
+      package-namespace:
+        description: The package namespace for docker images
+        default: ${{ github.repository }}
+        required: false
+        type: string
+    outputs:
+      builder-tag:
+        description: tag
+        value: ${{ jobs.builder-necessary.outputs.builder-tag }}
+
+concurrency:
+  group: ${{ github.workflow }} @ build-builders-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  builder-necessary:
+    name: Is builder necessary?
+    runs-on: ubuntu-24.04
+    outputs:
+      build: ${{ steps.changed-files.outputs.all_changed_and_modified_files != '' }}
+      builder-tag: ${{ steps.builder-tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref }}
+
+      - uses: tj-actions/changed-files@v41
+        id: changed-files
+        with:
+          files: |
+            .devcontainer/ubuntu/Dockerfile
+            .devcontainer/raspi/Dockerfile
+            .github/workflows/builder.yml
+
+      - name: Set builder tag
+        id: builder-tag
+        run: |
+          echo "Modified: ${{ steps.changed-files.outputs.all_changed_and_modified_files != '' }}"
+          tag=${{ steps.changed-files.outputs.all_changed_and_modified_files != '' && github.ref != 'refs/heads/main' && github.sha || 'latest' }}
+          echo "github.ref is: ${{ github.ref }}"
+          echo "Is not main branch? ${{ github.ref != 'refs/heads/main' }}"
+          echo "github.sha is: ${{ github.sha }}"
+          echo "Tag: $tag"
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+          echo Modified file list:
+          for file in ${{ steps.changed-files.outputs.all_changed_and_modified_files }}; do
+            echo "$file"
+          done
+
+  build-push-raspi:
+    name: Build and push raspios bookworm builder
+    if: ${{ needs.builder-necessary.outputs.build == 'true' }}
+    needs:
+      - builder-necessary
+    runs-on: ${{ github.event.repository.private && 'buildjet-8vcpu-ubuntu-2204-arm' || 'ubuntu-24.04-arm' }}
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Github Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          registry: ghcr.io
+
+      - name: Build and push raspios bookworm builder
+        uses: docker/build-push-action@v5
+        with:
+          context: .devcontainer/raspi
+          file: .devcontainer/raspi/Dockerfile
+          push: true
+          tags: ghcr.io/${{ inputs.package-namespace }}/builder-raspios-bookworm:${{ needs.builder-necessary.outputs.builder-tag }}
+
+  build-push-ubuntu:
+    name: Build and push ubuntu noble (${{ matrix.platform }})
+    if: ${{ needs.builder-necessary.outputs.build == 'true' }}
+    needs:
+      - builder-necessary
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: amd64
+            runner: ${{ github.event.repository.private && 'buildjet-8vcpu-ubuntu-2204' || 'ubuntu-24.04' }}
+          - platform: arm64
+            runner: ${{ github.event.repository.private &&  'buildjet-8vcpu-ubuntu-2204-arm' || 'ubuntu-24.04-arm' }}
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Github Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          registry: ghcr.io
+
+      - name: Build and push ubuntu builder
+        uses: docker/build-push-action@v5
+        with:
+          context: .devcontainer/ubuntu
+          file: .devcontainer/ubuntu/Dockerfile
+          push: true
+          provenance: false
+          tags: ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-${{ matrix.platform }}
+
+  manifest-ubuntu:
+    if: ${{ needs.builder-necessary.outputs.build == 'true' }}
+    needs:
+      - builder-necessary
+      - build-push-ubuntu
+    name: Docker manifest
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Login to Github Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          registry: ghcr.io
+
+      - name: Create and push multiarch manifests
+        run: |
+          docker manifest create \
+            ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }} \
+            ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-amd64 \
+            ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-arm64
+            docker manifest push ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}

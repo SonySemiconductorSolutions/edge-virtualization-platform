@@ -209,18 +209,6 @@ config EVP_BLOB_GET_UPLOAD_URL
 	---help---
 		Retrieve STP access token.
 
-config EVP_AGENT_LOCAL_SDK_NNG_STREAMS
-	bool "Enables EVP_stream type nng on local SDK builds"
-	default n
-	---help---
-		This option allows the use of EVP_streams of type nng when local
-		SDK is enabled. When not set, calls to EVP_streamInputOpen or
-		EVP_streamOutputOpen shall return EVP_NOTSUP. This can help reduce
-		the additional memory footprint required by the nng library.
-
-		Since nng is bundled separately from the agent on remote SDK
-		builds, this option does not affect builds using remote SDK builds.
-
 config EVP_MODULE_INSTANCE_STOP_TIMEOUT
 	int "Maximum time before force stopping spawed instance after stop request"
 	depends on EVP_MODULE_IMPL_SPAWN
