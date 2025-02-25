@@ -1,0 +1,79 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "WASM and native modules"
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+      builder-tag:
+        description: The builder tag to be used
+        default: latest
+        required: false
+        type: string
+      package-namespace:
+        description: The package namespace for docker images
+        default: ${{ github.repository }}
+        required: false
+        type: string
+
+jobs:
+  build-modules:
+    name: Build modules (${{ matrix.name }}, ${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+      options: ${{ startsWith(matrix.runner, 'buildjet') && '--user 1000:1001' || '--user 1001:127' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: raspios-bookworm
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204-arm' || 'ubuntu-24.04-arm' }}
+            platform: arm64
+          - name: ubuntu-noble
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204-arm' || 'ubuntu-24.04-arm' }}
+            platform: arm64
+          - name: ubuntu-noble
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204' || 'ubuntu-24.04' }}
+            platform: amd64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Build all modules
+        run: |
+          make -j$((`nproc` * 2)) \
+          KBUILD_DEFCONFIG=configs/unit-test-all-hubs-wasm.config \
+          wasm_test_modules
+          make -j$((`nproc` * 2)) -C test_modules/python
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-modules-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
+          path: |
+            test_modules/*.elf
+            test_modules/*.wasm
+            test_modules/*.wasm.*
+            test_modules/python/*.zip

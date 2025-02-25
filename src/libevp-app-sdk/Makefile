@@ -6,6 +6,7 @@ PROJECTDIR = ../..
 
 include $(PROJECTDIR)/scripts/rules.mk
 -include $(PROJECTDIR)/deps.mk
+-include $(PROJECTDIR)/.config
 
 MORE_CPPFLAGS = \
 	-I../libevp-agent \
@@ -33,19 +34,23 @@ obj-$(CONFIG_EVP_SDK_SOCKET) += \
 	sdk.o \
 	sdkrpc/client.o \
 
-obj-$(CONFIG_EVP_AGENT_LOCAL_SDK_NNG_STREAMS) += stream/nng.o
-
 LDFLAGS = -L$(LIBDIR)
 
 all: libevp-app-sdk.a libevp-app-sdk-bundle.a
 
-libevp-app-sdk.a: $(obj-y)
+libevp-app-sdk.o: $(obj-y)
 	$(LD) -r -o $@ $(MORE_LDFLAGS) $(obj-y) -X -x
 	$(OBJCOPY) --keep-global-symbols=symbols.list $@
+
+libevp-app-sdk.a: libevp-app-sdk.o
+	$(AR) $(PROJ_ARFLAGS) $@ $?
 	cp $@ $(LIBDIR)
 
-libevp-app-sdk-bundle.a: libevp-app-sdk.a
-	$(LD) -r -o $@ $(LDFLAGS) libevp-app-sdk.a $(DEPLIBS)
+libevp-app-sdk-bundle.o: libevp-app-sdk.o
+	$(LD) -r -o $@ $(LDFLAGS) libevp-app-sdk.o $(DEPLIBS)
+
+libevp-app-sdk-bundle.a: libevp-app-sdk-bundle.o
+	$(AR) $(PROJ_ARFLAGS) $@ $?
 	cp $@ $(LIBDIR)
 
 clean:

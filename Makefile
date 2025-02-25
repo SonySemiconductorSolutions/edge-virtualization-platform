@@ -70,12 +70,14 @@ deps.mk: .config
 
 dist: all
 	$(SCRIPTDIR)/mk-agent-deb.sh -V $(VERSION) -a $(ARCH)
+	$(SCRIPTDIR)/mk-sdk-deb.sh -V $(SDK_VERSION) -a $(ARCH)
 
 clean:
 	cd test && $(MAKE) clean
 	rm -rf bin lib
-	rm -rf include/nng include/psa
+	rm -rf include/psa
 	rm -rf include/flatcc include/mbedtls
+	rm -rf include/sdkenc
 	rm -rf include/lib_export.h include/version.h include/parson.h
 	rm -f include/wasm_c_api.h include/wasm_export.h
 	rm -f libevp-app-sdk-*.tar.gz libevp-app-sdk-*.deb

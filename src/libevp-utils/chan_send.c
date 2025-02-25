@@ -32,8 +32,8 @@ chan_send(struct chan *ch, struct chan_msg *msg)
 		/*
 		 * synchronous msg, `it->m' is hold
 		 * by this thread and we have to wait
-		 * in `it->cond' until the receiver
-		 * signals it and then we can free `it'
+		 * in `it->sem' until the receiver
+		 * posts it and then we can free `it'
 		 */
 
 		while (sem_wait(&it->sem) && errno == EINTR)

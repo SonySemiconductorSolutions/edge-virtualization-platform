@@ -7,7 +7,8 @@
 all:
 
 # Macros related to the version of the agent
-VERSION = 1.42.0
+VERSION = 1.43.0
+SDK_VERSION = 1.0.0
 
 # Default value for configuration macros
 O       = o
@@ -30,9 +31,6 @@ LDINCLUDES= -L$(LIBDIR)
 
 # Include optional personal preferences
 -include $(PROJECTDIR)/config.mk
-
-# include kconfig configuration
--include $(PROJECTDIR)/.config
 
 # Include configuration definitions
 include $(SCRIPTDIR)/build/tool/$(TOOL).mk
@@ -198,6 +196,7 @@ distclean-dirs: FORCE
 	ARCH=$(ARCH) \
 	CFLAGS='$(CFLAGS)' \
 	MBEDTLS_CFLAGS='$(MBEDTLS_CFLAGS)' \
+	MBEDTLS_USER_CONFIG_FILE='$(MBEDTLS_USER_CONFIG_FILE)' \
 	$(SCRIPTDIR)/cmake-$*.sh $(PWD)/$(PROJECTDIR)
 
 %: %/build/Makefile FORCE

@@ -52,7 +52,7 @@ Section: contrib/misc
 Version: $version
 Priority: optional
 Architecture: $arch
-Maintainer: Midokura <engineering@midokura.com>
+Maintainer: Sony Semiconductor Solutions <engineering@midokura.com>
 Depends: libc6 (>= 2.35), ca-certificates
 Vcs-Browser: https://github.com/SonySemiconductorSolutions/edge-virtualization-platform
 Vcs-Git: https://github.com/SonySemiconductorSolutions/edge-virtualization-platform
@@ -64,8 +64,8 @@ EOF
 cat > dist/DEBIAN/copyright <<EOF
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: evp-agent
-Upstream-Contact: Midokura
-Source: <https://midokura.com>
+Upstream-Contact: Sony Semiconductor Solutions
+Source: <https://www.sony-semicon.com/en/index.html>
 
 Files: *
 Copyright: 2024 Sony Semiconductor Solutions Corporation

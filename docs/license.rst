@@ -40,12 +40,6 @@ MQTT-C
 
 Copyright (c) 2018 Liam Bindle
 
-nng
----
-
-Copyright 2021 Staysail Systems, Inc. <info@staysail.tech>
-Copyright 2018 Capitar IT Group BV <info@capitar.com>
-
 BSD-3-Clause License
 ********************
 

@@ -13,7 +13,7 @@ Edge Virtualization Platform (EVP) project.
 ## Building the documentation
 
 The latest documentation of EVP
-can always be found in [Midokura EVP Agent documentation],
+can always be found in [EVP Agent documentation],
 built automatically through [Read the Docs]
 for every update of any branch.
 Additionally, the documentation
@@ -121,7 +121,7 @@ under the Apache-2.0 License.
 See `LICENSE` in repository root for details.
 
 [Sphinx]: https://www.sphinx-doc.org/en/master
-[Midokura EVP Agent documentation]: https://midokura-edge-virtualization-platform.readthedocs-hosted.com/en/latest/about/agent_features.html
+[EVP Agent documentation]: https://evp-agent.docs.midokura.com/en/latest/
 [Read the Docs]: https://readthedocs.com
 [Python Developer’s Guide for documenting]: https://devguide.python.org/documentation/markup/#sections
 [Semantic Linefeeds]: https://rhodesmill.org/brandon/2012/one-sentence-per-line

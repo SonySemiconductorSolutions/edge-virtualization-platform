@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>
+#include <sdkenc/sdk_builder.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +20,6 @@
 
 #include "../ioutil.h"
 #include "../sdk_agent.h"
-#include "../sdkenc/sdk_builder.h"
 #include "server.h"
 
 void
