@@ -36,6 +36,7 @@ static struct test test;
 static void
 blob_cb(EVP_BLOB_CALLBACK_REASON reason, const void *vp, void *userData)
 {
+	xlog_info("%s called", __func__);
 	const struct EVP_BlobResultAzureBlob *result = vp;
 	check_expected(reason);
 	check_expected(result->result);
@@ -76,8 +77,9 @@ test_http_ext_get_memory(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(ctxt->client, 1000);
+	result = EVP_processEvent(ctxt->client, -1);
 	assert_int_equal(result, EVP_OK);
+	xlog_info("%s done", __func__);
 
 	EVP_BlobRequestHttpExt_free(request);
 }
@@ -113,8 +115,9 @@ test_http_ext_get_file(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(ctxt->client, 1000);
+	result = EVP_processEvent(ctxt->client, -1);
 	assert_int_equal(result, EVP_OK);
+	xlog_info("%s done", __func__);
 
 	EVP_BlobRequestHttpExt_free(request);
 }
@@ -148,8 +151,9 @@ test_http_ext_put_file(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(ctxt->client, 1000);
+	result = EVP_processEvent(ctxt->client, -1);
 	assert_int_equal(result, EVP_OK);
+	xlog_info("%s done", __func__);
 
 	EVP_BlobRequestHttpExt_free(request);
 }
@@ -188,8 +192,9 @@ test_http_ext_get_file_range(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(ctxt->client, 1000);
+	result = EVP_processEvent(ctxt->client, -1);
 	assert_int_equal(result, EVP_OK);
+	xlog_info("%s done", __func__);
 
 	EVP_BlobRequestHttpExt_free(request);
 }
@@ -231,8 +236,9 @@ test_http_ext_get_file_range_azure(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(ctxt->client, 1000);
+	result = EVP_processEvent(ctxt->client, -1);
 	assert_int_equal(result, EVP_OK);
+	xlog_info("%s done", __func__);
 
 	EVP_BlobRequestHttpExt_free(request);
 }
@@ -270,8 +276,9 @@ test_http_ext_get_null_memory_range_azure(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(ctxt->client, 1000);
+	result = EVP_processEvent(ctxt->client, -1);
 	assert_int_equal(result, EVP_OK);
+	xlog_info("%s done", __func__);
 
 	EVP_BlobRequestHttpExt_free(request);
 }
