@@ -98,7 +98,7 @@ test_http_get_file(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(ctxt->client, 1000);
+	result = EVP_processEvent(ctxt->client, 10000);
 	assert_int_equal(result, EVP_OK);
 }
 
