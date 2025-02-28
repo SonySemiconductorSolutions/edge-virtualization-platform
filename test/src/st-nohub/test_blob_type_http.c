@@ -25,6 +25,13 @@
 
 #define HTTP_STATUS_OK 200
 
+struct test {
+	struct evp_agent_context *agent;
+	struct EVP_client *client;
+};
+
+static struct test test;
+
 static void
 blob_cb(EVP_BLOB_CALLBACK_REASON reason, const void *vp, void *userData)
 {
@@ -36,28 +43,17 @@ blob_cb(EVP_BLOB_CALLBACK_REASON reason, const void *vp, void *userData)
 }
 
 void
-blob_type_http_test(void **state)
+test_http_get_memory(void **state)
 {
-	// start agent
-	struct evp_agent_context *ctxt = agent_test_start();
-
-	// create backdoor instance
-	struct EVP_client *sdk_handle =
-		evp_agent_add_instance(ctxt, "backdoor");
-	assert_non_null(sdk_handle);
-
-	// prepare tests
-	EVP_RESULT result;
-	static struct EVP_BlobRequestHttp request;
-	static struct EVP_BlobLocalStore localstore;
-	static char cb_data;
-	localstore.io_cb = 0;
-	localstore.blob_len = 0;
-	localstore.filename = NULL;
-	request.url = TEST_HTTP_GET_URL;
-
 	// test HTTP GET to memory
-	result = EVP_blobOperation(sdk_handle, EVP_BLOB_TYPE_HTTP,
+	struct test *ctxt = *state;
+
+	EVP_RESULT result;
+	struct EVP_BlobRequestHttp request = {.url = TEST_HTTP_GET_URL};
+	struct EVP_BlobLocalStore localstore = {0};
+	char cb_data;
+
+	result = EVP_blobOperation(ctxt->client, EVP_BLOB_TYPE_HTTP,
 				   EVP_BLOB_OP_GET, &request, &localstore,
 				   blob_cb, &cb_data);
 	assert_int_equal(result, EVP_OK);
@@ -69,16 +65,28 @@ blob_type_http_test(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->client, 1000);
 	assert_int_equal(result, EVP_OK);
+}
 
+void
+test_http_get_file(void **state)
+{
 	// test HTTP GET to file
-	request.url = TEST_HTTP_GET_URL;
-	xasprintf((char **)&localstore.filename, "%s/%s",
-		  path_get(MODULE_INSTANCE_PATH_ID), TEST_HTTP_GET_FILE);
+	struct test *ctxt = *state;
+
+	char *filename;
+	xasprintf(&filename, "%s/%s", path_get(MODULE_INSTANCE_PATH_ID),
+		  TEST_HTTP_GET_FILE);
+
+	EVP_RESULT result;
+	struct EVP_BlobRequestHttp request = {.url = TEST_HTTP_GET_URL};
+	struct EVP_BlobLocalStore localstore = {.filename = filename};
+	char cb_data;
+
 	/* we can't use expect_string because webclient_perform will be called
 	 * from a different thread */
-	result = EVP_blobOperation(sdk_handle, EVP_BLOB_TYPE_HTTP,
+	result = EVP_blobOperation(ctxt->client, EVP_BLOB_TYPE_HTTP,
 				   EVP_BLOB_OP_GET, &request, &localstore,
 				   blob_cb, &cb_data);
 	free(__UNCONST(localstore.filename));
@@ -90,14 +98,26 @@ blob_type_http_test(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->client, 1000);
 	assert_int_equal(result, EVP_OK);
+}
 
+void
+test_http_put_file(void **state)
+{
 	// test HTTP PUT to file
-	request.url = TEST_HTTP_PUT_URL;
-	xasprintf((char **)&localstore.filename, "%s/%s",
-		  path_get(MODULE_INSTANCE_PATH_ID), TEST_HTTP_PUT_FILE);
-	result = EVP_blobOperation(sdk_handle, EVP_BLOB_TYPE_HTTP,
+	struct test *ctxt = *state;
+
+	char *filename;
+	xasprintf(&filename, "%s/%s", path_get(MODULE_INSTANCE_PATH_ID),
+		  TEST_HTTP_PUT_FILE);
+
+	EVP_RESULT result;
+	struct EVP_BlobRequestHttp request = {.url = TEST_HTTP_PUT_URL};
+	struct EVP_BlobLocalStore localstore = {.filename = filename};
+	char cb_data;
+
+	result = EVP_blobOperation(ctxt->client, EVP_BLOB_TYPE_HTTP,
 				   EVP_BLOB_OP_PUT, &request, &localstore,
 				   blob_cb, &cb_data);
 	free(__UNCONST(localstore.filename));
@@ -109,7 +129,7 @@ blob_type_http_test(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->client, 1000);
 	assert_int_equal(result, EVP_OK);
 }
 
@@ -122,6 +142,13 @@ setup(void **state)
 	assert_int_equal(0, systemf("touch %s/%s",
 				    path_get(MODULE_INSTANCE_PATH_ID),
 				    TEST_HTTP_PUT_FILE));
+	// start agent
+	test.agent = agent_test_start();
+
+	// create backdoor instance
+	test.client = evp_agent_add_instance(test.agent, "backdoor");
+	assert_non_null(test.client);
+	*state = &test;
 	return 0;
 }
 
@@ -137,7 +164,9 @@ main(void)
 {
 	// define tests
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test(blob_type_http_test),
+		cmocka_unit_test(test_http_get_memory),
+		cmocka_unit_test(test_http_get_file),
+		cmocka_unit_test(test_http_put_file),
 	};
 	// setup and run tests
 	return cmocka_run_group_tests(tests, setup, teardown);
