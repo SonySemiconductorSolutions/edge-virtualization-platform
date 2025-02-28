@@ -7,6 +7,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>
+#include <sdkenc/sdk_builder.h>
+#include <sdkenc/sdk_reader.h>
+#include <sdkenc/sdk_verifier.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,9 +23,6 @@
 #include "path_docker.h"
 #include "sdk_callback_impl_ops.h"
 #include "sdk_common.h"
-#include "sdkenc/sdk_builder.h"
-#include "sdkenc/sdk_reader.h"
-#include "sdkenc/sdk_verifier.h"
 #include "sdkrpc/client.h"
 #include "sdkutil.h"
 #include "stream/stream.h"
@@ -1013,51 +1013,6 @@ process_null_params(ns(StreamParamsResponse_table_t) body,
 }
 
 static EVP_RESULT
-process_nng_params(const ns(StreamParamsResponse_table_t) body,
-		   union StreamParams *p)
-{
-	EVP_RESULT ret;
-	char *connectiondup = NULL;
-	const struct ns(StreamNng_table) *params =
-		ns(StreamParamsResponse_params(body));
-
-	if (params == NULL) {
-		fprintf(stderr, "%s: StreamParamsResponse_params failed\n",
-			__func__);
-		ret = EVP_AGENT_PROTOCOL_ERROR;
-		goto end;
-	}
-
-	flatbuffers_string_t connection = ns(StreamNng_connection_get(params));
-	if (connection == NULL) {
-		fprintf(stderr, "%s: unexpected null connection\n", __func__);
-		ret = EVP_AGENT_PROTOCOL_ERROR;
-		goto end;
-	}
-
-	connectiondup = strdup(connection);
-	if (connectiondup == NULL) {
-		fprintf(stderr, "%s: realloc(3) failed with errno %d\n",
-			__func__, errno);
-		ret = EVP_NOMEM;
-		goto end;
-	}
-
-	p->nng = (struct StreamNng){
-		.mode = ns(StreamNng_mode_get(params)),
-		.protocol = ns(StreamNng_protocol_get(params)),
-		.connection = connectiondup,
-	};
-
-	ret = EVP_OK;
-end:
-	if (ret != EVP_OK) {
-		free(connectiondup);
-	}
-	return ret;
-}
-
-static EVP_RESULT
 process_stream_response(const struct sdk_request *req, const char *name,
 			struct Stream *stream)
 {
@@ -1114,7 +1069,6 @@ process_stream_response(const struct sdk_request *req, const char *name,
 	static EVP_RESULT (*f[])(ns(StreamParamsResponse_table_t),
 				 union StreamParams *p) = {
 		[STREAM_TYPE_NULL] = process_null_params,
-		[STREAM_TYPE_NNG] = process_nng_params,
 	};
 
 	if (s.type >= __arraycount(f)) {

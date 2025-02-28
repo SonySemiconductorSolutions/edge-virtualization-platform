@@ -396,7 +396,6 @@ that enables actions such as:
 	wasm-micro-runtime: wasm-micro-runtime/build/Makefile
 	flatcc: flatcc/build/Makefile
 	mbedtls: mbedtls/build/Makefile
-	nng: nng/build/Makefile
 
 that will generate a chain of dependencies
 which will compile correctly a `CMake`_ project

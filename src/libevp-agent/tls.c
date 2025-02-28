@@ -150,7 +150,7 @@ xlog_mbedtls_error(int rv, const char *fmt, ...)
 		xlog_error("%s, mbedtls returned -0x%x (%s)", msg,
 			   (unsigned int)-rv, buf);
 	} else {
-		xlog_error("%s, mbedtls returned 0x%x", msg, rv);
+		xlog_error("%s, mbedtls returned 0x%x", msg, (unsigned int)rv);
 	}
 }
 
@@ -162,10 +162,11 @@ failed(const char *fn, int rv)
 	if (rv < 0) {
 		char buf[100];
 		mbedtls_strerror(rv, buf, sizeof(buf));
-		xlog_error("%s failed with -0x%x (%s)", fn, -rv, buf);
+		xlog_error("%s failed with -0x%x (%s)", fn, (unsigned int)-rv,
+			   buf);
 	} else {
 		xlog_error("%s failed, returning a positive value 0x%x", fn,
-			   rv);
+			   (unsigned int)rv);
 	}
 	return rv;
 }
@@ -751,11 +752,11 @@ mbedtls2errno(int rv)
 		xlog_info("mbedtls2errno: converting -0x%x "
 			  "(%s) to %d "
 			  "(%s)",
-			  -rv, buf, error, strerror(error));
+			  (unsigned int)-rv, buf, error, strerror(error));
 	} else {
 		xlog_info("mbedtls2errno: converting 0x%x to "
 			  "%d (%s)",
-			  rv, error, strerror(error));
+			  (unsigned int)rv, error, strerror(error));
 	}
 
 	return error;

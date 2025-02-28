@@ -9,10 +9,7 @@
 import re
 
 project = "EVP Agent"
-copyright = (
-    "2025, Sony Semiconductor Solutions Corporation. "
-    + "Sony Semiconductor Solutions Confidential"
-)
+copyright = "2025, Sony Semiconductor Solutions Corporation."
 author = "Sony Semiconductor Solutions Corporation"
 version = "unknown-dev"
 version_re = re.compile(r"^VERSION\s*=\s*(.*)\s*$")
@@ -35,6 +32,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx_copybutton",
     "sphinx.ext.intersphinx",
 ]
 

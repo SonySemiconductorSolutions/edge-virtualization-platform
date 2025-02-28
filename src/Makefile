@@ -12,6 +12,7 @@ EVP_LIBS = \
 DIRS = \
 	evp_agent\
 	libparson\
+	sdkenc\
 	$(EVP_LIBS)
 
 include $(PROJECTDIR)/scripts/rules.mk
@@ -32,8 +33,9 @@ libevp-agent: libevp-utils
 
 evp_agent: libevp-agent libevp-utils
 
+sdkenc: flatcc
+
 # cmake dependencies
 wasm-micro-runtime: wasm-micro-runtime/build/Makefile
 flatcc: flatcc/build/Makefile
 mbedtls: mbedtls/build/Makefile
-nng: nng/build/Makefile

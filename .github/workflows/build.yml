@@ -1,0 +1,189 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+on:
+  workflow_call:
+    inputs:
+      builder-tag:
+        description: The builder tag to be used
+        default: latest
+        required: false
+        type: string
+      package-namespace:
+        description: The package namespace for docker images
+        default: ${{ github.repository }}
+        required: false
+        type: string
+      ref:
+        type: string
+        required: true
+
+jobs:
+  build-agent:
+    name: Agent (${{ matrix.name }}, ${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+      options: ${{ startsWith(matrix.runner, 'buildjet') && '--user 1000:1001' || '--user 1001:127' }}
+    timeout-minutes: 8 # the worst case is 3 minutes
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: raspios-bookworm
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204-arm' || 'ubuntu-22.04-arm' }}
+            platform: arm64
+          - name: ubuntu-noble
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204-arm' || 'ubuntu-22.04-arm' }}
+            platform: arm64
+          - name: ubuntu-noble
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204' || 'ubuntu-24.04' }}
+            platform: amd64
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Build
+        run: bear -- make -j$((`nproc` * 2)) CFLAGS="-g -Werror"
+
+      - name: Generate SBOM
+        run: |
+          ./scripts/sources bin/evp_agent > sources.lst
+          ./scripts/mk-sbom -d -c `dpkg -l libc6 | awk '/libc6/ {print $3}'` sources.lst
+
+      - name: Agent Debian Package
+        run: make dist
+
+      - name: Upload agent debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-deb-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
+          path: evp-agent*.deb
+
+      - name: Upload sdk debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: libevp-app-sdk-dev-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
+          path: libevp-app-sdk-dev*.deb
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-agent-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
+          path: |
+            compile_commands.json
+            sources.lst
+            sbom.tsv
+            sbom-files.txt
+            sbom-tmp.txt
+
+  build-sdk:
+    name: SDK (${{ matrix.name }}, ${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+      options: ${{ startsWith(matrix.runner, 'buildjet') && '--user 1000:1001' || '--user 1001:127' }}
+    timeout-minutes: 8 # the worst case is 3 minutes
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: raspios-bookworm
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204-arm' || 'ubuntu-22.04-arm' }}
+            platform: arm64
+          - name: ubuntu-noble
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204-arm' || 'ubuntu-22.04-arm' }}
+            platform: arm64
+          - name: ubuntu-noble
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204' || 'ubuntu-24.04' }}
+            platform: amd64
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Build SDK
+        run: make -j$((`nproc` * 2)) sdk \
+          CFLAGS="-O2 -Werror" \
+          KBUILD_DEFCONFIG=configs/linux-docker.config
+
+      - name: Install python test dependencies
+        working-directory: src/python-evp-app-sdk
+        run: |
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pip install \
+            -e . \
+            -r requirements.test.txt
+
+      - name: Run python SDK tests
+        working-directory: src/python-evp-app-sdk
+        run: |
+          . .venv/bin/activate
+          python -m pytest \
+            --cov=evp.app \
+            --cov-report="xml:pysdk-cov.xml" \
+            --junit-xml="pysdk-test-res.xml" \
+            -v
+
+      - name: Publish pytest coverage
+        id: pysdk-cov
+        uses: MishaKav/pytest-coverage-comment@main
+        if: always()
+        with:
+          title: EVP Python Application SDK coverage report
+          badge-title: Python Application SDK
+          coverage-path-prefix: src/python-evp-app-sdk/evp/app/
+          pytest-xml-coverage-path: src/python-evp-app-sdk/pysdk-cov.xml
+          junitxml-path: src/python-evp-app-sdk/pysdk-test-res.xml
+          junitxml-title: Python Application SDK test report
+
+      - name: Publish pytest results to summary
+        if: steps.pysdk-cov.outputs.summaryReport
+        run: echo ${{ steps.pysdk-cov.outputs.summaryReport }}  >> $GITHUB_STEP_SUMMARY
+
+      - name: Build Python package
+        working-directory: src/python-evp-app-sdk
+        run: python3 -m build
+
+      - name: SDK Debian package
+        working-directory: src/python-evp-app-sdk
+        run: python setup.py --command-packages=stdeb.command bdist_deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-sdk-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
+          path: src/python-evp-app-sdk/dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-sdk-deb-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
+          path: src/python-evp-app-sdk/deb_dist/*.deb
+
+  run-static-analysis:
+    name: Static Code Analysis
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ inputs.builder-tag }}
+      options: --user 1001:127
+    timeout-minutes: 8 # the worst case is 3 minutes
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Run cppcheck analysis
+        run: make -j$((`nproc` * 2)) CFLAGS="-Werror" TOOL=cppcheck analysis

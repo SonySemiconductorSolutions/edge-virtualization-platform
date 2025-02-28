@@ -58,7 +58,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean -y\
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 50
 
-RUN echo "deb https://apt.llvm.org/jammy/ llvm-toolchain-jammy-${LLVM_VERSION} main" > /etc/apt/sources.list.d/apt.llvm.org.list && \
+RUN echo "deb https://apt.llvm.org/bookworm/ llvm-toolchain-bookworm-${LLVM_VERSION} main" > /etc/apt/sources.list.d/apt.llvm.org.list && \
     curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \
     apt-get update && apt-get install -y --no-install-recommends \
     clang-format-${LLVM_VERSION} \
