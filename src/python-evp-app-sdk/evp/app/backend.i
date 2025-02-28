@@ -36,7 +36,7 @@ static void PythonConfigCallback(const char *topic, const void *config, size_t c
 
    func = (PyObject *) userData;
    arglist = Py_BuildValue("(sO)", topic, PyUnicode_FromStringAndSize(config, configlen));
-   PyObject *ret = PyEval_CallObject(func, arglist);
+   PyObject *ret = PyObject_Call(func, arglist, NULL);
    if (!ret) {
       // Handle any Python exceptions raised during the callback
       PyErr_Print();
@@ -63,7 +63,7 @@ static void PythonReasonCallback(int reason, void *userData)
 
    func = (PyObject *) userData;
    arglist = Py_BuildValue("(i)", reason);
-   PyObject *ret = PyEval_CallObject(func, arglist);
+   PyObject *ret = PyObject_Call(func, arglist, NULL);
    if (!ret) {
       // Handle any Python exceptions raised during the callback
       PyErr_Print();
@@ -108,7 +108,7 @@ static void PythonTelemetryCallback(int reason, void *userData)
 
    func = (PyObject *) data->PyHandler;
    arglist = Py_BuildValue("(i)", reason);
-   PyObject *ret = PyEval_CallObject(func, arglist);
+   PyObject *ret = PyObject_Call(func, arglist, NULL);
    if (!ret) {
       // Handle any Python exceptions raised during the callback
       PyErr_Print();
@@ -215,11 +215,10 @@ static EVP_RESULT PyEVP_sendTelemetry(struct EVP_client *h, PyObject *Telemetrie
 static void PythonRpcRequestCallback(unsigned long id, const char *methodName,
 					 const char *params, void *userData) {
    PyObject *func, *arglist;
-   double    dres = 0;
 
    func = (PyObject *) userData;
    arglist = Py_BuildValue("(lss)", id, methodName, params);
-   PyObject *ret = PyEval_CallObject(func, arglist);
+   PyObject *ret = PyObject_Call(func, arglist, NULL);
    if (!ret) {
       // Handle any Python exceptions raised during the callback
       PyErr_Print();
