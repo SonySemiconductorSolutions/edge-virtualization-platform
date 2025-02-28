@@ -71,6 +71,7 @@ blob_type_http_ext_test(void **state)
 				   EVP_BLOB_OP_GET, request, &localstore,
 				   blob_cb, &cb_data);
 	assert_int_equal(result, EVP_OK);
+	agent_poll(verify_equals, "GET " TEST_HTTP_GET_URL);
 	// Blob download to memory is allowed
 
 	// Expect processed blob to succeed
