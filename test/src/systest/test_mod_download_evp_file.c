@@ -353,6 +353,8 @@ test_download_http_blob(struct test_context *ctxt, enum test_deployment depl)
 	agent_ensure_deployment(&ctxt->d, get_manifest(depl),
 				get_deployment_id(depl));
 
+	message_info("Wait for STATE_STATUS_READY");
+
 	poll_state_instance_status(depl, STATE_STATUS_READY);
 
 	char *cfg = get_instance_config(ctxt, depl);
@@ -366,7 +368,11 @@ test_download_http_blob(struct test_context *ctxt, enum test_deployment depl)
 	// send a GET request
 	// check that the agent sends a blob containing the file
 	// contents
+	message_info("Wait for GET operation to finish");
+
 	agent_poll(verify_contains, "GET finished");
+
+	message_info("Wait for STATE_STATUS_DONE");
 
 	poll_state_instance_status(depl, STATE_STATUS_DONE);
 
