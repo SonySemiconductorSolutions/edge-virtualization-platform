@@ -6,6 +6,7 @@
 
 #define _GNU_SOURCE /* for pthread_setname_np */
 
+#include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <poll.h>
@@ -43,17 +44,26 @@ struct jverifier {
 	JSON_Object *objects[JSONSTACKSZ];
 };
 
+struct msg {
+	char *data;
+	struct msg *next;
+};
+
 static struct {
 	pthread_t thread_id;
 	int running;
 	bool connected;
 	bool offline_hub;
-	int pipe[2];
 	struct evp_lock lock;
 	evp_agent_loop_fn_t agent_loop_fn;
+	struct msg *messages;
+	pthread_cond_t cond;
 	const char
 		*payloads[EVP_HUB_TYPE_UNKNOWN][AGENT_TEST_MAX_PAYLOAD_ID + 1];
-} g_agent_test = {.lock = EVP_LOCK_INITIALIZER, .pipe = {-1, -1}};
+} g_agent_test = {
+	.lock = EVP_LOCK_INITIALIZER,
+	.cond = PTHREAD_COND_INITIALIZER,
+};
 
 void
 message_log(enum message_log_level level, const char *func, const char *file,
@@ -1024,14 +1034,6 @@ agent_test_start(void)
 {
 	int ret;
 
-	// create pipe for test data
-#ifdef O_DIRECT
-	ret = pipe2(g_agent_test.pipe, O_DIRECT);
-#else
-	ret = pipe(g_agent_test.pipe);
-#endif
-	assert_int_equal(0, ret);
-
 	// instantiate EVP Agent context
 	struct evp_agent_context *ctxt;
 	ctxt = evp_agent_setup("evp_agent_main");
@@ -1082,6 +1084,16 @@ agent_test_exit(void)
 	}
 	path_free();
 	set_connected(false);
+
+	struct msg *m = g_agent_test.messages;
+
+	while (m) {
+		struct msg *next = m->next;
+
+		free(m->data);
+		free(m);
+		m = next;
+	}
 }
 
 /**
@@ -1092,20 +1104,58 @@ agent_test_exit(void)
 void
 agent_write_to_pipe(const char *data)
 {
-	size_t remain = strlen(data) + 1;
-	int fd = g_agent_test.pipe[1];
-	if (fd == -1) {
-		return;
+	char *datadup = strdup(data);
+	struct msg *msg = malloc(sizeof(*msg));
+
+	assert(msg);
+	assert(datadup);
+
+	*msg = (struct msg){.data = datadup};
+
+	xpthread_mutex_lock(&g_agent_test.lock);
+
+	if (!g_agent_test.messages)
+		g_agent_test.messages = msg;
+	else {
+		for (struct msg *m = g_agent_test.messages; m; m = m->next) {
+			if (!m->next) {
+				m->next = msg;
+				break;
+			}
+		}
 	}
-	while (remain) {
-		xlog_debug("write pipe %s", data);
-		ssize_t ret;
-		ret = write(fd, data, remain);
-		assert_true(ret > 0);
-		assert_true(remain >= (size_t)ret);
-		remain -= ret;
-		data += ret;
+
+	xlog_debug("write pipe %s", data);
+	assert(!pthread_cond_broadcast(&g_agent_test.cond));
+	xpthread_mutex_unlock(&g_agent_test.lock);
+}
+
+static int
+msg_pop(agent_test_verify_t verify_callback, const void *user_data, va_list va)
+{
+	for (struct msg *m = g_agent_test.messages, *prev = NULL; m;
+	     prev = m, m = m->next) {
+		va_list vac;
+		const char *payload = m->data;
+
+		va_copy(vac, va);
+
+		if (verify_callback(payload, user_data, vac)) {
+			if (prev)
+				prev->next = m->next;
+			else
+				g_agent_test.messages = m->next;
+
+			free(m->data);
+			free(m);
+			va_end(vac);
+			return 0;
+		}
+
+		va_end(vac);
 	}
+
+	return -1;
 }
 
 /**
@@ -1117,29 +1167,24 @@ agent_write_to_pipe(const char *data)
 void
 agent_poll(agent_test_verify_t verify_callback, const void *user_data, ...)
 {
-	int r, fds = g_agent_test.pipe[0];
-	char *payload, c;
-	size_t cnt;
-	va_list va;
+	int r;
 
-	payload = NULL;
-	for (cnt = 1;; cnt++) {
+	xpthread_mutex_lock(&g_agent_test.lock);
+
+	do {
+		va_list va;
+
 		va_start(va, user_data);
-		r = read(fds, &c, 1);
-		assert_int_equal(r, 1);
 
-		payload = xrealloc(payload, cnt);
-		payload[cnt - 1] = c;
-		if (c == '\0') {
-			if (verify_callback(payload, user_data, va)) {
-				free(payload);
-				va_end(va);
-				return;
-			}
-			cnt = 0;
+		if ((r = msg_pop(verify_callback, user_data, va))) {
+			assert(!pthread_cond_wait(&g_agent_test.cond,
+						  &g_agent_test.lock.lock));
 		}
+
 		va_end(va);
-	}
+	} while (r);
+
+	xpthread_mutex_unlock(&g_agent_test.lock);
 }
 
 void
