@@ -512,7 +512,7 @@ verify_equals(const char *data, const void *user_data, va_list va)
 {
 	const char *expected = (const char *)user_data;
 	if (strcmp(data, expected) == 0) {
-		xlog_info("Got expected data %s", expected);
+		message_info("Got expected data %s", expected);
 		return true;
 	}
 	xlog_warning("Missing expected data %s in %s", expected, data);
@@ -529,7 +529,7 @@ verify_contains(const char *data, const void *user_data, va_list va)
 {
 	const char *expected = (const char *)user_data;
 	if (strstr(data, expected) != NULL) {
-		xlog_info("Got expected data %s", expected);
+		message_info("Got expected data %s", expected);
 		return true;
 	}
 	xlog_warning("Missing expected data %s in %s", expected, data);
@@ -552,7 +552,7 @@ verify_contains_except(const char *data, const void *user_data, va_list va)
 	const char *unexpected = (const char *)checks->unexpect;
 
 	if (strstr(data, expected) != NULL) {
-		xlog_info("Got expected data %s", expected);
+		message_info("Got expected data %s", expected);
 	} else {
 		xlog_warning("Missing expected data %s in %s", expected, data);
 		return false;
@@ -653,7 +653,7 @@ verify_json(const char *text, const void *user_data, va_list va)
 	struct jverifier jv;
 	const char *field, *fmt = user_data;
 
-	xlog_info("verify_json: checking '%s' with '%s'", text, fmt);
+	message_info("verify_json: checking '%s' with '%s'", text, fmt);
 
 	jv.nobjs = jv.nvals = 0;
 	if (!push_string_value(text, &o, &jv))
@@ -808,7 +808,7 @@ verify_json(const char *text, const void *user_data, va_list va)
 		}
 	}
 	r = true;
-	xlog_info("Got expected data %s in %s", (char *)user_data, text);
+	message_info("Got expected data %s in %s", (char *)user_data, text);
 
 err:
 	free_values(&jv);
@@ -830,7 +830,7 @@ verify_contains_in_unordered_set(const char *data, const void *user_data,
 	int count = 0;
 	for (count = 0; set->value; count++, set++) {
 		if (strstr(data, set->value) != NULL) {
-			xlog_info("Got expected data %s", set->value);
+			message_info("Got expected data %s", set->value);
 			set->found = true;
 		}
 
@@ -1125,7 +1125,7 @@ agent_write_to_pipe(const char *data)
 		}
 	}
 
-	xlog_debug("write pipe %s", data);
+	message_info("Message: %s", data);
 	assert(!pthread_cond_broadcast(&g_agent_test.cond));
 	xpthread_mutex_unlock(&g_agent_test.lock);
 }
@@ -1174,6 +1174,7 @@ agent_poll(agent_test_verify_t verify_callback, const void *user_data, ...)
 {
 	int r;
 
+	message_info("Poll wait");
 	xpthread_mutex_lock(&g_agent_test.lock);
 
 	do {
@@ -1195,6 +1196,7 @@ agent_poll(agent_test_verify_t verify_callback, const void *user_data, ...)
 void
 agent_msg_clear(void)
 {
+	message_info("Clear message pool");
 	xpthread_mutex_lock(&g_agent_test.lock);
 
 	while (g_agent_test.messages) {
