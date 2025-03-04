@@ -7,6 +7,7 @@
 #include <config.h>
 
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdbool.h>
 #include <time.h>
 #include <unistd.h>
@@ -94,7 +95,7 @@ struct module_instance {
 	pthread_t wasm_runner;
 	wasm_module_inst_t wasm_module_inst;
 	char *wasm_runner_exception;
-	pthread_cond_t exit_condition;
+	sem_t sem;
 	struct evp_lock lock;
 	enum module_instance_status status;
 	wasm_module_t wasm_module;
