@@ -6,6 +6,7 @@ PROJECTDIR = ../..
 
 include $(PROJECTDIR)/scripts/rules.mk
 -include $(PROJECTDIR)/deps.mk
+-include $(PROJECTDIR)/.config
 
 MORE_CPPFLAGS = \
 	-I../libevp-agent \

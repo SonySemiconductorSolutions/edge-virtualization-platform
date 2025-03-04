@@ -293,7 +293,6 @@ The full list of checks enabled is:
     fsanitize=shift
     fsanitize=undefined
     fsanitize=unreachable
-    fsanitize=unsigned-integer-overflow
     fsanitize=vla-bound
 
 More information about every specific option can be found in the
