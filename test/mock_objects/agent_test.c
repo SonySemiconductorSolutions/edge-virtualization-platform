@@ -1130,6 +1130,13 @@ agent_write_to_pipe(const char *data)
 	xpthread_mutex_unlock(&g_agent_test.lock);
 }
 
+static void
+msg_free(struct msg *m)
+{
+	free(m->data);
+	free(m);
+}
+
 static int
 msg_pop(agent_test_verify_t verify_callback, const void *user_data, va_list va)
 {
@@ -1145,9 +1152,7 @@ msg_pop(agent_test_verify_t verify_callback, const void *user_data, va_list va)
 				prev->next = m->next;
 			else
 				g_agent_test.messages = m->next;
-
-			free(m->data);
-			free(m);
+			msg_free(m);
 			va_end(vac);
 			return 0;
 		}
@@ -1183,6 +1188,20 @@ agent_poll(agent_test_verify_t verify_callback, const void *user_data, ...)
 
 		va_end(va);
 	} while (r);
+
+	xpthread_mutex_unlock(&g_agent_test.lock);
+}
+
+void
+agent_msg_clear(void)
+{
+	xpthread_mutex_lock(&g_agent_test.lock);
+
+	while (g_agent_test.messages) {
+		struct msg *head = g_agent_test.messages;
+		g_agent_test.messages = head->next;
+		msg_free(head);
+	}
 
 	xpthread_mutex_unlock(&g_agent_test.lock);
 }
