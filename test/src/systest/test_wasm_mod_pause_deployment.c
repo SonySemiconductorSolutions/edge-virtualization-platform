@@ -192,6 +192,8 @@ test_teardown(void **state)
 	struct evp_agent_context *ctxt = *state;
 	const char *deployment;
 
+	agent_msg_clear();
+
 	// send empty deployment
 	deployment = agent_get_payload(EMPTY_DEPLOYMENT_MANIFEST);
 	agent_send_deployment(ctxt, deployment);
@@ -273,6 +275,8 @@ pause_deployment_not_in_progress(void **state)
 	struct evp_agent_context *ctxt = *state;
 	int ret;
 
+	agent_msg_clear();
+
 	// Request pause when no module is being downloaded
 	ret = evp_agent_request_pause_deployment(ctxt);
 	assert_int_equal(ret, 0);
@@ -310,6 +314,8 @@ pause_deployment_in_progress(void **state)
 {
 	struct evp_agent_context *ctxt = *state;
 	int ret;
+
+	agent_msg_clear();
 
 	// Block download to simulate a web download
 	sync_activate(&sync_download, 2);
