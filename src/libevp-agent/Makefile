@@ -5,6 +5,7 @@
 PROJECTDIR = ../..
 
 include $(PROJECTDIR)/scripts/rules.mk
+-include $(PROJECTDIR)/.config
 
 MORE_CPPFLAGS = \
 	-IMQTT-C/include\

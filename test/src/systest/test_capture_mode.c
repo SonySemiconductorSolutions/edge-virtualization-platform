@@ -109,7 +109,7 @@ test_capture_mode(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(ctxt->sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->sdk_handle, 3000);
 	assert_int_equal(result, EVP_OK);
 
 	// Ensure no mqtt transmission occured

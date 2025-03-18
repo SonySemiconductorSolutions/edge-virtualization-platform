@@ -122,17 +122,11 @@ STESTS=\
 	src/systest/test_failed_wasm_load.elf\
 	src/systest/test_messaging.elf\
 	src/systest/test_mi_denied_requests.elf\
-	src/systest/test_mod_download_evp_file.elf\
 	src/systest/test_module_log.elf\
 	src/systest/test_mstp.elf\
 	src/systest/test_mstp_null.elf\
-	src/systest/test_python_mod_config_echo.elf\
-	src/systest/test_python_mod_telemetry_echo2.elf\
-	src/systest/test_python_mod_mdc.elf\
-	src/systest/test_python_mod_upload_http_file.elf\
-	src/systest/test_python_mod_upload_http_memory.elf\
-	src/systest/test_python_mod_zombie.elf\
 	src/systest/test_spawn_mod_config_echo.elf\
+	src/systest/test_spawn_mod_download_evp_file.elf\
 	src/systest/test_spawn_mod_mstp_cache_load.elf\
 	src/systest/test_spawn_mod_mstp_cache_store.elf\
 	src/systest/test_spawn_mod_telemetry_echo2.elf\
@@ -147,6 +141,8 @@ STESTS=\
 	src/systest/test_wasm_mod_backdoor_state_report.elf\
 	src/systest/test_wasm_mod_config_echo.elf\
 	src/systest/test_wasm_mod_deployment.elf\
+	src/systest/test_wasm_mod_deployment_invalid_wamr.elf\
+	src/systest/test_wasm_mod_download_evp_file.elf\
 	src/systest/test_wasm_mod_download_http_ext.elf\
 	src/systest/test_wasm_mod_failed_connect.elf\
 	src/systest/test_wasm_mod_health_check.elf\
@@ -166,14 +162,23 @@ STESTS=\
 	src/systest/test_wasm_mod_upload_evp_memory.elf\
 	src/systest/test_wasm_mod_upload_http_file.elf\
 	src/systest/test_wasm_mod_workspace.elf\
+	src/systest/test_wasm_mod_zombie.elf\
 	src/systest/test_wasm_repeated_deploy.elf\
 	src/systest/test_wasm_rpc.elf\
 	src/systest/test_wasm_telemetry.elf\
 
+STESTS_PY=\
+	src/systest/test_python_mod_config_echo.elf\
+	src/systest/test_python_mod_telemetry_echo2.elf\
+	src/systest/test_python_mod_mdc.elf\
+	src/systest/test_python_mod_upload_http_file.elf\
+	src/systest/test_python_mod_upload_http_memory.elf\
+	src/systest/test_python_mod_zombie.elf\
+	src/systest/test_python_mod_download_evp_file.elf\
+
 STESTS_NH=\
 	src/st-nohub/test_blob_type_http.elf\
 	src/st-nohub/test_blob_type_http_ext.elf\
-	src/st-nohub/test_cancel_blob.elf\
 	src/st-nohub/test_connection_mode.elf\
 	src/st-nohub/test_connection_timeout.elf\
 	src/st-nohub/test_connections_disconnecting.elf\
@@ -186,7 +191,7 @@ STESTS_NH=\
 	src/st-nohub/test_sysapp_state.elf\
 	src/st-nohub/test_worker_manager.elf\
 
-TESTS=$(UTESTS_EVP1_TB) $(UTESTS_EVP2_TB) $(UTESTS_NH) $(STESTS) $(STESTS_NH)
+TESTS=$(UTESTS_EVP1_TB) $(UTESTS_EVP2_TB) $(UTESTS_NH) $(STESTS) $(STESTS_NH) $(STESTS_PY)
 
 BINDEPS =\
 	$(LIBDIR)/libevp-agent.a\
@@ -256,10 +261,10 @@ test-helper: run-ut run-st
 
 .IGNORE: run-ut run-st
 .IGNORE: run-ut-evp1-tb run-ut-evp2-tb run-ut-nh
-.IGNORE: run-st-evp1-tb run-st-evp2-tb run-st-nh
+.IGNORE: run-st-evp1-tb run-st-evp2-tb run-st-nh run-st-py
 
 run-ut: run-ut-evp1-tb run-ut-evp2-tb run-ut-nh
-run-st: run-st-evp1-tb run-st-evp2-tb run-st-nh
+run-st: run-st-evp1-tb run-st-evp2-tb run-st-nh run-st-py
 
 run-ut-evp1-tb: $(UTESTS_EVP1_TB) FORCE
 	@./run-tests.sh $(RUNFLAGS) -d logs/EVP1-TB -p EVP1 $(UTESTS_EVP1_TB)
@@ -278,6 +283,9 @@ run-st-evp2-tb: $(STESTS) FORCE
 
 run-st-nh: $(STESTS_NH) FORCE
 	@./run-tests.sh $(RUNFLAGS) -d logs/EVP2-TB -p TB $(STESTS_NH)
+
+run-st-py: $(STESTS_PY) FORCE
+	@./run-tests.sh $(RUNFLAGS) -d logs/EVP2-TB -p TB $(STESTS_PY)
 
 clean:
 	test -f libweb/Makefile && cd libweb && $(MAKE) clean || true

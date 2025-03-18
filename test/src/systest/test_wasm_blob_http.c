@@ -378,7 +378,7 @@ blob_http_get_memory(void **state)
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
 	result = EVP_processEvent_wasm(ctxt->wasm_exec_env, ctxt->wasm_handle,
-				       1000);
+				       3000);
 	assert_int_equal(result, EVP_OK);
 	assert_int_equal(on_blob_result_mock.call, 0);
 

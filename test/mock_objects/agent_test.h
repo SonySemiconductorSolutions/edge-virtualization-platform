@@ -250,6 +250,9 @@ void agent_write_to_pipe(const char *data);
 void agent_poll(agent_test_verify_t verify_callback, const void *user_data,
 		...);
 
+char *agent_poll_fetch(agent_test_verify_t verify_callback,
+		       const void *user_data, ...);
+
 void agent_register_payload(unsigned int id, enum evp_hub_type hub_type,
 			    const char *payload);
 

@@ -97,8 +97,8 @@ capture_flush(struct log_entry *log)
 
 	log->line = xrealloc(log->line, log->line_sz + 1);
 	log->line[log->line_sz] = '\0';
-	xlog_debug("wasm:%s/%s:%s", log->instance_id.ro, log->stream,
-		   log->line);
+	xlog_info("wasm:%s/%s:%s", log->instance_id.ro, log->stream,
+		  log->line);
 
 	if (log->enabled) {
 		module_log_queue_put(log->instance_id.ro, log->stream,

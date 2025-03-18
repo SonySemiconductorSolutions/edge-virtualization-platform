@@ -166,8 +166,6 @@ test_backdoor_instance_config_early(void **state)
 int
 setup(void **state)
 {
-	// be sure that the periodic report is send every 3 seconds
-	putenv("EVP_REPORT_STATUS_INTERVAL_MAX_SEC=3");
 	agent_test_setup();
 
 	// EVP1

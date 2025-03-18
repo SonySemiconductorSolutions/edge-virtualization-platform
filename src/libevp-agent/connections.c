@@ -156,6 +156,9 @@ connections_webclient_perform(struct webclient_context *ctx)
 perform_again:
 	ret = webclient_perform(ctx);
 
+	if (ret)
+		xlog_debug("webclient_perform returned %d", ret);
+
 	if (ret == -EAGAIN || ret == -EINPROGRESS) {
 		struct webclient_poll_info info;
 		struct pollfd pfd;

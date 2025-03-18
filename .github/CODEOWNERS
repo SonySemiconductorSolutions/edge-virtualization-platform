@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# The sole reason of this file is to make github assign reviews to
+# all team members explicitly.
+# Every member in https://github.com/orgs/midokura/teams/device/members
+# is responsible for review of any PRs in this repo.
+# The each members are intentionally listed here instead of @midokura/device
+# team because we want to assign reviews to individuals, not the team.
+#
+# https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-on-github/about-code-owners
+
+* @midokura/device
+
+# We need to ensure documentation is validated at PR time.
+# The validation must be done before merging to ensure we can do a release and
+# generate the documentation artifacts safely
+*.md @jimken-mido @midokura/device
+*.rst @jimken-mido @midokura/device

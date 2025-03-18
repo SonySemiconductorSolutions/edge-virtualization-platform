@@ -27,13 +27,15 @@ on:
         type: string
 
   schedule:
-    - cron: 0 0 * * 1-5
+    - cron: 0 0-6,20-23 * * 1-5 # every hour in no working ours
+    - cron: 0 */2 * * 6,0 # every 2 hours in weekends
 
 concurrency:
   group: ${{ github.repository }}-${{ github.workflow }}@main-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+
   infos:
     name: Infos
     runs-on: ubuntu-24.04
@@ -77,20 +79,33 @@ jobs:
       ref: ${{ inputs.ref || github.sha }}
       package-namespace: ${{ needs.infos.outputs.package-namespace }}
 
-  test-modules:
-    name: Test-modules
+  build-sdk:
+    name: Build
     needs:
       - checks
       - builder
       - infos
-    uses: ./.github/workflows/test-modules.yml
+    uses: ./.github/workflows/build-sdk.yml
     secrets: inherit
     with:
       builder-tag: ${{ needs.builder.outputs.builder-tag }}
       ref: ${{ inputs.ref || github.sha }}
       package-namespace: ${{ needs.infos.outputs.package-namespace }}
 
-  build:
+  build-modules:
+    name: Build
+    needs:
+      - checks
+      - builder
+      - infos
+    uses: ./.github/workflows/build-modules.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+      package-namespace: ${{ needs.infos.outputs.package-namespace }}
+
+  build-agent:
     name: Build
     needs:
       - checks
@@ -102,3 +117,34 @@ jobs:
       builder-tag: ${{ needs.builder.outputs.builder-tag }}
       ref: ${{ inputs.ref || github.sha }}
       package-namespace: ${{ needs.infos.outputs.package-namespace }}
+
+  tests:
+    name: Tests
+    needs:
+      - checks
+      - build-sdk
+      - build-modules
+      - builder
+      - infos
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+      package-namespace: ${{ needs.infos.outputs.package-namespace }}
+
+  checkpoint-success:
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    needs:
+      - tests
+      - build-agent
+    steps:
+      - name: Check all previous jobs finished correctly
+        run: |
+          if [ "${{ needs.tests.result }}" = "success" ]; then
+            echo Requested jobs finished successfully. This PR can be merged
+          else
+            echo Requested jobs are failing. This PR can not be merged
+            exit 1
+          fi

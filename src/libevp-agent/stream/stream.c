@@ -185,6 +185,17 @@ EVP_impl_streamOpen(struct EVP_client *h, const char *name, EVP_STREAM *out)
 		goto end;
 	}
 
+	struct notification *n = stream_notification();
+	if (n == NULL) {
+		ret = EVP_ERROR;
+		goto end;
+	}
+
+	if (notification_publish(n, "init/done", si)) {
+		ret = EVP_ERROR;
+		goto end;
+	}
+
 	*out = si->stream;
 end:
 	if (ret != EVP_OK) {
