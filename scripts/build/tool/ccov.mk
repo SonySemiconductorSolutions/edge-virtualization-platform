@@ -13,6 +13,7 @@ CI_FILTER=\
 	src/libevp-agent/hub/tb/*.c\
 
 coverage/cov.lcov: FORCE
+	@echo [$@]
 	trap "rm -f $$$$.tmp" EXIT INT TERM;\
 	find . -name '*.profraw' |\
 	xargs llvm-profdata merge -o coverage/cov.profdata -sparse
@@ -21,6 +22,7 @@ coverage/cov.lcov: FORCE
 	mv $$$$.tmp $@
 
 coverage/filtered.lcov: coverage/cov.lcov
+	@echo [$@]
 	trap "rm -f $$$$.tmp" EXIT INT TERM;\
 	find . -name '*.elf' |\
 	xargs llvm-cov export --instr-profile coverage/cov.profdata --format lcov \
@@ -29,12 +31,14 @@ coverage/filtered.lcov: coverage/cov.lcov
 	mv $$$$.tmp $@
 
 coverage: FORCE
+	@echo [$@]
 	rm -rf coverage
 	mkdir -p coverage
 	$(MAKE) coverage/cov.lcov
 	genhtml --branch-coverage -o coverage coverage/cov.lcov
 
 coverage-ci: FORCE
+	@echo [$@]
 	rm -rf coverage
 	mkdir -p coverage
 	$(MAKE) coverage/filtered.lcov
