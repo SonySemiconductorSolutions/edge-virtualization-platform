@@ -17,6 +17,7 @@ coverage/cov.lcov: FORCE
 	trap "rm -f $$$$.tmp" EXIT INT TERM;\
 	find . -name '*.profraw' |\
 	xargs llvm-profdata merge -o coverage/cov.profdata -sparse
+	find . -name '*.elf'
 	find . -name '*.elf' |\
 	xargs llvm-cov export --instr-profile coverage/cov.profdata --format lcov > $$$$.tmp &&\
 	mv $$$$.tmp $@
