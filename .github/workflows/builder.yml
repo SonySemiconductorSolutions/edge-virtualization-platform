@@ -35,6 +35,7 @@ concurrency:
   group: ${{ github.workflow }} @ build-builders-${{ github.ref }}
   cancel-in-progress: true
 
+# COMMENT TO TRIGGER A NEW BUILD
 jobs:
   builder-necessary:
     name: Is builder necessary?
