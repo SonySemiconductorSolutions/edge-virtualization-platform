@@ -18,6 +18,8 @@
 #include "module_instance.h"
 #include "mqtt_custom.h"
 
+#define TEST_PROCESS_EVENT_TIMEOUT 5000
+
 enum test_messaging_payloads { DEPLOYMENT_MANIFEST_1 };
 
 #define TEST_DEPLOYMENT_ID1 "4fa905ae-e103-46ab-a8b9-73be07599708"
@@ -171,11 +173,11 @@ test_messaging(void **state)
 	result = EVP_setMessageCallback(sdk_handle_two, recv_message_cb,
 					(void *)userRecvData);
 	assert_int_equal(EVP_OK, result);
+
 	result = EVP_sendMessage(sdk_handle_one, "alias-one", testPayload,
 				 sizeof(testPayload), send_message_cb,
 				 (void *)userSendData);
 	assert_int_equal(EVP_OK, result);
-
 	// check receive callback
 	expect_string(recv_message_cb, topic, "alias-two");
 	expect_memory(recv_message_cb, msgPayload, testPayload,
@@ -183,15 +185,25 @@ test_messaging(void **state)
 	expect_value(recv_message_cb, msgPayloadLen, sizeof(testPayload));
 	expect_memory(recv_message_cb, userData, userRecvData,
 		      sizeof(userRecvData));
-	result = EVP_processEvent(sdk_handle_two, 1000);
-	assert_int_equal(EVP_OK, result);
+
+	agent_profile_scope("EVP_processEvent")
+	{
+		result = EVP_processEvent(sdk_handle_two,
+					  TEST_PROCESS_EVENT_TIMEOUT);
+		assert_int_equal(EVP_OK, result);
+	}
 
 	// check send callback
 	expect_value(send_message_cb, reason, EVP_STATE_CALLBACK_REASON_SENT);
 	expect_memory(send_message_cb, userData, userSendData,
 		      sizeof(userSendData));
-	result = EVP_processEvent(sdk_handle_one, 1000);
-	assert_int_equal(EVP_OK, result);
+
+	agent_profile_scope("EVP_processEvent")
+	{
+		result = EVP_processEvent(sdk_handle_one,
+					  TEST_PROCESS_EVENT_TIMEOUT);
+		assert_int_equal(EVP_OK, result);
+	}
 
 	// test unknown/invalid alias
 	result = EVP_sendMessage(sdk_handle_one, "invalid-alias", testPayload,
@@ -202,8 +214,13 @@ test_messaging(void **state)
 		     EVP_MESSAGE_SENT_CALLBACK_REASON_ERROR);
 	expect_memory(send_message_cb, userData, userSendData,
 		      sizeof(userSendData));
-	result = EVP_processEvent(sdk_handle_one, 1000);
-	assert_int_equal(EVP_OK, result);
+
+	agent_profile_scope("EVP_processEvent")
+	{
+		result = EVP_processEvent(sdk_handle_one,
+					  TEST_PROCESS_EVENT_TIMEOUT);
+		assert_int_equal(EVP_OK, result);
+	}
 }
 
 int
