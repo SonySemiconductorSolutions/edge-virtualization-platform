@@ -201,7 +201,7 @@ static void
 test_telemetry_error(void **state)
 {
 	struct EVP_client *sdk_handle = *state;
-	int user_data = 0xc0ffeeee;
+	unsigned int user_data = 0xC0FFEEEEu;
 	const struct EVP_telemetry_entry entries[] = {
 		{.key = "key", .value = "value"}};
 
