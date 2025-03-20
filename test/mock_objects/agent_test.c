@@ -1464,3 +1464,23 @@ agent_ensure_deployment_config(struct agent_deployment *d, const char *payload,
 
 	agent_ensure_deployment_status(deploymentId, "ok");
 }
+
+struct profile
+agent_profile_start(char *id)
+{
+	struct profile p = {.id = id};
+	clock_gettime(CLOCK_MONOTONIC, &p.start);
+	// message_info("profile %s: started", id);
+	return p;
+}
+
+void
+agent_profile_print(struct profile *p)
+{
+	struct timespec now, diff;
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	timespecsub(&now, &p->start, &diff);
+	int ms = (timespec2ns(&diff) + 999999) / 1000000;
+
+	message_info("profile %s: %d ms", p->id, ms);
+}
