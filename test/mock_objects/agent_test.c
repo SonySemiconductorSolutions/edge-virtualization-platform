@@ -1224,6 +1224,8 @@ agent_get_payload_formatted(unsigned int id, ...)
 void
 agent_send_deployment(struct evp_agent_context *ctxt, const char *payload)
 {
+	message_info("Sending deployment");
+
 	// EVP_HUB_TYPE_EVP[12]_TB
 	// send deployment update
 	char *msgdata;
@@ -1251,6 +1253,8 @@ agent_send_device_config(struct evp_agent_context *ctxt, const char *payload)
 void
 agent_send_instance_config(struct evp_agent_context *ctxt, const char *payload)
 {
+	message_info("Sending instance config: %s", payload);
+
 	// EVP_HUB_TYPE_EVP[12]_TB
 	// test device config update
 	const char *topic = "v1/devices/me/attributes";
@@ -1312,6 +1316,8 @@ void
 agent_send_initial(struct evp_agent_context *ctxt, const char *deployment,
 		   const char *device_config, const char *instance_config)
 {
+	message_info("Sending initial deployment");
+
 	// EVP_HUB_TYPE_EVP[12]_TB
 	// send shared attribute response
 	char *msgdata;
@@ -1390,6 +1396,8 @@ agent_ensure_deployment_status(const char *id, const char *status)
 	default:
 		fail_msg("unexpected hub type %d\n", type);
 	}
+
+	message_info("Checking deployment");
 
 	agent_poll(verify_json, fmt, id, status);
 }
