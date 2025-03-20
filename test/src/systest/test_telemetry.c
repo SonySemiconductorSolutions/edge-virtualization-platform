@@ -66,7 +66,8 @@ test_telemetry_common(struct EVP_client *sdk_handle,
 	// verify callback
 	expect_value(telemetry_cb, reason, reason);
 	expect_memory(telemetry_cb, userData, user_data, sizeof(user_data));
-	EVP_processEvent(sdk_handle, 1000);
+	EVP_RESULT res = EVP_processEvent(sdk_handle, 1000);
+	assert_int_equal(res, EVP_OK);
 }
 
 static void
