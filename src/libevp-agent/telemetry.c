@@ -27,6 +27,10 @@ static int
 add_telemetry(struct telemetry_entries *t, const char *module_instance,
 	      const struct EVP_telemetry_entry *entry)
 {
+	xlog_abortif(!module_instance, "module_instance is NULL");
+	xlog_abortif(!entry->key, "entry->key is NULL");
+	xlog_abortif(!entry->value, "entry->value is NULL");
+
 	char *instancedup = strdup(module_instance),
 	     *topicdup = strdup(entry->key), *valuedup = strdup(entry->value);
 
