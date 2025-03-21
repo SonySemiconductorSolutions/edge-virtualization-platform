@@ -105,6 +105,12 @@ jobs:
           TERM: xterm
         run: . .venv/bin/activate && make -C test -j RUNFLAGS='-c -t 60'
 
+      - name: Report summary blob profiling
+        if: always()
+        run: |
+          echo "# Blob operation profiling" >> $GITHUB_STEP_SUMMARY
+          awk -f ./scripts/blob-prof.awk test/logs/*/src/*/*.log >> $GITHUB_STEP_SUMMARY
+
       - name: Print failure logs
         if: failure()
         run: |
