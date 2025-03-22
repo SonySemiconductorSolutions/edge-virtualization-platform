@@ -106,7 +106,13 @@ jobs:
           ASAN_OPTIONS: detect_leaks=1:detect_stack_use_after_return=1
           UBSAN_OPTIONS: print_stacktrace=1
           TERM: xterm
-        run: . .venv/bin/activate && make -C test -j RUNFLAGS='-c -t 60'
+        run: |
+          . .venv/bin/activate
+          for i in $(seq 1 10)
+          do
+            echo '<<<ITERATION $i>>>'
+            make -C test -j RUNFLAGS='-c -t 60'
+          done
 
       - name: Report summary blob profiling
         if: always()
