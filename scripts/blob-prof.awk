@@ -14,6 +14,8 @@
         starts[key] = timestamp
         if (file != FILENAME) {
             printf "\n## %s\n\n", FILENAME
+            printf "| Operation | Time | Description |\n"
+            printf "| --------- | ---- | ----------- |\n"
         }
         file = FILENAME
     }
@@ -25,12 +27,12 @@
         if (key in starts) {
             start = starts[key]
             diff = timestamp - start
-            if (diff > 1.0) b = "*";
+            if (diff > 1.0) b = "**";
             else b = ""
-            printf "* %s%s - %s : %.9f s%s\n", b, action, desc, diff, b
+            printf "| %s | %s%.9f s%s | %s |\n", action, b, diff, b, desc
             delete starts[key]
         } else {
-            printf "Warning: No matching STARTING found for ENDING with key: %s\n", key;  # Debugging output
+            printf "| %s | - | Warning: No matching %s started at %s |\n", action, desc, start
         }
     }
 }
