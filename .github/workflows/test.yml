@@ -45,6 +45,9 @@ jobs:
             platform: amd64
 
     steps:
+      - name: Show awk version
+        run: awk -Wversion
+
       - name: Checkout source
         uses: actions/checkout@v4
         with:
@@ -109,7 +112,7 @@ jobs:
         if: always()
         run: |
           echo "# Blob operation profiling" >> $GITHUB_STEP_SUMMARY
-          awk -f ./scripts/blob-prof.awk test/logs/*/src/*/*.log >> $GITHUB_STEP_SUMMARY
+          LC_ALL=C awk -f ./scripts/blob-prof.awk test/logs/*/src/*/*.log >> $GITHUB_STEP_SUMMARY
 
       - name: Print failure logs
         if: failure()
