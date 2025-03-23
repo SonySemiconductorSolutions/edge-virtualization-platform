@@ -199,7 +199,8 @@ test_instance_state(void **state)
 	expect_value(state_cb, userData, userdata);
 
 	// Wait at least minimum report interval (3s)
-	res = EVP_processEvent(ctxt->h, 4000);
+	// Note: Seen up to 4.5 s, so keep bumping timeout up
+	res = EVP_processEvent(ctxt->h, 6000);
 	assert_int_equal(res, EVP_OK);
 }
 
