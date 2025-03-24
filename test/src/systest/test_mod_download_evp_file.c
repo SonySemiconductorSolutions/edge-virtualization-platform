@@ -393,16 +393,3 @@ test_download_http_blob_python(void **state)
 {
 	test_download_http_blob(*state, PYTHON);
 }
-
-int
-main(void)
-{
-	// define tests
-	const struct CMUnitTest tests[] = {
-		cmocka_unit_test(test_download_http_blob_wasm),
-		cmocka_unit_test(test_download_http_blob_spawn),
-		cmocka_unit_test(test_download_http_blob_python),
-	};
-	// setup, run tests and teardown
-	return cmocka_run_group_tests(tests, setup, teardown);
-}

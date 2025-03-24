@@ -759,30 +759,30 @@ D0731D514166A49C8FFB53F1F9FD92A2
 # False positive.
 # namedup is transferred to a compound literal, which is then
 # transferred to *dst. Otherwise, it is free(3)d.
-# [E5BAF7C295BEB651FD2DBB5177CAC5CF : high : Memory Leak : controlflow ]
+# [ADE750BBDBD6FD8493538AB75049712B : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/stream/stream.c(472) : start -> allocated : namedup = strdup(...)
-#     libevp-agent/stream/stream.c(472) : allocated -> allocated : namedup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(476) : Branch not taken: (namedup != NULL)
-#     libevp-agent/stream/stream.c(484) : Branch taken: (src->type == 0)
-#     libevp-agent/stream/stream.c(484) : goto
-#     libevp-agent/stream/stream.c(530) : allocated -> allocated : namedup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(538) : Branch not taken: (ret == 0)
-#     libevp-agent/stream/stream.c(543) : allocated -> allocated : namedup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(543) : allocated -> allocated : <AnonymousObject>.name no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(543) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
+#     stream/stream.c(484) : start -> allocated : namedup = strdup(...)
+#     stream/stream.c(484) : allocated -> allocated : namedup refers to dynamically allocated memory
+#     stream/stream.c(488) : Branch not taken: (namedup != NULL)
+#     stream/stream.c(496) : Branch taken: (src->type == 0)
+#     stream/stream.c(496) : goto
+#     stream/stream.c(523) : allocated -> allocated : namedup refers to dynamically allocated memory
+#     stream/stream.c(531) : Branch not taken: (ret == 0)
+#     stream/stream.c(536) : allocated -> allocated : namedup no longer refers to dynamically allocated memory
+#     stream/stream.c(536) : allocated -> allocated : <AnonymousObject>.name no longer refers to dynamically allocated memory
+#     stream/stream.c(536) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
 #
-#     libevp-agent/stream/stream.c(472) : start -> allocated : namedup = strdup(...)
-#     libevp-agent/stream/stream.c(472) : allocated -> allocated : namedup refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(476) : Branch not taken: (namedup != NULL)
-#     libevp-agent/stream/stream.c(486) : Branch taken: (src->type == 1)
-#     libevp-agent/stream/stream.c(486) : goto
-#     libevp-agent/stream/stream.c(491) : Branch taken: (connectiondup == NULL)
-#     libevp-agent/stream/stream.c(496) : goto
-#     libevp-agent/stream/stream.c(538) : Branch not taken: (ret == 0)
-#     libevp-agent/stream/stream.c(543) : allocated -> allocated : namedup no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(543) : allocated -> leak : namedup end scope : Memory leaked
-E5BAF7C295BEB651FD2DBB5177CAC5CF
+#     stream/stream.c(484) : start -> allocated : namedup = strdup(...)
+#     stream/stream.c(484) : allocated -> allocated : namedup refers to dynamically allocated memory
+#     stream/stream.c(488) : Branch not taken: (namedup != NULL)
+#     stream/stream.c(498) : Branch taken: (src->type == 1)
+#     stream/stream.c(498) : goto
+#     stream/stream.c(503) : Branch taken: (hostnamedup == NULL)
+#     stream/stream.c(508) : goto
+#     stream/stream.c(531) : Branch not taken: (ret == 0)
+#     stream/stream.c(536) : allocated -> allocated : namedup no longer refers to dynamically allocated memory
+#     stream/stream.c(536) : allocated -> leak : namedup end scope : Memory leaked
+ADE750BBDBD6FD8493538AB75049712B
 
 # False positive.
 # list is transferred to *dst if successful. Otherwise, it is free(3)d.
@@ -801,29 +801,29 @@ E5BAF7C295BEB651FD2DBB5177CAC5CF
 # False positive.
 # Fortify fails to see the ownership for event is transferred to the
 # TAILQ. It is later freed by sdk_free_event.
-# [FAB645EE0389BCEEDFF7466521CF7A24 : high : Memory Leak : controlflow ]
+# [D3F2CC7293422B38A63196E89231D854 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/stream/stream.c(328) : start -> allocated : args = malloc(...)
-#     libevp-agent/stream/stream.c(328) : allocated -> allocated : args refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(329) : Branch not taken: (args != NULL)
-#     libevp-agent/stream/stream.c(339) : Branch not taken: (event != NULL)
-#     libevp-agent/stream/stream.c(345) : allocated -> allocated : args refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(357) : Branch not taken: (ret == 0)
-#     libevp-agent/stream/stream.c(361) : allocated -> allocated : args no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(361) : allocated -> allocated : <AnonymousObject>.free_args no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(361) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
-FAB645EE0389BCEEDFF7466521CF7A24
+#     stream/stream.c(340) : start -> allocated : args = malloc(...)
+#     stream/stream.c(340) : allocated -> allocated : args refers to dynamically allocated memory
+#     stream/stream.c(341) : Branch not taken: (args != NULL)
+#     stream/stream.c(351) : Branch not taken: (event != NULL)
+#     stream/stream.c(357) : allocated -> allocated : args refers to dynamically allocated memory
+#     stream/stream.c(369) : Branch not taken: (ret == 0)
+#     stream/stream.c(373) : allocated -> allocated : args no longer refers to dynamically allocated memory
+#     stream/stream.c(373) : allocated -> allocated : <AnonymousObject>.free_args no longer refers to dynamically allocated memory
+#     stream/stream.c(373) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
+D3F2CC7293422B38A63196E89231D854
 
-# False positive. Similar to FAB645EE0389BCEEDFF7466521CF7A24.
-# [EC095B6EAD3150351E9E6E34CE065126 : high : Memory Leak : controlflow ]
+# False positive. Similar to D3F2CC7293422B38A63196E89231D854.
+# [D2CB91D8DE70456F32CA8103BE32E947 : high : Memory Leak : controlflow ]
 #
-#     libevp-agent/stream/stream.c(329) : Branch not taken: (args != NULL)
-#     libevp-agent/stream/stream.c(338) : start -> allocated : event = malloc(...)
-#     libevp-agent/stream/stream.c(338) : allocated -> allocated : event refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(339) : Branch not taken: (event != NULL)
-#     libevp-agent/stream/stream.c(361) : allocated -> allocated : event no longer refers to dynamically allocated memory
-#     libevp-agent/stream/stream.c(361) : allocated -> leak : event end scope : Memory leaked
-EC095B6EAD3150351E9E6E34CE065126
+#     stream/stream.c(341) : Branch not taken: (args != NULL)
+#     stream/stream.c(350) : start -> allocated : event = malloc(...)
+#     stream/stream.c(350) : allocated -> allocated : event refers to dynamically allocated memory
+#     stream/stream.c(351) : Branch not taken: (event != NULL)
+#     stream/stream.c(373) : allocated -> allocated : event no longer refers to dynamically allocated memory
+#     stream/stream.c(373) : allocated -> leak : event end scope : Memory leaked
+D2CB91D8DE70456F32CA8103BE32E947
 
 # False positive.
 # Fortify fails to see sem is a semaphore that would block until
@@ -3174,20 +3174,20 @@ BA0F36F9B53D08073B3E0230D7DE21EB
 # False positive.
 # Yet again, Fortify fails to see the ownership for hostnamedup is transferred
 # to params.posix when the function is succesful.
-# [74169ED2AA3FB0795C28912A9E687D77 : high : Memory Leak : controlflow ]
+# [86C572DDAE429AC6DBF9403CC30942EB : high : Memory Leak : controlflow ]
 #
-#     stream/stream.c(477) : Branch not taken: (namedup != NULL)
-#     stream/stream.c(487) : Branch taken: (src->type == 1)
-#     stream/stream.c(487) : goto
-#     stream/stream.c(491) : start -> allocated : hostnamedup = strdup(...)
-#     stream/stream.c(491) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
-#     stream/stream.c(492) : Branch not taken: (hostnamedup != NULL)
-#     stream/stream.c(501) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
-#     stream/stream.c(505) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
-#     stream/stream.c(520) : Branch not taken: (ret == 0)
-#     stream/stream.c(525) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
-#     stream/stream.c(525) : allocated -> leak : hostnamedup end scope : Memory leaked
-74169ED2AA3FB0795C28912A9E687D77
+#     stream/stream.c(488) : Branch not taken: (namedup != NULL)
+#     stream/stream.c(498) : Branch taken: (src->type == 1)
+#     stream/stream.c(498) : goto
+#     stream/stream.c(502) : start -> allocated : hostnamedup = strdup(...)
+#     stream/stream.c(502) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
+#     stream/stream.c(503) : Branch not taken: (hostnamedup != NULL)
+#     stream/stream.c(512) : allocated -> allocated : hostnamedup refers to dynamically allocated memory
+#     stream/stream.c(516) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
+#     stream/stream.c(531) : Branch not taken: (ret == 0)
+#     stream/stream.c(536) : allocated -> allocated : hostnamedup no longer refers to dynamically allocated memory
+#     stream/stream.c(536) : allocated -> leak : hostnamedup end scope : Memory leaked
+86C572DDAE429AC6DBF9403CC30942EB
 
 # Not an issue.
 # Even if the data type for sr->id is defined as EVP_STREAM_PEER_ID,
@@ -3224,14 +3224,14 @@ B4D4885FB1057A4F2A586BA9DFB6B7E6
 # __attribute__((__noreturn__)). Therefore, it is impossible that the goto
 # statement pointed out by Fortify is executed, and thus there is no risk for
 # a double-free condition.
-# [AB82561AD6FCF66BC65E7AFFCCBCC835 : high : Double Free : controlflow ]
+# [4BB661EC174DF3BF29E777D9042CDB59 : high : Double Free : controlflow ]
 #
-#     libevp-agent/stream/stream.c(394) : Branch taken: __not_first_call
-#     libevp-agent/stream/stream.c(394) : nofree -> free : free(__cancel_arg)
-#     libevp-agent/stream/stream.c(394) : free -> free : Pointer __cancel_arg refers to a freed memory allocation
-#     libevp-agent/stream/stream.c(399) : goto
-#     libevp-agent/stream/stream.c(404) : free -> doublefree : free(__cancel_arg) : Pointer __cancel_arg freed a second time
-AB82561AD6FCF66BC65E7AFFCCBCC835
+#     stream/stream.c(406) : Branch taken: __not_first_call
+#     stream/stream.c(406) : nofree -> free : free(__cancel_arg)
+#     stream/stream.c(406) : free -> free : Pointer __cancel_arg refers to a freed memory allocation
+#     stream/stream.c(411) : goto
+#     stream/stream.c(416) : free -> doublefree : free(__cancel_arg) : Pointer __cancel_arg freed a second time
+4BB661EC174DF3BF29E777D9042CDB59
 
 # False positive. Similar to AB82561AD6FCF66BC65E7AFFCCBCC835.
 # [53786A8C3E915B54DB96ECC8DF3FFCF8 : high : Double Free : controlflow ]

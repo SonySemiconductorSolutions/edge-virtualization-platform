@@ -167,11 +167,13 @@ int
 popen_print(FILE *fp, void *user)
 {
 	size_t n;
+	size_t n_write;
 
 	do {
 		char str[BUFSIZ];
 		n = fread(str, 1, BUFSIZ, fp);
-		write(1, str, n);
+		n_write = write(1, str, n);
+		assert_int_equal(n, n_write);
 		if (n != BUFSIZ) {
 			int err = ferror(fp);
 			if (err) {
@@ -502,7 +504,7 @@ verify_equals(const char *data, const void *user_data, va_list va)
 {
 	const char *expected = (const char *)user_data;
 	if (strcmp(data, expected) == 0) {
-		xlog_info("Got expected data %s", expected);
+		message_info("Got expected data %s", expected);
 		return true;
 	}
 	xlog_warning("Missing expected data %s in %s", expected, data);
@@ -519,7 +521,7 @@ verify_contains(const char *data, const void *user_data, va_list va)
 {
 	const char *expected = (const char *)user_data;
 	if (strstr(data, expected) != NULL) {
-		xlog_info("Got expected data %s", expected);
+		message_info("Got expected data %s", expected);
 		return true;
 	}
 	xlog_warning("Missing expected data %s in %s", expected, data);
@@ -542,7 +544,7 @@ verify_contains_except(const char *data, const void *user_data, va_list va)
 	const char *unexpected = (const char *)checks->unexpect;
 
 	if (strstr(data, expected) != NULL) {
-		xlog_info("Got expected data %s", expected);
+		message_info("Got expected data %s", expected);
 	} else {
 		xlog_warning("Missing expected data %s in %s", expected, data);
 		return false;
@@ -643,7 +645,7 @@ verify_json(const char *text, const void *user_data, va_list va)
 	struct jverifier jv;
 	const char *field, *fmt = user_data;
 
-	xlog_info("verify_json: checking '%s' with '%s'", text, fmt);
+	message_info("verify_json: checking '%s' with '%s'", text, fmt);
 
 	jv.nobjs = jv.nvals = 0;
 	if (!push_string_value(text, &o, &jv))
@@ -798,7 +800,7 @@ verify_json(const char *text, const void *user_data, va_list va)
 		}
 	}
 	r = true;
-	xlog_info("Got expected data %s in %s", (char *)user_data, text);
+	message_info("Got expected data %s in %s", (char *)user_data, text);
 
 err:
 	free_values(&jv);
@@ -820,7 +822,7 @@ verify_contains_in_unordered_set(const char *data, const void *user_data,
 	int count = 0;
 	for (count = 0; set->value; count++, set++) {
 		if (strstr(data, set->value) != NULL) {
-			xlog_info("Got expected data %s", set->value);
+			message_info("Got expected data %s", set->value);
 			set->found = true;
 		}
 
@@ -964,6 +966,8 @@ agent_test_setup(void)
 	putenv("EVP_DOCKER_HOST=http://dockerd");
 	putenv("EVP_MQTT_CLIENTID=10001");
 	putenv("EVP_MQTT_DEVICE_ID=10001");
+	putenv("EVP_REPORT_STATUS_INTERVAL_MIN_SEC=1");
+	putenv("EVP_REPORT_STATUS_INTERVAL_MAX_SEC=1");
 
 	/* This expects "EVP_IOT_PLATFORM" to not be null */
 	char *iot_platform = getenv("EVP_IOT_PLATFORM");
@@ -1108,6 +1112,38 @@ agent_write_to_pipe(const char *data)
 	}
 }
 
+static char *
+vagent_poll_fetch(agent_test_verify_t verify_callback, const void *user_data,
+		  va_list ud_va)
+{
+	int r, fds = g_agent_test.pipe[0];
+	char *payload, c;
+	size_t cnt;
+
+	payload = NULL;
+	for (cnt = 1;; cnt++) {
+		r = read(fds, &c, 1);
+		assert_int_equal(r, 1);
+
+		payload = xrealloc(payload, cnt);
+		payload[cnt - 1] = c;
+		if (c == '\0') {
+			va_list apc;
+			int result;
+
+			va_copy(apc, ud_va);
+			result = verify_callback(payload, user_data, apc);
+			va_end(apc);
+
+			if (result) {
+				break;
+			}
+			cnt = 0;
+		}
+	}
+	return payload;
+}
+
 /**
  * Wait for data to arrive in test data pipe, and validate with callback
  * function.
@@ -1117,29 +1153,32 @@ agent_write_to_pipe(const char *data)
 void
 agent_poll(agent_test_verify_t verify_callback, const void *user_data, ...)
 {
-	int r, fds = g_agent_test.pipe[0];
-	char *payload, c;
-	size_t cnt;
-	va_list va;
+	char *msg;
+	va_list v_args;
+	va_start(v_args, user_data);
+	msg = vagent_poll_fetch(verify_callback, user_data, v_args);
+	free(msg);
+	va_end(v_args);
+}
 
-	payload = NULL;
-	for (cnt = 1;; cnt++) {
-		va_start(va, user_data);
-		r = read(fds, &c, 1);
-		assert_int_equal(r, 1);
-
-		payload = xrealloc(payload, cnt);
-		payload[cnt - 1] = c;
-		if (c == '\0') {
-			if (verify_callback(payload, user_data, va)) {
-				free(payload);
-				va_end(va);
-				return;
-			}
-			cnt = 0;
-		}
-		va_end(va);
-	}
+/**
+ * Wait for data to arrive in test data pipe, and validate with callback
+ * function.
+ * @param[in] verify_callback user provided function to validate test data
+ * @param[in] user_data provided to verify_callback along with test data
+ *
+ * @return A copy of the message that matched with `verify_callback`
+ */
+char *
+agent_poll_fetch(agent_test_verify_t verify_callback, const void *user_data,
+		 ...)
+{
+	char *msg;
+	va_list v_args;
+	va_start(v_args, user_data);
+	msg = vagent_poll_fetch(verify_callback, user_data, v_args);
+	va_end(v_args);
+	return msg;
 }
 
 void
@@ -1185,6 +1224,8 @@ agent_get_payload_formatted(unsigned int id, ...)
 void
 agent_send_deployment(struct evp_agent_context *ctxt, const char *payload)
 {
+	message_info("Sending deployment");
+
 	// EVP_HUB_TYPE_EVP[12]_TB
 	// send deployment update
 	char *msgdata;
@@ -1212,6 +1253,8 @@ agent_send_device_config(struct evp_agent_context *ctxt, const char *payload)
 void
 agent_send_instance_config(struct evp_agent_context *ctxt, const char *payload)
 {
+	message_info("Sending instance config: %s", payload);
+
 	// EVP_HUB_TYPE_EVP[12]_TB
 	// test device config update
 	const char *topic = "v1/devices/me/attributes";
@@ -1261,7 +1304,8 @@ agent_send_storagetoken_response(struct evp_agent_context *ctxt,
 	// send the STP response (with the token)
 	char *topic;
 	if (evp1_topic_reqid == NULL) {
-		evp1_topic_reqid = "10004";
+		xlog_error("reqid can not be NULL");
+		assert_non_null(evp1_topic_reqid);
 	}
 	xasprintf(&topic, "v1/devices/me/rpc/response/%s", evp1_topic_reqid);
 	evp_agent_send(ctxt, topic, payload);
@@ -1272,6 +1316,8 @@ void
 agent_send_initial(struct evp_agent_context *ctxt, const char *deployment,
 		   const char *device_config, const char *instance_config)
 {
+	message_info("Sending initial deployment");
+
 	// EVP_HUB_TYPE_EVP[12]_TB
 	// send shared attribute response
 	char *msgdata;
@@ -1351,6 +1397,8 @@ agent_ensure_deployment_status(const char *id, const char *status)
 		fail_msg("unexpected hub type %d\n", type);
 	}
 
+	message_info("Checking deployment");
+
 	agent_poll(verify_json, fmt, id, status);
 }
 
@@ -1415,4 +1463,24 @@ agent_ensure_deployment_config(struct agent_deployment *d, const char *payload,
 	}
 
 	agent_ensure_deployment_status(deploymentId, "ok");
+}
+
+struct profile
+agent_profile_start(char *id)
+{
+	struct profile p = {.id = id};
+	clock_gettime(CLOCK_MONOTONIC, &p.start);
+	// message_info("profile %s: started", id);
+	return p;
+}
+
+void
+agent_profile_print(struct profile *p)
+{
+	struct timespec now, diff;
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	timespecsub(&now, &p->start, &diff);
+	int ms = (timespec2ns(&diff) + 999999) / 1000000;
+
+	message_info("profile %s: %d ms", p->id, ms);
 }

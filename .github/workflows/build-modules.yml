@@ -34,7 +34,7 @@ on:
 
 jobs:
   build-modules:
-    name: Build modules (${{ matrix.name }}, ${{ matrix.platform }})
+    name: Modules (${{ matrix.name }}, ${{ matrix.platform }})
     runs-on: ${{ matrix.runner }}
     container:
       image: ghcr.io/${{ inputs.package-namespace }}/builder-${{ matrix.name }}:${{ inputs.builder-tag }}

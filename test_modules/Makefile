@@ -41,6 +41,7 @@ MODULES =\
 	upload_evp_memory.$(EXT)\
 	upload_evp_mstp_file.$(EXT)\
 	upload_http_file.$(EXT)\
+	zombie.$(EXT)\
 
 HUB_OBJS =\
 	hub_scalability_test.$O\

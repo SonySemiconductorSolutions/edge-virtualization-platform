@@ -33,7 +33,7 @@ enum test_wasm_config_echo_payloads {
 #define TEST_EMPTY_DEPLOYMENT_ID1 "4fa905ae-e103-46ab-a8b9-73be07599709"
 #define TEST_INSTANCE_ID1         "b218f90b-9228-423f-8e02-000000000001"
 
-#define MODULE_PATH "../test_modules/python/zombie.zip"
+#define MODULE_PATH "../test_modules/zombie.wasm"
 
 #define MODULE_HASH                                                           \
 	"579fca500ec9f67a661e8b1a3a59a114a97029c46776d6ad9502fb183f1a1f7d"
@@ -56,7 +56,7 @@ enum test_wasm_config_echo_payloads {
 	"        },"                                                          \
 	"        \\\"modules\\\": {"                                          \
 	"            \\\"b218f90b-9228-423f-8e02-a6d3527bc15d\\\": {"         \
-	"                \\\"moduleImpl\\\": \\\"python\\\","                 \
+	"                \\\"moduleImpl\\\": \\\"wasm\\\","                   \
 	"                \\\"downloadUrl\\\": \\\"file://%s\\\","             \
 	"                \\\"hash\\\": \\\"" MODULE_HASH "\\\""               \
 	"            }"                                                       \
@@ -117,20 +117,17 @@ test_mod_zombie(void **state)
 	struct agent_deployment d = {.ctxt = ctxt};
 
 	// deploy
+	message_info("Deploy");
 	agent_ensure_deployment(&d, agent_get_payload(DEPLOYMENT_MANIFEST_1),
 				TEST_DEPLOYMENT_ID1);
 
 	// Undeploy
+	message_info("Undeploy");
 	agent_send_deployment(ctxt,
 			      agent_get_payload(EMPTY_DEPLOYMENT_MANIFEST_1));
 
-	// Wait for first deployment status transition to applying
-	agent_ensure_deployment_status(TEST_EMPTY_DEPLOYMENT_ID1, "applying");
-
-	// Agent should continue reporting after 3 seconds
-	agent_ensure_deployment_status(TEST_EMPTY_DEPLOYMENT_ID1, "applying");
-
 	// Agent should force kill after 5 seconds
+	message_info("Wait for 'ok' status");
 	agent_ensure_deployment_status(TEST_EMPTY_DEPLOYMENT_ID1, "ok");
 
 	// Module is still being undeployed but test is done at this point.

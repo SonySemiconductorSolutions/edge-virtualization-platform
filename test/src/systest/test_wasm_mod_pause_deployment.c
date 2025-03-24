@@ -20,7 +20,6 @@
 
 #include "webclient/webclient.h"
 
-#include "../sync.h"
 #include "agent_test.h"
 #include "hub.h"
 #include "module_instance.h"
@@ -36,9 +35,9 @@ enum test_wasm_config_echo_payloads {
 
 #define DEPLOYMENT_ID0 "4fa905ae-e103-46ab-a8b9-73be07599708"
 #define DEPLOYMENT_ID1 "8543e017-2d93-444b-bd4c-bcaa39c46095"
-#define DEPLOYMENT_ID2 "4fa905ae-e103-46ab-a8b9-73be07599709"
+#define DEPLOYMENT_ID2 "e46f226e-3f8a-42fa-a2dd-d287ef64809b"
 #define INSTANCE_ID1   "b218f90b-9228-423f-8e02-000000000001"
-#define INSTANCE_ID2   "b218f90b-9228-423f-8e02-000000000002"
+#define INSTANCE_ID2   "f0fe8678-acf9-4979-8e8b-43c495698593"
 
 #define RECONCILE_EVENT(Id, Event) "on_reconcileStatus/" Id "/" __STRING(Event)
 
@@ -122,8 +121,8 @@ enum test_wasm_config_echo_payloads {
 	"        \"subscribeTopics\": {}"                                     \
 	"}"
 
-static struct sync_ctxt sync_download;
 unsigned short backend_port;
+static struct agent_deployment g_deployment;
 
 int __real_webclient_perform(FAR struct webclient_context *ctx);
 int
@@ -163,7 +162,6 @@ on_get_file(const struct http_payload *p, struct http_response *r, void *user)
 		.n = statbuf.st_size,
 	};
 
-	sync_join(&sync_download);
 	return 0;
 }
 
@@ -189,13 +187,9 @@ on_reconcileStatus(const void *args, void *user_data)
 int
 test_teardown(void **state)
 {
-	struct evp_agent_context *ctxt = *state;
-	const char *deployment;
-
-	// send empty deployment
-	deployment = agent_get_payload(EMPTY_DEPLOYMENT_MANIFEST);
-	agent_send_deployment(ctxt, deployment);
-	agent_poll(verify_contains, DEPLOYMENT_ID0);
+	agent_ensure_deployment(&g_deployment,
+				agent_get_payload(EMPTY_DEPLOYMENT_MANIFEST),
+				DEPLOYMENT_ID0);
 	return 0;
 }
 
@@ -213,7 +207,6 @@ static int
 suite_setup(void **state)
 {
 	agent_test_setup();
-	sync_init(&sync_download);
 
 	assert_int_equal(websrv_setup(0), 0);
 	assert_int_equal(
@@ -241,14 +234,12 @@ suite_setup(void **state)
 				 ctxt, "deployment/reconcileStatus",
 				 on_reconcileStatus, NULL),
 			 0);
-	const char *deployment;
 
 	// Send initial empty deployment
-	deployment = agent_get_payload(EMPTY_DEPLOYMENT_MANIFEST);
-	agent_send_initial(ctxt, deployment, NULL, NULL);
-
-	// wait for reconcile status ok
-	agent_poll(verify_contains, RECONCILE_EVENT(DEPLOYMENT_ID0, ok));
+	g_deployment.ctxt = ctxt;
+	agent_ensure_deployment(&g_deployment,
+				agent_get_payload(EMPTY_DEPLOYMENT_MANIFEST),
+				DEPLOYMENT_ID0);
 
 	print_message("[  INFO   ] Deployment ok\n");
 	return 0;
@@ -271,37 +262,27 @@ void
 pause_deployment_not_in_progress(void **state)
 {
 	struct evp_agent_context *ctxt = *state;
-	int ret;
 
 	// Request pause when no module is being downloaded
-	ret = evp_agent_request_pause_deployment(ctxt);
-	assert_int_equal(ret, 0);
+	assert_int_equal(evp_agent_request_pause_deployment(ctxt), 0);
 
 	// Send a new deployment with a module to download
 	send_deployment(ctxt, DEPLOYMENT_ID1, INSTANCE_ID1, MODULE_1,
 			MODULE_1_HASH);
 
 	// wait for the deployment status to be paused
-	agent_poll(verify_contains, RECONCILE_EVENT(DEPLOYMENT_ID1, paused));
+	agent_poll(verify_equals, RECONCILE_EVENT(DEPLOYMENT_ID1, paused));
 
 	print_message("[  INFO   ] Paused\n");
-
-	// Block download to simulate a web download
-	sync_activate(&sync_download, 2);
 
 	// Resume deployment capability
 	assert_int_equal(evp_agent_resume_deployment(ctxt), 0);
 
 	// wait for the deployment status to be resumed
-	agent_poll(verify_contains, RECONCILE_EVENT(DEPLOYMENT_ID1, applying));
-
-	// Achieve an on going operation
-	sync_join(&sync_download);
-
-	print_message("[  INFO   ] Download completed\n");
+	agent_poll(verify_equals, RECONCILE_EVENT(DEPLOYMENT_ID1, applying));
 
 	// wait for the deployment
-	agent_poll(verify_contains, RECONCILE_EVENT(DEPLOYMENT_ID1, ok));
+	agent_poll(verify_equals, RECONCILE_EVENT(DEPLOYMENT_ID1, ok));
 	agent_poll(verify_contains, INSTANCE_ID1);
 }
 
@@ -309,38 +290,24 @@ void
 pause_deployment_in_progress(void **state)
 {
 	struct evp_agent_context *ctxt = *state;
-	int ret;
-
-	// Block download to simulate a web download
-	sync_activate(&sync_download, 2);
 
 	// Send a new deployment with a module to download
 	send_deployment(ctxt, DEPLOYMENT_ID2, INSTANCE_ID2, MODULE_2,
 			MODULE_2_HASH);
 
 	// wait for the deployment status to be applying
-	agent_poll(verify_contains, RECONCILE_EVENT(DEPLOYMENT_ID2, applying));
+	agent_poll(verify_equals, RECONCILE_EVENT(DEPLOYMENT_ID2, applying));
 
 	// Request pause when no module is being downloaded
-	ret = evp_agent_request_pause_deployment(ctxt);
-	assert_int_equal(ret, EAGAIN);
-
-	// Achieve an on going operation
-	sync_join(&sync_download);
-
-	print_message("[  INFO   ] Download completed\n");
+	assert_int_equal(evp_agent_request_pause_deployment(ctxt), EAGAIN);
 
 	// Request pause when no module is being downloaded
-	int timeout = 20;
-	while ((ret = evp_agent_request_pause_deployment(ctxt)) != 0 &&
-	       timeout--)
-		sleep(1);
-	assert_int_equal(ret, 0);
+	while (evp_agent_request_pause_deployment(ctxt)) {
+		agent_poll(verify_equals,
+			   RECONCILE_EVENT(DEPLOYMENT_ID2, paused));
+	}
 
-	// wait for the deployment status to be paused
-	agent_poll(verify_contains, RECONCILE_EVENT(DEPLOYMENT_ID2, paused));
-
-	print_message("[  INFO   ] Paused in %ds\n", 20 - timeout);
+	print_message("[  INFO   ] Paused\n");
 
 	// Send a new deployment with a module to download
 	send_deployment(ctxt, DEPLOYMENT_ID1, INSTANCE_ID1, MODULE_1,
@@ -350,7 +317,7 @@ pause_deployment_in_progress(void **state)
 	assert_int_equal(evp_agent_resume_deployment(ctxt), 0);
 
 	// wait for the deployment
-	agent_poll(verify_contains, RECONCILE_EVENT(DEPLOYMENT_ID1, ok));
+	agent_poll(verify_equals, RECONCILE_EVENT(DEPLOYMENT_ID1, ok));
 	agent_poll(verify_contains, INSTANCE_ID1);
 }
 

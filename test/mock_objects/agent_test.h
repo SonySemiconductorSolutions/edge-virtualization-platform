@@ -9,9 +9,11 @@
 
 #include <setjmp.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 
 #include <cmocka.h>
 #include <evp/agent.h>
@@ -250,6 +252,9 @@ void agent_write_to_pipe(const char *data);
 void agent_poll(agent_test_verify_t verify_callback, const void *user_data,
 		...);
 
+char *agent_poll_fetch(agent_test_verify_t verify_callback,
+		       const void *user_data, ...);
+
 void agent_register_payload(unsigned int id, enum evp_hub_type hub_type,
 			    const char *payload);
 
@@ -320,5 +325,27 @@ void agent_ensure_deployment_config(struct agent_deployment *d,
 				    const char *payload,
 				    const char *deploymentId,
 				    const char *instance_config);
+
+#define CAT_(a, b) a##b
+#define CAT(a, b)  CAT_(a, b)
+#define UID(Name)  CAT(Name, __LINE__)
+#define STR_(s)    #s
+#define STR(s)     STR_(s)
+
+struct profile {
+	struct timespec start;
+	char *id;
+	bool exit;
+};
+
+#define PROF()        UID(prof)
+#define PROF_ID(Name) __FILE__ ":" STR(__LINE__) ":" Name
+
+#define agent_profile_scope(Name)                                             \
+	for (struct profile PROF() = agent_profile_start(PROF_ID(Name));      \
+	     !PROF().exit; PROF().exit = true, agent_profile_print(&PROF()))
+
+struct profile agent_profile_start(char *id);
+void agent_profile_print(struct profile *p);
 
 #endif // AGENT_TEST_H

@@ -112,11 +112,6 @@ test_instance_state(void **state)
 int
 setup(void **state)
 {
-	// Force max time to 3 because the test is checking the report 2 times
-	// consecutivily. Otherwise we will get a timeout, since
-	// default value is defined by MAX_REPORT_INTERVAL_SEC
-	putenv("EVP_REPORT_STATUS_INTERVAL_MAX_SEC=3");
-
 	agent_test_setup();
 	agent_register_payload(DEPLOYMENT_MANIFEST_1, EVP_HUB_TYPE_EVP1_TB,
 			       EVP1_DEPLOYMENT_MANIFEST_1);

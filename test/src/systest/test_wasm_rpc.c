@@ -103,9 +103,6 @@ enum test_direct_command_payloads {
 	"                \"params\": " TB_TEST_RPC_REQUEST_PARAMS "}"         \
 	"}"
 
-#define XSTR(x) #x
-#define STR(x)  XSTR(x)
-
 #define EVP2_TB_MDC_REQ_1                                                     \
 	"{"                                                                   \
 	"\"direct-command-request\": {"                                       \

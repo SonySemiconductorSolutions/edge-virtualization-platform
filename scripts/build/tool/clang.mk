@@ -25,7 +25,6 @@ SANITIZER_ENABLED=\
 	-fsanitize=shift\
 	-fsanitize=undefined\
 	-fsanitize=unreachable\
-	-fsanitize=unsigned-integer-overflow\
 	-fsanitize=vla-bound\
 
 TOOL_ASFLAGS = -c

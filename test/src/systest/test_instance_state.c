@@ -285,13 +285,14 @@ setup(void **state)
 	struct evp_agent_context *ctxt;
 	static struct state st;
 
+	agent_test_setup();
+
 	// Set periodic report intervals
 	putenv("EVP_REPORT_STATUS_INTERVAL_MIN_SEC=" ___STRING(
 		REPORT_STATUS_INTERVAL_MIN));
 	putenv("EVP_REPORT_STATUS_INTERVAL_MAX_SEC=" ___STRING(
 		REPORT_STATUS_INTERVAL_MAX));
 
-	agent_test_setup();
 	agent_register_payload(DEPLOYMENT_MANIFEST_1, EVP_HUB_TYPE_EVP1_TB,
 			       EVP1_DEPLOYMENT_MANIFEST_1);
 	agent_register_payload(DEPLOYMENT_MANIFEST_2, EVP_HUB_TYPE_EVP1_TB,

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#define _GNU_SOURCE
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -155,6 +156,20 @@ enum test_wasm_config_echo_payloads {
 	"}"                                                                   \
 	"}"
 
+enum MQTTErrors
+__wrap_mqtt_publish(struct mqtt_client *client, const char *topic_name,
+		    const void *application_message,
+		    size_t application_message_size, uint8_t publish_flags)
+{
+	agent_write_to_pipe(topic_name);
+	char *payload = xstrndup((char *)application_message,
+				 application_message_size);
+	xlog_info("MQTT publish %s: %s", topic_name, payload);
+	agent_write_to_pipe(payload);
+	free(payload);
+	return MQTT_OK;
+}
+
 /*
  * The goal of this test is validate the module MODULE_PATH
  * Send the storageName (key) configuration, and wait for a mSTP blob operation
@@ -175,11 +190,24 @@ test_wasm_mod_performance_boot_mstp(void **state)
 	// send config
 	agent_send_instance_config(ctxt, agent_get_payload(INSTANCE_CONFIG_1));
 
-	// wait for the mstp request on mqtt
-	agent_poll(verify_contains, "test.txt");
+	// Wait for the rpc request and get the reqid from topic (compatible
+	// between EVP1 and EVP2)
+	char *msg;
+	uintmax_t reqid;
+	msg = agent_poll_fetch(verify_contains, "v1/devices/me/rpc/request/");
+	assert_int_equal(sscanf(msg, "v1/devices/me/rpc/request/%ju", &reqid),
+			 1);
+	assert_non_null(msg);
+	free(msg);
 
-	char *payload = agent_get_payload_formatted(MSTP_RESPONSE_1, "10007");
-	agent_send_storagetoken_response(ctxt, payload, "10007");
+	// Send the RPC response
+	char *reqid_str;
+	asprintf(&reqid_str, "%ju", reqid);
+
+	char *payload =
+		agent_get_payload_formatted(MSTP_RESPONSE_1, reqid_str);
+	agent_send_storagetoken_response(ctxt, payload, reqid_str);
+	free(reqid_str);
 	free(payload);
 
 	// wait for the http request

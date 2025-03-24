@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -158,6 +159,12 @@ on_port(const void *args, void *user)
 	return 0;
 }
 
+static int
+on_init(const void *args, void *user)
+{
+	return sem_post(user);
+}
+
 static void
 send_deployment(struct evp_agent_context *ctxt, const char *payload)
 {
@@ -185,12 +192,18 @@ test_wasm_mod_streams_posix(void **state)
 	}
 
 	struct stream_port p;
-	struct notification_entry *e;
+	struct notification_entry *eport, *edone;
 	struct notification *n = stream_notification();
+	sem_t sem;
 
+	assert_int_equal(sem_init(&sem, 0, 0), 0);
 	assert_non_null(n);
 	assert_int_equal(
-		notification_subscribe(n, "init/port", on_port, &p, &e), 0);
+		notification_subscribe(n, "init/port", on_port, &p, &eport),
+		0);
+	assert_int_equal(
+		notification_subscribe(n, "init/done", on_init, &sem, &edone),
+		0);
 
 	send_deployment(ctxt, agent_get_payload(DEPLOYMENT_MANIFEST_1));
 
@@ -198,6 +211,8 @@ test_wasm_mod_streams_posix(void **state)
 		   "deploymentStatus.deploymentId=%s,"
 		   "deploymentStatus.reconcileStatus=%s",
 		   TEST_DEPLOYMENT_ID1, "ok");
+
+	assert_int_equal(sem_wait(&sem), 0);
 
 	sdk_lock();
 	struct EVP_client *h = sdk_handle_from_name(READER_INSTANCE_ID);
@@ -223,7 +238,9 @@ test_wasm_mod_streams_posix(void **state)
 		   TEST_DEPLOYMENT_ID2, "ok");
 
 	agent_poll(verify_contains, "stream-read-ok");
-	assert_int_equal(notification_unsubscribe(n, e), 0);
+	assert_int_equal(notification_unsubscribe(n, edone), 0);
+	assert_int_equal(notification_unsubscribe(n, eport), 0);
+	assert_int_equal(sem_destroy(&sem), 0);
 
 	// send empty deployment
 	send_deployment(ctxt, agent_get_payload(EMPTY_DEPLOYMENT_MANIFEST_1));

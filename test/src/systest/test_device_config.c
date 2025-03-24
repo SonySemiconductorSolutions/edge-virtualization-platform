@@ -103,6 +103,10 @@ int
 setup(void **state)
 {
 	agent_test_setup();
+	// This test expects the default value when no value
+	// is set via env var. So be sure that there is not any
+	// value as max report
+	putenv("EVP_REPORT_STATUS_INTERVAL_MAX_SEC=");
 	return 0;
 }
 

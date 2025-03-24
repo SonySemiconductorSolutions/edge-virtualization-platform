@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -91,10 +93,6 @@ struct context {
 	// WEB server
 	uint16_t backend_port;
 	uint16_t frontend_port;
-
-	// Requests
-	char *reqid;
-	EVP_RPC_ID reqid_offset;
 };
 
 /*
@@ -215,6 +213,20 @@ __wrap_webclient_perform(FAR struct webclient_context *ctx)
 		agent_write_to_pipe(ctx->headers[i]);
 	}
 	return __real_webclient_perform(ctx);
+}
+
+enum MQTTErrors
+__wrap_mqtt_publish(struct mqtt_client *client, const char *topic_name,
+		    const void *application_message,
+		    size_t application_message_size, uint8_t publish_flags)
+{
+	agent_write_to_pipe(topic_name);
+	char *payload = xstrndup((char *)application_message,
+				 application_message_size);
+	xlog_info("MQTT publish %s: %s", topic_name, payload);
+	agent_write_to_pipe(payload);
+	free(payload);
+	return MQTT_OK;
 }
 
 static void
@@ -368,8 +380,6 @@ suite_setup(void **state)
 {
 	struct context *ctxt = *state = malloc(sizeof(*ctxt));
 
-	ctxt->reqid_offset = 0;
-
 	xasprintf(&ctxt->put_file, "%s/%s/boofar.bin",
 		  path_get(MODULE_INSTANCE_PATH_ID), TEST_MODULE_INSTANCE_ID1);
 	xasprintf(&ctxt->get_file, "%s/%s/boofar.txt",
@@ -461,17 +471,8 @@ suite_teardown(void **state)
 int
 setup_test(void **state)
 {
-	struct context *ctxt = *state;
 	g_network_ssl_timeout_error = false;
 
-	// Allocate request id to get the current value.
-	// Next agent used request will be +1
-	// Add offset of reqid due to suite setup requests
-	EVP_RPC_ID reqid = request_id_alloc() + 1 + ctxt->reqid_offset;
-	// Clear requid_offset at first setup
-	ctxt->reqid_offset = 0;
-
-	xasprintf(&ctxt->reqid, "%lu", reqid);
 	return 0;
 }
 
@@ -492,8 +493,6 @@ setup_test_ssl_timeout_error(void **state)
 int
 setup_teardown(void **state)
 {
-	struct context *ctxt = *state;
-	free(ctxt->reqid);
 	return 0;
 }
 
@@ -1019,6 +1018,16 @@ blob_evp_ext_put_file(void **state)
 		TEST_BLOB_HTTP_CALLBACK_INDEX, MAGIC_USERDATA);
 	assert_int_equal(result, EVP_OK);
 
+	// Wait for the rpc request and get the reqid from topic (compatible
+	// between EVP1 and EVP2)
+	char *msg;
+	uintmax_t reqid;
+	msg = agent_poll_fetch(verify_contains, "v1/devices/me/rpc/request/");
+	assert_int_equal(sscanf(msg, "v1/devices/me/rpc/request/%ju", &reqid),
+			 1);
+	assert_non_null(msg);
+	free(msg);
+
 	// At this point the agent sends a StorageToken request, check it
 	static struct multi_check test_set_device_state1[] = {
 		{.value = TEST_EVP_PUT_REMOTE_NAME},
@@ -1028,10 +1037,13 @@ blob_evp_ext_put_file(void **state)
 	agent_poll(verify_contains_in_unordered_set, test_set_device_state1);
 
 	// Send the RPC reponse (as HUB does)
+	char *reqid_str;
+	assert_int_not_equal(asprintf(&reqid_str, "%ju", reqid), -1);
 	char *payload;
-	payload = agent_get_payload_formatted(
-		STP_RESPONSE, ctxt->frontend_port, ctxt->reqid);
-	agent_send_storagetoken_response(ctxt->agent, payload, ctxt->reqid);
+	payload = agent_get_payload_formatted(STP_RESPONSE,
+					      ctxt->frontend_port, reqid_str);
+	agent_send_storagetoken_response(ctxt->agent, payload, reqid_str);
+	free(reqid_str);
 	free(payload);
 
 	// Now the agent will do the blob operation
@@ -1090,6 +1102,16 @@ blob_evp_ext_default_put_file(void **state)
 		TEST_BLOB_HTTP_CALLBACK_INDEX, MAGIC_USERDATA);
 	assert_int_equal(result, EVP_OK);
 
+	// Wait for the rpc request and get the reqid from topic (compatible
+	// between EVP1 and EVP2)
+	char *msg;
+	uintmax_t reqid;
+	msg = agent_poll_fetch(verify_contains, "v1/devices/me/rpc/request/");
+	assert_int_equal(sscanf(msg, "v1/devices/me/rpc/request/%ju", &reqid),
+			 1);
+	assert_non_null(msg);
+	free(msg);
+
 	// At this point the agent sends a StorageToken request WITHOUT
 	// storage_name, check it
 	expect_unexpect_t val = {.expect = TEST_EVP_PUT_REMOTE_NAME,
@@ -1097,10 +1119,13 @@ blob_evp_ext_default_put_file(void **state)
 	agent_poll(verify_contains_except, &val);
 
 	// Send the RPC response (as HUB does)
+	char *reqid_str;
+	assert_int_not_equal(asprintf(&reqid_str, "%ju", reqid), -1);
 	char *payload;
-	payload = agent_get_payload_formatted(
-		STP_RESPONSE, ctxt->frontend_port, ctxt->reqid);
-	agent_send_storagetoken_response(ctxt->agent, payload, ctxt->reqid);
+	payload = agent_get_payload_formatted(STP_RESPONSE,
+					      ctxt->frontend_port, reqid_str);
+	agent_send_storagetoken_response(ctxt->agent, payload, reqid_str);
+	free(reqid_str);
 	free(payload);
 
 	// Now the agent will dot he blob operation

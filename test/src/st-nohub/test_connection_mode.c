@@ -27,9 +27,15 @@
 #define TEST_HTTP_GET_FILE "foobar.txt"
 #define TEST_HTTP_PUT_FILE "boofar.bin"
 
-#define HTTP_STATUS_OK 200
+#define HTTP_STATUS_OK        200
+#define PROCESS_EVENT_TIMEOUT 3000
 
-static struct sync_ctxt g_sync_conns;
+struct test {
+	struct sync_ctxt sync_cons;
+	char *filename;
+};
+
+static struct test g_test;
 
 int __real_connections_webclient_perform(FAR struct webclient_context *ctx);
 
@@ -38,7 +44,7 @@ __wrap_connections_webclient_perform(FAR struct webclient_context *ctx)
 {
 	// Sync point with test thread. If enabled, will wait for other
 	// call to `sync_join` from the other thread.
-	sync_join(&g_sync_conns);
+	sync_join(&g_test.sync_cons);
 	return __real_connections_webclient_perform(ctx);
 }
 
@@ -55,6 +61,8 @@ blob_cb(EVP_BLOB_CALLBACK_REASON reason, const void *vp, void *userData)
 void
 test_disconnect_reconnect(void **state)
 {
+	struct test *t = *state;
+
 	// start agent
 	struct evp_agent_context *ctxt = agent_test_start();
 	agent_poll_status(ctxt, EVP_AGENT_STATUS_CONNECTED, 10);
@@ -67,17 +75,16 @@ test_disconnect_reconnect(void **state)
 	// prepare tests
 	EVP_RESULT result;
 	char cb_data;
-	char *filename;
-	xasprintf(&filename, "%s/%s", path_get(MODULE_INSTANCE_PATH_ID),
+	xasprintf(&t->filename, "%s/%s", path_get(MODULE_INSTANCE_PATH_ID),
 		  TEST_HTTP_GET_FILE);
-	assert_non_null(filename);
+	assert_non_null(t->filename);
 
 	struct EVP_BlobLocalStore localstore = {
-		.filename = filename,
+		.filename = t->filename,
 	};
 
 	// Start blocking blob work
-	sync_activate(&g_sync_conns, 2);
+	sync_activate(&t->sync_cons, 2);
 
 	// test HTTP GET to file
 	struct EVP_BlobRequestHttp request = {
@@ -95,14 +102,14 @@ test_disconnect_reconnect(void **state)
 
 	// Control race condition: wait for blob work to be started and before
 	// http operation is performed.
-	sync_join(&g_sync_conns);
+	sync_join(&t->sync_cons);
 
 	// Expect processed blob to have failed
 	expect_value(blob_cb, reason, EVP_BLOB_CALLBACK_REASON_DONE);
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_ERROR);
 	expect_value(blob_cb, result->http_status, 0);
 	expect_value(blob_cb, result->error, ENETDOWN);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(sdk_handle, PROCESS_EVENT_TIMEOUT);
 	assert_int_equal(result, EVP_OK);
 
 	// Blob download cannot be performed when disconnected
@@ -116,7 +123,7 @@ test_disconnect_reconnect(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_ERROR);
 	expect_value(blob_cb, result->http_status, 0);
 	expect_value(blob_cb, result->error, ENETDOWN);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(sdk_handle, PROCESS_EVENT_TIMEOUT);
 	assert_int_equal(result, EVP_OK);
 
 	result = evp_agent_connect(ctxt);
@@ -134,17 +141,17 @@ test_disconnect_reconnect(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(sdk_handle, PROCESS_EVENT_TIMEOUT);
 	assert_int_equal(result, EVP_OK);
-
-	free(filename);
 }
 
 int
 setup(void **state)
 {
+	struct test *t = &g_test;
+
 	int rv;
-	rv = sync_init(&g_sync_conns);
+	rv = sync_init(&t->sync_cons);
 	assert_int_equal(0, rv);
 	agent_test_setup();
 	rv = systemf("mkdir -p %s", path_get(MODULE_INSTANCE_PATH_ID));
@@ -152,12 +159,18 @@ setup(void **state)
 	rv = systemf("touch %s/%s", path_get(MODULE_INSTANCE_PATH_ID),
 		     TEST_HTTP_GET_FILE);
 	assert_int_equal(0, rv);
+
+	*state = t;
 	return 0;
 }
 
 int
 teardown(void **state)
 {
+	struct test *t = *state;
+
+	free(t->filename);
+
 	agent_test_exit();
 	return 0;
 }

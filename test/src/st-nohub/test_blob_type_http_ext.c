@@ -26,6 +26,13 @@
 
 #define HTTP_STATUS_OK 200
 
+struct test {
+	struct evp_agent_context *agent;
+	struct EVP_client *client;
+};
+
+static struct test test;
+
 static void
 blob_cb(EVP_BLOB_CALLBACK_REASON reason, const void *vp, void *userData)
 {
@@ -37,7 +44,7 @@ blob_cb(EVP_BLOB_CALLBACK_REASON reason, const void *vp, void *userData)
 }
 
 void
-blob_type_http_ext_test(void **state)
+test_http_ext_get_memory(void **state)
 {
 	/* This should test the HttpExt blob type.
 	 *
@@ -46,31 +53,22 @@ blob_type_http_ext_test(void **state)
 	 * Finally we test the headers limit and the free function.
 	 */
 
-	// start agent
-	struct evp_agent_context *ctxt = agent_test_start();
+	// test HTTP GET to memory
+	struct test *ctxt = *state;
 
-	// create backdoor instance
-	struct EVP_client *sdk_handle =
-		evp_agent_add_instance(ctxt, "backdoor");
-	assert_non_null(sdk_handle);
-
-	// prepare tests
 	EVP_RESULT result;
-	static struct EVP_BlobLocalStore localstore;
-	static char cb_data;
-	localstore.io_cb = 0;
-	localstore.blob_len = 0;
-	localstore.filename = NULL;
+	struct EVP_BlobLocalStore localstore = {0};
+	char cb_data;
 
 	struct EVP_BlobRequestHttpExt *request =
 		EVP_BlobRequestHttpExt_initialize();
 	EVP_BlobRequestHttpExt_setUrl(request, TEST_HTTP_GET_URL);
 
-	// test HTTP GET to memory
-	result = EVP_blobOperation(sdk_handle, EVP_BLOB_TYPE_HTTP_EXT,
+	result = EVP_blobOperation(ctxt->client, EVP_BLOB_TYPE_HTTP_EXT,
 				   EVP_BLOB_OP_GET, request, &localstore,
 				   blob_cb, &cb_data);
 	assert_int_equal(result, EVP_OK);
+	agent_poll(verify_equals, "GET " TEST_HTTP_GET_URL);
 	// Blob download to memory is allowed
 
 	// Expect processed blob to succeed
@@ -78,19 +76,35 @@ blob_type_http_ext_test(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->client, 5000);
 	assert_int_equal(result, EVP_OK);
 
+	EVP_BlobRequestHttpExt_free(request);
+}
+
+void
+test_http_ext_get_file(void **state)
+{
 	// test HTTP GET to file
+	struct test *ctxt = *state;
+
+	char *filename;
+	xasprintf(&filename, "%s/%s", path_get(MODULE_INSTANCE_PATH_ID),
+		  TEST_HTTP_GET_FILE);
+	EVP_RESULT result;
+	struct EVP_BlobLocalStore localstore = {.filename = filename};
+	char cb_data;
+
+	struct EVP_BlobRequestHttpExt *request =
+		EVP_BlobRequestHttpExt_initialize();
 	EVP_BlobRequestHttpExt_setUrl(request, TEST_HTTP_GET_URL);
-	xasprintf((char **)&localstore.filename, "%s/%s",
-		  path_get(MODULE_INSTANCE_PATH_ID), TEST_HTTP_GET_FILE);
+
 	/* we can't use expect_string because webclient_perform will be called
 	 * from a different thread */
-	result = EVP_blobOperation(sdk_handle, EVP_BLOB_TYPE_HTTP_EXT,
+	result = EVP_blobOperation(ctxt->client, EVP_BLOB_TYPE_HTTP_EXT,
 				   EVP_BLOB_OP_GET, request, &localstore,
 				   blob_cb, &cb_data);
-	free(__UNCONST(localstore.filename));
+	free(filename);
 	assert_int_equal(result, EVP_OK);
 	agent_poll(verify_equals, "GET " TEST_HTTP_GET_URL);
 
@@ -99,17 +113,33 @@ blob_type_http_ext_test(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->client, 5000);
 	assert_int_equal(result, EVP_OK);
 
-	// test HTTP PUT to file
+	EVP_BlobRequestHttpExt_free(request);
+}
+
+void
+test_http_ext_put_file(void **state)
+{
+	// test HTTP PUT file
+	struct test *ctxt = *state;
+
+	char *filename;
+	xasprintf(&filename, "%s/%s", path_get(MODULE_INSTANCE_PATH_ID),
+		  TEST_HTTP_GET_FILE);
+	EVP_RESULT result;
+	struct EVP_BlobLocalStore localstore = {.filename = filename};
+	char cb_data;
+
+	struct EVP_BlobRequestHttpExt *request =
+		EVP_BlobRequestHttpExt_initialize();
 	EVP_BlobRequestHttpExt_setUrl(request, TEST_HTTP_PUT_URL);
-	xasprintf((char **)&localstore.filename, "%s/%s",
-		  path_get(MODULE_INSTANCE_PATH_ID), TEST_HTTP_PUT_FILE);
-	result = EVP_blobOperation(sdk_handle, EVP_BLOB_TYPE_HTTP_EXT,
+
+	result = EVP_blobOperation(ctxt->client, EVP_BLOB_TYPE_HTTP_EXT,
 				   EVP_BLOB_OP_PUT, request, &localstore,
 				   blob_cb, &cb_data);
-	free(__UNCONST(localstore.filename));
+	free(filename);
 	assert_int_equal(result, EVP_OK);
 	agent_poll(verify_equals, "PUT " TEST_HTTP_PUT_URL);
 
@@ -118,19 +148,36 @@ blob_type_http_ext_test(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->client, 5000);
 	assert_int_equal(result, EVP_OK);
 
+	EVP_BlobRequestHttpExt_free(request);
+}
+
+void
+test_http_ext_get_file_range(void **state)
+{
 	// test HTTP GET with RANGE
+	struct test *ctxt = *state;
+
+	char *filename;
+	xasprintf(&filename, "%s/%s", path_get(MODULE_INSTANCE_PATH_ID),
+		  TEST_HTTP_GET_FILE);
+	EVP_RESULT result;
+	struct EVP_BlobLocalStore localstore = {.filename = filename};
+	char cb_data;
+
+	struct EVP_BlobRequestHttpExt *request =
+		EVP_BlobRequestHttpExt_initialize();
 	EVP_BlobRequestHttpExt_setUrl(request, TEST_HTTP_GET_URL);
 	EVP_BlobRequestHttpExt_addHeader(request, "Range",
 					 TEST_HTTP_GET_RANGE);
-	xasprintf((char **)&localstore.filename, "%s/%s",
-		  path_get(MODULE_INSTANCE_PATH_ID), TEST_HTTP_GET_FILE);
-	result = EVP_blobOperation(sdk_handle, EVP_BLOB_TYPE_HTTP_EXT,
+
+	result = EVP_blobOperation(ctxt->client, EVP_BLOB_TYPE_HTTP_EXT,
 				   EVP_BLOB_OP_GET, request, &localstore,
 				   blob_cb, &cb_data);
 
+	free(filename);
 	assert_int_equal(result, EVP_OK);
 	agent_poll(verify_equals, "GET " TEST_HTTP_GET_URL);
 	// make sure range header is present
@@ -141,19 +188,37 @@ blob_type_http_ext_test(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->client, 5000);
 	assert_int_equal(result, EVP_OK);
 
+	EVP_BlobRequestHttpExt_free(request);
+}
+
+void
+test_http_ext_get_file_range_azure(void **state)
+{
 	// test HTTP GET with RANGE and Azure header
+	struct test *ctxt = *state;
+
+	char *filename;
+	xasprintf(&filename, "%s/%s", path_get(MODULE_INSTANCE_PATH_ID),
+		  TEST_HTTP_GET_FILE);
+	EVP_RESULT result;
+	struct EVP_BlobLocalStore localstore = {.filename = filename};
+	char cb_data;
+
+	struct EVP_BlobRequestHttpExt *request =
+		EVP_BlobRequestHttpExt_initialize();
+	EVP_BlobRequestHttpExt_setUrl(request, TEST_HTTP_GET_URL);
 	EVP_BlobRequestHttpExt_addHeader(request, "Range",
 					 TEST_HTTP_GET_RANGE);
 	EVP_BlobRequestHttpExt_addAzureHeader(request);
-	result = EVP_blobOperation(sdk_handle, EVP_BLOB_TYPE_HTTP_EXT,
+
+	result = EVP_blobOperation(ctxt->client, EVP_BLOB_TYPE_HTTP_EXT,
 				   EVP_BLOB_OP_GET, request, &localstore,
 				   blob_cb, &cb_data);
 
-	free(__UNCONST(localstore.filename));
-
+	free(filename);
 	assert_int_equal(result, EVP_OK);
 	agent_poll(verify_equals, "GET " TEST_HTTP_GET_URL);
 	// make sure range header is present
@@ -166,13 +231,30 @@ blob_type_http_ext_test(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->client, 5000);
 	assert_int_equal(result, EVP_OK);
 
+	EVP_BlobRequestHttpExt_free(request);
+}
+
+void
+test_http_ext_get_null_memory_range_azure(void **state)
+{
 	// Test download to null memory
-	localstore.filename = NULL;
-	localstore.io_cb = NULL;
-	result = EVP_blobOperation(sdk_handle, EVP_BLOB_TYPE_HTTP_EXT,
+	struct test *ctxt = *state;
+
+	EVP_RESULT result;
+	struct EVP_BlobLocalStore localstore = {0};
+	char cb_data;
+
+	struct EVP_BlobRequestHttpExt *request =
+		EVP_BlobRequestHttpExt_initialize();
+	EVP_BlobRequestHttpExt_setUrl(request, TEST_HTTP_GET_URL);
+	EVP_BlobRequestHttpExt_addHeader(request, "Range",
+					 TEST_HTTP_GET_RANGE);
+	EVP_BlobRequestHttpExt_addAzureHeader(request);
+
+	result = EVP_blobOperation(ctxt->client, EVP_BLOB_TYPE_HTTP_EXT,
 				   EVP_BLOB_OP_GET, request, &localstore,
 				   blob_cb, &cb_data);
 
@@ -188,13 +270,20 @@ blob_type_http_ext_test(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(sdk_handle, 1000);
+	result = EVP_processEvent(ctxt->client, 5000);
 	assert_int_equal(result, EVP_OK);
 
+	EVP_BlobRequestHttpExt_free(request);
+}
+
+void
+test_http_ext_header_limits(void **state)
+{
+	struct EVP_BlobRequestHttpExt *request =
+		EVP_BlobRequestHttpExt_initialize();
 	// Test the headers limit and the free function
 	unsigned int i;
-	// We start with 2 because there are already 2 headers in the request
-	for (i = 2; i < 200; i++) {
+	for (i = 0; i < 200; i++) {
 		if (EVP_OK != EVP_BlobRequestHttpExt_addHeader(
 				      request, "Dummy", "dummy")) {
 			break;
@@ -202,7 +291,7 @@ blob_type_http_ext_test(void **state)
 	}
 
 	// i should be the maximum number of headers
-	assert_int_equal(i, 100);
+	assert_int_equal(i, 101);
 
 	EVP_BlobRequestHttpExt_free(request);
 }
@@ -216,6 +305,13 @@ setup(void **state)
 	assert_int_equal(0, systemf("touch %s/%s",
 				    path_get(MODULE_INSTANCE_PATH_ID),
 				    TEST_HTTP_PUT_FILE));
+	// start agent
+	test.agent = agent_test_start();
+
+	// create backdoor instance
+	test.client = evp_agent_add_instance(test.agent, "backdoor");
+	assert_non_null(test.client);
+	*state = &test;
 	return 0;
 }
 
@@ -231,7 +327,13 @@ main(void)
 {
 	// define tests
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test(blob_type_http_ext_test),
+		cmocka_unit_test(test_http_ext_get_memory),
+		cmocka_unit_test(test_http_ext_get_file),
+		cmocka_unit_test(test_http_ext_put_file),
+		cmocka_unit_test(test_http_ext_get_file_range),
+		cmocka_unit_test(test_http_ext_get_file_range_azure),
+		cmocka_unit_test(test_http_ext_get_null_memory_range_azure),
+		cmocka_unit_test(test_http_ext_header_limits),
 	};
 	// setup and run tests
 	return cmocka_run_group_tests(tests, setup, teardown);

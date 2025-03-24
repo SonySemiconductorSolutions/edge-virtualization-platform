@@ -65,10 +65,10 @@ module_instance_set_status(struct module_instance *m,
 {
 	xpthread_mutex_lock(&m->lock);
 	m->status = status;
-	if (status == MODULE_INSTANCE_STATUS_STOPPED) {
-		xpthread_cond_signal(&m->exit_condition);
-	}
 	xpthread_mutex_unlock(&m->lock);
+	if (status == MODULE_INSTANCE_STATUS_STOPPED && sem_post(&m->sem)) {
+		xlog_error("sem_post failed with errno %d", errno);
+	}
 }
 
 static enum module_instance_status
@@ -139,7 +139,10 @@ static void
 impl_post_create(struct module_instance *m)
 {
 	xpthread_mutex_init(&m->lock);
-	pthread_cond_init(&m->exit_condition, NULL);
+
+	if (sem_init(&m->sem, 0, 0)) {
+		xlog_abort("sem_init failed with errno %d", errno);
+	}
 
 	module_instance_set_status(m, MODULE_INSTANCE_STATUS_LOADING);
 
@@ -541,40 +544,18 @@ impl_stop(struct module_instance *m)
 			EVP_AGENT_WASM_STOPPED_GRACEFULLY;
 		getrealtime(&max_wait);
 		max_wait.tv_sec += MAX_EXIT_TIME_IN_SECONDS;
-		xpthread_mutex_lock(&m->lock);
-		ret = xpthread_cond_timedwait(&m->exit_condition, &m->lock,
-					      &max_wait);
-		xpthread_mutex_unlock(&m->lock);
-		if (ret == ETIMEDOUT) {
-			// timeout: send WASM exception
-			xlog_warning("Raising WASM exception to exit %s",
-				     m->name);
-			status = EVP_AGENT_WASM_STOPPED_EXCEPTION;
-			wasm_runtime_set_exception(m->wasm_module_inst,
-						   "force terminated");
-			// wait again for WASM module to exit
-			max_wait.tv_sec += MAX_EXIT_TIME_IN_SECONDS;
-			xpthread_mutex_lock(&m->lock);
-			ret = xpthread_cond_timedwait(&m->exit_condition,
-						      &m->lock, &max_wait);
-			xpthread_mutex_unlock(&m->lock);
-			if (ret == ETIMEDOUT) {
-				// the module still didn't exit: cancel it
-				xlog_warning("Cancelling thread to exit %s",
+		while (sem_timedwait(&m->sem, &max_wait)) {
+			if (errno == ETIMEDOUT) {
+				xlog_warning("Terminating Wasm instance %s",
 					     m->name);
-				ret = pthread_cancel(m->wasm_runner);
-
-				if (ret != 0) {
-					xlog_error("pthread_cancel failed: %d",
-						   ret);
-				}
+				wasm_runtime_terminate(m->wasm_module_inst);
 				status = EVP_AGENT_WASM_STOPPED_CANCELLED;
-			} else if (ret != 0) {
-				xlog_error("xpthread_cond_timedwait error %d",
-					   ret);
+				break;
+			} else if (errno != EINTR) {
+				ret = errno;
+				xlog_warning("sem_timedwait error %d", ret);
+				return ret;
 			}
-		} else if (ret != 0) {
-			xlog_error("xpthread_cond_timedwait error %d", ret);
 		}
 
 		ret = pthread_join(m->wasm_runner, NULL);
@@ -592,7 +573,9 @@ impl_stop(struct module_instance *m)
 
 		module_instance_set_status(m, MODULE_INSTANCE_STATUS_STOPPED);
 		xpthread_mutex_destroy(&m->lock);
-		pthread_cond_destroy(&m->exit_condition);
+		if (sem_destroy(&m->sem)) {
+			xlog_abort("sem_destroy failed with errno %d", errno);
+		}
 	}
 	if (m->wasm_module_inst != NULL) {
 		/*

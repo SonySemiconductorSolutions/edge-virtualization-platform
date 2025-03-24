@@ -29,12 +29,15 @@ __pycache__
 *.signed
 *.gcda
 *.gcno
+*.log
+*.res
 tools/module_key.bin
 deps.mk
 compile_commands.json
 analysis.txt
 /docs/build/
 /docs/changelog.md
+test/lorem-ipsum
 
 # Headers
 /include/*
