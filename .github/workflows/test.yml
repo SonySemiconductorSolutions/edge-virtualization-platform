@@ -133,6 +133,7 @@ jobs:
 
       - name: Generate coverage
         run: |
+          llvm-cov --version
           make \
             TOOL=clang \
             COVERAGE=ccov \
