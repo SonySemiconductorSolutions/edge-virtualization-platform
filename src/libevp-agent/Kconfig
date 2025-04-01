@@ -19,7 +19,6 @@ config EXTERNALS_EVP_AGENT
 	select EXTERNALS_MBEDTLS
 	select SCHED_WAITPID
 	select CLOCK_MONOTONIC
-	select LIBC_DLFCN
 	# we use a local copy
 	#select NETUTILS_NETLIB_GENERICURLPARSER
 	# main_loop uses pipe()

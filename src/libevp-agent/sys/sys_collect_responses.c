@@ -26,9 +26,10 @@ process_response(struct chan_msg *msg)
 static int
 collect(struct SYS_client *c, sys_collect_cb cb, void *user)
 {
-	struct sys_response *r;
+	struct sys_response *r, *next;
 
-	for (r = c->resp_head; r; r = r->next) {
+	for (r = c->resp_head; r; r = next) {
+		next = r->next;
 		if (cb(r->id, r->response, r->status, user)) {
 			r->reason = SYS_REASON_ERROR;
 		} else {

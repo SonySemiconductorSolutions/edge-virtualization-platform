@@ -47,6 +47,8 @@ setup(void **state)
 	static struct test_context ctxt;
 
 	// Set periodic report intervals
+	agent_test_setup();
+
 	putenv("EVP_REPORT_STATUS_INTERVAL_MIN_SEC=" ___STRING(
 		REPORT_STATUS_INTERVAL_MIN));
 	putenv("EVP_REPORT_STATUS_INTERVAL_MAX_SEC=" ___STRING(
@@ -56,8 +58,6 @@ setup(void **state)
 			       JSON_STATUS_CHECK_EVP1);
 	agent_register_payload(JSON_STATUS_CHECK, EVP_HUB_TYPE_EVP2_TB,
 			       JSON_STATUS_CHECK_TB);
-
-	agent_test_setup();
 
 	ctxt.agent = agent_test_start();
 

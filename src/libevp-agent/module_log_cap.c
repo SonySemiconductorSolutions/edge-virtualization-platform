@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -52,7 +53,7 @@ struct log_entry {
 
 struct log_cap_context {
 	struct evp_lock lock;
-	pthread_cond_t cond;
+	sem_t sem;
 	pthread_t thread;
 	struct map *captures;
 	int sync[2];
@@ -66,7 +67,6 @@ struct poll_context {
 
 static struct log_cap_context g_capture = {
 	.lock = EVP_LOCK_INITIALIZER,
-	.cond = PTHREAD_COND_INITIALIZER,
 };
 
 static void
@@ -97,8 +97,8 @@ capture_flush(struct log_entry *log)
 
 	log->line = xrealloc(log->line, log->line_sz + 1);
 	log->line[log->line_sz] = '\0';
-	xlog_debug("wasm:%s/%s:%s", log->instance_id.ro, log->stream,
-		   log->line);
+	xlog_info("wasm:%s/%s:%s", log->instance_id.ro, log->stream,
+		  log->line);
 
 	if (log->enabled) {
 		module_log_queue_put(log->instance_id.ro, log->stream,
@@ -257,8 +257,7 @@ capture_worker(void *arg)
 
 	for (;;) {
 		capture_prepare_poll(ctxt, &poll_ctxt);
-		xpthread_cond_signal(&ctxt->cond);
-
+		sem_post(&ctxt->sem);
 		unlock(ctxt);
 		rv = poll(poll_ctxt.fds, poll_ctxt.nfds, -1);
 		lock(ctxt);
@@ -341,8 +340,17 @@ module_log_cap_open(const char *instance_id, const char *stream)
 	void *oldval = map_put(ctxt->captures, &fd[0], value);
 	free(oldval);
 	capture_sync(ctxt);
-	xpthread_cond_wait(&ctxt->cond, &ctxt->lock);
 	unlock(ctxt);
+
+	while (sem_wait(&ctxt->sem)) {
+		if (errno == EINTR)
+			continue;
+		xlog_error("sem_wait(3) failed with %s", strerror(errno));
+		free(value);
+		close(fd[0]);
+		close(fd[1]);
+		return -1;
+	}
 
 	return fd[1];
 }
@@ -382,9 +390,15 @@ module_log_cap_close(const char *instance, const char *stream)
 			   value->fd_write);
 		log_gc(ctxt, value);
 		capture_sync(ctxt);
-		xpthread_cond_wait(&ctxt->cond, &ctxt->lock);
+		unlock(ctxt);
+
+		if (sem_wait(&ctxt->sem)) {
+			xlog_error("sem_wait(3) failed with %s",
+				   strerror(errno));
+		}
+	} else {
+		unlock(ctxt);
 	}
-	unlock(ctxt);
 }
 
 int
@@ -480,6 +494,9 @@ void
 module_log_cap_init(void)
 {
 	struct log_cap_context *ctxt = &g_capture;
+	if (sem_init(&ctxt->sem, 0, 0)) {
+		xlog_abort("sem_init(3) failed with %s", strerror(errno));
+	}
 	ctxt->captures = map_init(0, pipe_fd_lookup, NULL);
 	module_log_queue_init();
 }
@@ -491,4 +508,7 @@ module_log_cap_free(void)
 	struct log_cap_context *ctxt = &g_capture;
 	map_free(ctxt->captures);
 	ctxt->captures = NULL;
+	if (sem_destroy(&ctxt->sem)) {
+		xlog_error("sem_destroy(3) failed with %s", strerror(errno));
+	}
 }

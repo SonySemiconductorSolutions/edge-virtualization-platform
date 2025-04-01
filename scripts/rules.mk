@@ -32,9 +32,6 @@ LDINCLUDES= -L$(LIBDIR)
 # Include optional personal preferences
 -include $(PROJECTDIR)/config.mk
 
-# include kconfig configuration
--include $(PROJECTDIR)/.config
-
 # Include configuration definitions
 include $(SCRIPTDIR)/build/tool/$(TOOL).mk
 include $(SCRIPTDIR)/build/sys/$(SYS).mk

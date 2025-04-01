@@ -39,12 +39,12 @@ struct test {
 
 struct webclient_context;
 
-void
+int
 __wrap_webclient_perform(FAR struct webclient_context *ctx)
 {
-	void __real_webclient_perform(FAR struct webclient_context *);
+	int __real_webclient_perform(FAR struct webclient_context *);
 
-	__real_webclient_perform(ctx);
+	return __real_webclient_perform(ctx);
 }
 
 static enum SYS_result

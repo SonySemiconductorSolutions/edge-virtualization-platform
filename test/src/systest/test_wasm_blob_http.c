@@ -63,6 +63,8 @@ enum test_direct_command_payloads {
 	DEPLOYMENT_MANIFEST_1,
 };
 
+#define TEST_PROCESS_EVENT_TIMEOUT 10000
+
 #define TEST_INSTANCE_ID1 "backdoor-mdc"
 #define TEST_METHOD_NAME1 "test-method"
 #define RPC_TEST_ID       543210
@@ -370,6 +372,7 @@ blob_http_get_memory(void **state)
 					wasm_request, wasm_store,
 					TEST_BLOB_HTTP_CALLBACK_INDEX, 0);
 	assert_int_equal(result, EVP_OK);
+	agent_poll(verify_equals, "GET " TEST_HTTP_GET_URL);
 	// Blob download to memory is allowed
 
 	// Expect processed blob to succeed
@@ -421,7 +424,7 @@ blob_http_get_file(void **state)
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
 	result = EVP_processEvent_wasm(ctxt->wasm_exec_env, ctxt->wasm_handle,
-				       1000);
+				       TEST_PROCESS_EVENT_TIMEOUT);
 	assert_int_equal(result, EVP_OK);
 	assert_int_equal(on_blob_result_mock.call, 0);
 

@@ -106,7 +106,9 @@ static void
 send_message_cb(EVP_MESSAGE_SENT_CALLBACK_REASON reason, void *userData)
 {
 	static int send_msg;
-	log_module(module_name, "Send message number %d DONE\n", send_msg);
+	log_module(module_name, "Sent message number %d DONE. reason %d\n",
+		   send_msg, reason);
+	assert(reason == EVP_MESSAGE_SENT_CALLBACK_REASON_SENT);
 	send_msg++;
 
 	struct send_message_cb_data *d = userData;

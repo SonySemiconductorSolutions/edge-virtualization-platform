@@ -118,8 +118,6 @@ CSRCS += health_check.c
 CSRCS += module_api_dlfcn.c
 CSRCS += module_impl_dlfcn.c
 CSRCS += module_instance_impl_dlfcn.c
-CSRCS += sdk_callback_native.c
-CSRCS += sdk_local_native.c
 endif
 
 ifeq ($(CONFIG_EVP_MODULE_IMPL_DOCKER),y)
@@ -160,6 +158,8 @@ ifeq ($(CONFIG_EVP_SDK_LOCAL),y)
 CSRCS += sdk_common.c
 CSRCS += sdk_local.c
 CSRCS += sdk_execute.c
+CSRCS += sdk_local_native.c
+CSRCS += sdk_callback_native.c
 endif
 
 ifeq ($(CONFIG_EVP_SDK_SOCKET),y)

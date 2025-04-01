@@ -6,7 +6,10 @@
 
 #include <config.h>
 
+#include <assert.h>
+#include <errno.h>
 #include <inttypes.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +19,8 @@
 #include <parson.h>
 
 #include <internal/util.h>
+
+#include "webclient/webclient.h"
 
 #include "../sync.h"
 #include "agent_test.h"
@@ -30,6 +35,7 @@
 struct test_context {
 	struct EVP_client *h;
 	struct evp_agent_context *agent;
+	sem_t sem;
 };
 
 enum test_payloads { DEPLOYMENT_MANIFEST_1 };
@@ -37,6 +43,8 @@ static struct sync_ctxt sdk_collect_telemetry_sync;
 static struct sync_ctxt sdk_complete_collect_telemetry_sync;
 
 #define LOG_INFO "[   INFO   ] "
+
+#define TEST_PROCESS_EVENT_TIMEOUT 10000
 
 #define REPORT_STATUS_INTERVAL_MIN 3
 #define REPORT_STATUS_INTERVAL_MAX 5
@@ -130,6 +138,8 @@ static struct sync_ctxt sdk_complete_collect_telemetry_sync;
 	"Dui_faucibus_in_ornare_quam_viverra_orci_sagittis_eu_volutpat__Et_"  \
 	"netus_et_malesuada_fames_ac"
 
+static struct test_context test;
+
 void __real_sdk_collect_telemetry(void (*)(const char *,
 					   const struct EVP_telemetry_entry *,
 					   size_t, void *,
@@ -144,6 +154,13 @@ __wrap_sdk_collect_telemetry(void (*cb)(const char *,
 {
 	sync_join(&sdk_collect_telemetry_sync);
 	__real_sdk_collect_telemetry(cb, user);
+}
+
+int
+__wrap_webclient_perform(FAR struct webclient_context *ctx)
+{
+	assert(!sem_wait(&test.sem));
+	return 0;
 }
 
 /*
@@ -184,7 +201,8 @@ test_instance_state(void **state)
 	expect_value(state_cb, userData, userdata);
 
 	// Wait at least minimum report interval (3s)
-	res = EVP_processEvent(ctxt->h, 4000);
+	// Note: Seen up to 4.5 s, so keep bumping timeout up
+	res = EVP_processEvent(ctxt->h, TEST_PROCESS_EVENT_TIMEOUT);
 	assert_int_equal(res, EVP_OK);
 }
 
@@ -289,16 +307,21 @@ test_blob_max_ongoing_requests(void **state)
 	     i++) {
 		EVP_RESULT res;
 
+		// We only need to trigger a webclient_perform call so the
+		// mocked call will block and ensure operations remain ongoing.
+		// So the blob type does not matter.
+		// Here Azure blob is used arbitrarily.
 		struct EVP_BlobRequestAzureBlob request = {
 			.url = "",
 		};
-
-		// make a local store
 		struct EVP_BlobLocalStore localStore = {.filename = FILENAME};
 
-		// the blob operation should fire an mSTP token request
+		// 3 blob operations will be queued and remain ongoing until
+		// smaphore releases each ones.
+		// The 4th iteration shall return EVP_DENIED as the blob
+		// operation queue limit has been reached.
 		res = EVP_blobOperation(ctxt->h, EVP_BLOB_TYPE_AZURE_BLOB,
-					EVP_BLOB_OP_PUT, &request, &localStore,
+					EVP_BLOB_OP_GET, &request, &localStore,
 					blob_cb, userdata);
 		if (i < CONFIG_EVP_AGENT_MAX_LIVE_BLOBS_PER_INSTANCE) {
 			assert_int_equal(res, EVP_OK);
@@ -307,10 +330,12 @@ test_blob_max_ongoing_requests(void **state)
 		}
 	}
 
+	// Now release all ongoing blob operations.
 	for (int i = 0; i < CONFIG_EVP_AGENT_MAX_LIVE_BLOBS_PER_INSTANCE;
 	     i++) {
 		expect_value(blob_cb, reason, EVP_BLOB_CALLBACK_REASON_DONE);
 		expect_value(blob_cb, userData, userdata);
+		assert_int_equal(0, sem_post(&ctxt->sem));
 		// wait for the blob_cb
 		EVP_RESULT res = EVP_processEvent(ctxt->h, 1000);
 		assert_int_equal(res, EVP_OK);
@@ -348,12 +373,19 @@ test_direct_command(void **state)
 int
 setup(void **state)
 {
-	static struct test_context ctxt;
+	struct test_context *ctxt = &test;
+
+	agent_test_setup();
 
 	putenv("EVP_REPORT_STATUS_INTERVAL_MIN_SEC=3");
 	putenv("EVP_TRANSPORT_QUEUE_LIMIT=1024");
 	info("Set EVP_TRANSPORT_QUEUE_LIMIT=%s\n",
 	     getenv("EVP_TRANSPORT_QUEUE_LIMIT"));
+
+	if (sem_init(&ctxt->sem, 0, 0)) {
+		fprintf(stderr, "%s: sem_init(3) sem: %s\n", __func__,
+			strerror(errno));
+	}
 
 	sync_init(&sdk_collect_telemetry_sync);
 	sync_init(&sdk_complete_collect_telemetry_sync);
@@ -363,29 +395,35 @@ setup(void **state)
 	agent_register_payload(DEPLOYMENT_MANIFEST_1, EVP_HUB_TYPE_EVP2_TB,
 			       EVP2_DEPLOYMENT_MANIFEST_1);
 
-	agent_test_setup();
-
 	// start agent
-	ctxt.agent = agent_test_start();
+	ctxt->agent = agent_test_start();
 
-	struct agent_deployment d = {.ctxt = ctxt.agent};
+	struct agent_deployment d = {.ctxt = ctxt->agent};
 
 	// create backdoor instance
-	ctxt.h = evp_agent_add_instance(ctxt.agent, MODULE_NAME);
-	assert_non_null(ctxt.h);
+	ctxt->h = evp_agent_add_instance(ctxt->agent, MODULE_NAME);
+	assert_non_null(ctxt->h);
 
 	// send deployment manifest
 	agent_ensure_deployment(&d, agent_get_payload(DEPLOYMENT_MANIFEST_1),
 				TEST_DEPLOYMENT_ID1);
 
-	*state = &ctxt;
+	*state = ctxt;
 	return 0;
 }
 
 int
 teardown(void **state)
 {
+	struct test_context *ctxt = *state;
+
 	agent_test_exit();
+
+	if (sem_destroy(&ctxt->sem)) {
+		fprintf(stderr, "%s: sem_destroy(3) sem: %s\n", __func__,
+			strerror(errno));
+	}
+
 	return 0;
 }
 

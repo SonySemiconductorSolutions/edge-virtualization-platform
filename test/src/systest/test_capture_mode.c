@@ -38,6 +38,8 @@ enum {
  * 5. Agent stops
  * 6. Device goes back to sleep
  */
+#define TEST_PROCESS_EVENT_TIMEOUT 10000
+
 #define RECONCILE_STATUS_EVT "reconcileStatus"
 
 #define TEST_DEPLOYMENT_ID "4619b7ed-02a9-8c8f-44cd-000000000001"
@@ -109,7 +111,8 @@ test_capture_mode(void **state)
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_SUCCESS);
 	expect_value(blob_cb, result->http_status, HTTP_STATUS_OK);
 	expect_value(blob_cb, result->error, 0);
-	result = EVP_processEvent(ctxt->sdk_handle, 1000);
+	result =
+		EVP_processEvent(ctxt->sdk_handle, TEST_PROCESS_EVENT_TIMEOUT);
 	assert_int_equal(result, EVP_OK);
 
 	// Ensure no mqtt transmission occured

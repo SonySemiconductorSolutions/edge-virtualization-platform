@@ -24,7 +24,7 @@ sdk: FORCE
 lib bin:
 	mkdir -p $@
 
-wasm_test_modules: libs
+wasm_test_modules: sdk
 	+cd test_modules && $(MAKE) elf wasm
 
 check: FORCE
@@ -40,7 +40,7 @@ check_test_config: FORCE
 
 test: check_test_config libs test_modules
 
-test_modules: libs
+test_modules: sdk
 
 signed_test_modules: test_modules
 	+cd test_modules && $(MAKE) signed
