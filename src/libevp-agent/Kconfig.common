@@ -109,6 +109,7 @@ config EVP_MODULE_IMPL_DLFCN
 	select EVP_MODULE_IMPL_OBJ
 	select EVP_MODULE_IMPL_NOOP
 	select EVP_SDK_LOCAL
+	depends on LIBC_DLFCN
 	---help---
 		Support EVP modules based on NuttX dlfcn.
 
@@ -163,6 +164,7 @@ config EVP_MODULE_IMPL_WASM_DEFAULT_HOST_STACKSIZE
 config EVP_MODULE_IMPL_WASM_NATIVE_LIBS
 	bool "Wasm native libraries"
 	default y
+	depends on LIBC_DLFCN
 	---help---
 		Allow loading native libraries to the Wasm runtime
 endif

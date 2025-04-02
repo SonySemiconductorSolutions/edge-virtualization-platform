@@ -26,7 +26,7 @@ UNFILTERED_FILES = $(shell git ls-files '*.[ch]')
 SOURCE_FILES = $(filter-out $(EXCLUDE), $(UNFILTERED_FILES))
 
 # List all files under Sony and Apache license control
-# exlude:
+# exclude:
 # - json
 # - txt
 # - empty files
@@ -37,8 +37,9 @@ ALL_FILES = $(shell git ls-files --exclude='*.json' --exclude='*.txt')
 JSON_FILES = $(shell git ls-files '*.json')
 TEXT_FILES = $(shell git ls-files '*.txt')
 CONFIG_FILES = $(shell git ls-files '*.config')
+BINARY_FILES = $(shell git ls-files '*.wasm.x86_64')
 NOT_LICENSE_SUPPORTED += LICENSE
-LICENSED_FILES = $(filter-out $(EXCLUDE) $(JSON_FILES) $(TEXT_FILES) $(CONFIG_FILES) $(NOT_LICENSE_SUPPORTED), $(ALL_FILES))
+LICENSED_FILES = $(filter-out $(EXCLUDE) $(JSON_FILES) $(TEXT_FILES) $(CONFIG_FILES) $(BINARY_FILES) $(NOT_LICENSE_SUPPORTED), $(ALL_FILES))
 
 check: check-python check-format check-license check-make check-shell ## check code formatting
 .PHONY: check

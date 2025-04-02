@@ -21,24 +21,36 @@
 
 #include <internal/util.h>
 
+#include "webclient/webclient.h"
+
 #include "agent_internal.h"
 #include "agent_test.h"
 #include "hub.h"
 #include "websrv/websrv.h"
+#include "xlog.h"
+
+#define SYSAPP_LOG(fmt, ...) xlog_info("<SYSAPP> " fmt, ##__VA_ARGS__)
+#define SET_VAR_SAFE(var, value)                                              \
+	pthread_mutex_lock(&mutex_vars);                                      \
+	(var) = (value);                                                      \
+	pthread_mutex_unlock(&mutex_vars);
 
 /* Arbitrary number. */
 enum { BLOB_LEN = 4096, MAGIC = 'F' };
 
+pthread_mutex_t mutex_vars = PTHREAD_MUTEX_INITIALIZER;
+static bool simulate_error = false;
+static bool g_next = false;
+
 struct test {
 	unsigned short port;
 	char *url;
-	enum SYS_result result;
+	char *url_error;
+	char *url_final;
 	struct SYS_client *c;
 	struct evp_agent_context *ctxt;
-	bool done;
+	bool blob_done;
 };
-
-struct webclient_context;
 
 int
 __wrap_webclient_perform(FAR struct webclient_context *ctx)
@@ -48,25 +60,42 @@ __wrap_webclient_perform(FAR struct webclient_context *ctx)
 	return __real_webclient_perform(ctx);
 }
 
+ssize_t
+__wrap_webclient_conn_send(FAR struct webclient_conn_s *conn,
+			   FAR const void *buffer, size_t len)
+{
+	ssize_t __real_webclient_conn_send(FAR struct webclient_conn_s *,
+					   FAR const void *, size_t);
+	bool send_error = false;
+	pthread_mutex_lock(&mutex_vars);
+	if (simulate_error) {
+		simulate_error = false;
+		send_error = true;
+	}
+	pthread_mutex_unlock(&mutex_vars);
+
+	if (send_error) {
+		xlog_info("Generating errno 107 in webclient");
+		agent_write_to_pipe("simulate error");
+		return -107;
+	} else {
+		return __real_webclient_conn_send(conn, buffer, len);
+	}
+}
+
 static enum SYS_result
 blob_cb(struct SYS_client *c, struct SYS_blob_data *blob,
 	enum SYS_callback_reason reason, void *user)
 {
-	struct test *test = user;
-
 	switch (reason) {
 	case SYS_REASON_MORE_DATA:
 		memset(blob->blob_buffer, MAGIC, blob->len);
 		break;
 
 	case SYS_REASON_FINISHED:
-		test->done = true;
-		agent_write_to_pipe("blob_cb");
-		break;
-
 	case SYS_REASON_TIMEOUT:
 	case SYS_REASON_ERROR:
-		abort();
+		break;
 	}
 
 	return SYS_RESULT_OK;
@@ -82,45 +111,65 @@ sysapp(void *args)
 		NULL};
 
 	struct test *test = args;
-	enum SYS_result *result = &test->result;
+	enum SYS_result result;
 
-	*result = SYS_put_blob(test->c, test->url, headers, BLOB_LEN, blob_cb,
-			       test);
+	char *list[3] = {
+		test->url,
+		test->url_error,
+		test->url_final,
+	};
 
-	if (*result) {
-		fprintf(stderr, "%s: SYS_put_blob failed with %s\n", __func__,
-			SYS_result_tostr(*result));
-		goto end;
-	}
+	for (int i = 0; i < 3; i++) {
 
-	for (;;) {
-		*result = SYS_process_event(test->c, -1);
+		char *url = list[i];
+		SYSAPP_LOG("blob PUT to %s", url);
 
-		switch (*result) {
-		case SYS_RESULT_OK:
-			if (test->done) {
-				goto end;
-			}
+		if (strstr(url, "error")) {
+			SET_VAR_SAFE(simulate_error, true);
+		}
+		result = SYS_put_blob(test->c, url, headers, BLOB_LEN, blob_cb,
+				      test);
+		SYSAPP_LOG("SYS_put_blob result %s", SYS_result_tostr(result));
 
-			break;
-		case SYS_RESULT_TIMEDOUT:
-			break;
+		while (true) {
+			pthread_mutex_lock(&mutex_vars);
+			bool next = g_next;
+			g_next = false;
+			pthread_mutex_unlock(&mutex_vars);
+			if (next)
+				break;
 
-		default:
-			fprintf(stderr,
-				"%s: SYS_process_event failed with %s\n",
-				__func__, SYS_result_tostr(*result));
-			goto end;
+			result = SYS_process_event(test->c, 1000);
+			SYSAPP_LOG("process event done with %s",
+				   SYS_result_tostr(result));
 		}
 	}
-
-end:
 
 	return NULL;
 }
 
+/**
+ * The goal of this test is validate that when there is an error
+ * where the server connection is lost like:
+ *  - ENOTCONN 107 Transport endpoint is not connected
+ * The agent discards the blob operation but it keeps working
+ * as expected an the g_next blobs are well delivered.asm
+ *
+ * This test does these steps:
+ *  1)	performs a blob PUT to /test endpoint
+ *  2)	performs a blob PUT to /test_error endpoint, it will fails because
+ *  	an errno 107 is injected
+ *  3)  performs a valid operation against /test_final
+ *
+ *
+ * The steps are executed in a sequence to be sure that the agent can
+ * recover the blob operations after an error
+ *
+ * ref ADI-2317
+ *
+ */
 static void
-test_sysapp_blob_put(void **state)
+test_sysapp_blob_put_lost_server(void **state)
 {
 	struct test *test = *state;
 
@@ -128,18 +177,23 @@ test_sysapp_blob_put(void **state)
 
 	assert_int_equal(pthread_create(&thread, NULL, sysapp, test), 0);
 
-	agent_poll(verify_equals, "on_put");
-	agent_poll(verify_equals, "blob_cb");
+	agent_poll(verify_equals, "on_put:/test");
+	SET_VAR_SAFE(g_next, true);
+
+	agent_poll(verify_equals, "simulate error");
+	SET_VAR_SAFE(g_next, true);
+
+	agent_poll(verify_equals, "on_put:/test_final");
+	SET_VAR_SAFE(g_next, true);
 
 	assert_int_equal(pthread_join(thread, NULL), 0);
-	assert_int_equal(test->result, SYS_RESULT_OK);
 }
 
 static int
 on_put(const struct http_payload *p, struct http_response *r, void *user)
 {
-	/* NuttX webclient requires a body for PUT responses, even if not
-	 * needed. */
+	/* NuttX webclient requires a body for PUT responses, even if
+	 * not needed. */
 	static const char body[] = "hello!";
 	struct expected {
 		bool found;
@@ -203,9 +257,11 @@ on_put(const struct http_payload *p, struct http_response *r, void *user)
 		.n = strlen(body),
 	};
 
+	char *txt;
 	/* Notify the test that this callback was actually called */
-
-	agent_write_to_pipe("on_put");
+	asprintf(&txt, "on_put:%s", p->resource);
+	agent_write_to_pipe(txt);
+	free(txt);
 
 	return 0;
 }
@@ -225,6 +281,16 @@ setup(void **state)
 		return -1;
 	}
 
+	if (websrv_add_route("/test_error", HTTP_OP_PUT, on_put, NULL)) {
+		fprintf(stderr, "%s: websrv_add_route failed\n", __func__);
+		return -1;
+	}
+
+	if (websrv_add_route("/test_final", HTTP_OP_PUT, on_put, NULL)) {
+		fprintf(stderr, "%s: websrv_add_route failed\n", __func__);
+		return -1;
+	}
+
 	if (websrv_get_port(&test.port)) {
 		fprintf(stderr, "%s: websrv_get_port failed\n", __func__);
 		return -1;
@@ -236,6 +302,18 @@ setup(void **state)
 	}
 
 	if (asprintf(&test.url, "http://localhost:%hu/test", test.port) < 0) {
+		fprintf(stderr, "%s: asprintf(3) failed\n", __func__);
+		return -1;
+	}
+
+	if (asprintf(&test.url_error, "http://localhost:%hu/test_error",
+		     test.port) < 0) {
+		fprintf(stderr, "%s: asprintf(3) failed\n", __func__);
+		return -1;
+	}
+
+	if (asprintf(&test.url_final, "http://localhost:%hu/test_final",
+		     test.port) < 0) {
 		fprintf(stderr, "%s: asprintf(3) failed\n", __func__);
 		return -1;
 	}
@@ -272,6 +350,8 @@ teardown(void **state)
 	}
 
 	free(test->url);
+	free(test->url_error);
+	free(test->url_final);
 	agent_test_exit();
 
 	if (websrv_stop()) {
@@ -287,7 +367,7 @@ int
 main(void)
 {
 	static const struct CMUnitTest tests[] = {
-		cmocka_unit_test(test_sysapp_blob_put),
+		cmocka_unit_test(test_sysapp_blob_put_lost_server),
 	};
 
 	return cmocka_run_group_tests(tests, setup, teardown);

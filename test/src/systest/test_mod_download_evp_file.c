@@ -160,12 +160,12 @@ struct test_context {
 
 static struct test_context g_test_context;
 
-void
+int
 __wrap_webclient_perform(FAR struct webclient_context *ctx)
 {
-	void __real_webclient_perform(FAR struct webclient_context *);
+	int __real_webclient_perform(FAR struct webclient_context *);
 
-	__real_webclient_perform(ctx);
+	return __real_webclient_perform(ctx);
 }
 
 static char *
@@ -392,17 +392,4 @@ void
 test_download_http_blob_python(void **state)
 {
 	test_download_http_blob(*state, PYTHON);
-}
-
-int
-main(void)
-{
-	// define tests
-	const struct CMUnitTest tests[] = {
-		cmocka_unit_test(test_download_http_blob_wasm),
-		cmocka_unit_test(test_download_http_blob_spawn),
-		cmocka_unit_test(test_download_http_blob_python),
-	};
-	// setup, run tests and teardown
-	return cmocka_run_group_tests(tests, setup, teardown);
 }

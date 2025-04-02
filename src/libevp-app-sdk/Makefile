@@ -6,6 +6,7 @@ PROJECTDIR = ../..
 
 include $(PROJECTDIR)/scripts/rules.mk
 -include $(PROJECTDIR)/deps.mk
+-include $(PROJECTDIR)/.config
 
 MORE_CPPFLAGS = \
 	-I../libevp-agent \
@@ -33,8 +34,6 @@ obj-$(CONFIG_EVP_SDK_SOCKET) += \
 	sdk.o \
 	sdkrpc/client.o \
 
-LDFLAGS = -L$(LIBDIR)
-
 all: libevp-app-sdk.a libevp-app-sdk-bundle.a
 
 libevp-app-sdk.o: $(obj-y)
@@ -46,7 +45,7 @@ libevp-app-sdk.a: libevp-app-sdk.o
 	cp $@ $(LIBDIR)
 
 libevp-app-sdk-bundle.o: libevp-app-sdk.o
-	$(LD) -r -o $@ $(LDFLAGS) libevp-app-sdk.o $(DEPLIBS)
+	$(LD) -r -o $@ -L$(LIBDIR) libevp-app-sdk.o $(DEPLIBS)
 
 libevp-app-sdk-bundle.a: libevp-app-sdk-bundle.o
 	$(AR) $(PROJ_ARFLAGS) $@ $?
