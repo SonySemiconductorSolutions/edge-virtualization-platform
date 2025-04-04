@@ -4,6 +4,8 @@
 
 PROJECTDIR = ..
 
+VENV = .venv
+
 DIRS =\
 	certs\
 
@@ -202,7 +204,7 @@ BINDEPS =\
 	$(LIBDIR)/libdynstr.a\
 	$(FILELIBS)\
 
-all: test
+all: test-venv
 
 build: $(TESTS)
 
@@ -230,6 +232,14 @@ $(LIBDIR)/libweb.a: libweb
 $(LIBDIR)/libdynstr.a: libdynstr
 	cp libdynstr/libdynstr.a $@
 
+# There is a known bug in GNU binutils that causes the build to fail
+# when debug options are used.
+# This problem was already reported to the binutils community and it was fixed,
+# but the fix is not propagated to all supported build environments yet.
+# As a workaround, using the LLVM linker avoids the problem with selecting the
+# linker by passing `-fuse-ld=lld`
+PATCH_LDFLAGS = -fuse-ld=lld
+
 # Overwrite the general rule to generate .elf. We could use other extension
 # to avoid overriding, but I only thought about using .test, but having things
 # like test_manifest_evp1.test seemed too much testing to me.
@@ -239,12 +249,21 @@ $(LIBDIR)/libdynstr.a: libdynstr
 		gsub(/__wrap_/, "");\
 		printf ",--wrap=%s", $$3\
 	}' > $@.wrap
-	$(CC) $(PROJ_LDFLAGS) -o $@ $@-tmp.o -Wl`cat $@.wrap` $(PROJ_LDLIBS)
+	$(CC) $(PROJ_LDFLAGS) $(PATCH_LDFLAGS) -o $@ $@-tmp.o -Wl`cat $@.wrap` $(PROJ_LDLIBS)
 	rm $@-tmp.o $@.wrap
+
+$(VENV): FORCE
+	python -m venv $@
+
+test-venv: $(TESTS) $(VENV) FORCE
+	rm -rf logs
+	+. $(VENV)/bin/activate && \
+		pip install -U --find-links=$(LIBDIR)/python evp-app &&\
+		$(MAKE) test-helper
 
 test: FORCE
 	rm -rf logs
-	+@$(MAKE) test-helper
+	+$(MAKE) test-helper
 
 test-helper: run-ut run-st
 	@awk '\
@@ -291,7 +310,7 @@ run-st-py: $(STESTS_PY) FORCE
 clean:
 	test -f libweb/Makefile && cd libweb && $(MAKE) clean || true
 	test -f libdynstr/Makefile && cd libdynstr && $(MAKE) clean || true
-	rm -rf logs
+	rm -rf logs $(VENV)
 	find . -name '*.o' | xargs rm -f
 	find . -name '*.elf' | xargs rm -f
 	find . -name '*.wrap' | xargs rm -f

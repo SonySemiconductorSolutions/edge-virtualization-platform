@@ -18,14 +18,16 @@ depend sdk src libs: lib bin deps.mk include/version.h .config
 libs depend: FORCE
 	+cd src && $(MAKE) $@
 
+libs: sdk
+
 sdk: FORCE
 	+cd src && $(MAKE) libevp-app-sdk
 
+pysdk: sdk
+	+cd src && $(MAKE) python-evp-app-sdk
+
 lib bin:
 	mkdir -p $@
-
-wasm_test_modules: sdk
-	+cd test_modules && $(MAKE) elf wasm
 
 check: FORCE
 	$(MAKE) -f check.mk $@
@@ -38,11 +40,27 @@ check_test_config: FORCE
 		exit 1;\
 	fi
 
-test: check_test_config libs test_modules
+test: check_test_config libs test_modules/tests pysdk
 
 test_modules: sdk
 
-signed_test_modules: test_modules
+# NOTE: Kept for backward compatibility with private tests
+signed_test_modules: test_modules/signed
+
+test_modules/tests: sdk
+	+cd test_modules && $(MAKE) elf wasm python
+
+test_modules/wasm: sdk
+	+cd test_modules && $(MAKE) wasm
+
+test_modules/elf:
+	+cd test_modules && $(MAKE) elf
+
+test_modules/python:
+	+cd test_modules && $(MAKE) python
+.PHONY: test_modules/python
+
+test_modules/signed: test_modules
 	+cd test_modules && $(MAKE) signed
 
 include/version.h: FORCE
