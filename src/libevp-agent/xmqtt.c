@@ -127,10 +127,10 @@ mqtt_prepare_poll(struct mqtt_client *client, bool *want_writep)
 			const time_t now_sec = MQTT_PAL_TIME();
 			const uint64_t now_ms = gettime_ms();
 			uint64_t abs_timeout_ms;
-			xlog_info("%s: abs_timeout_sec=%ju, "
-				  "now_sec=%ju\n",
-				  __func__, (uintmax_t)abs_timeout_sec,
-				  (uintmax_t)now_sec);
+			xlog_trace("%s: abs_timeout_sec=%ju, "
+				   "now_sec=%ju\n",
+				   __func__, (uintmax_t)abs_timeout_sec,
+				   (uintmax_t)now_sec);
 			if (abs_timeout_sec >= now_sec) {
 				uint64_t delta_sec = abs_timeout_sec - now_sec;
 				abs_timeout_ms = now_ms + delta_sec * 1000;

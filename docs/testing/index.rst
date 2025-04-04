@@ -183,13 +183,13 @@ one matching parameter of a variable length argument list.
 Special patterns
 ^^^^^^^^^^^^^^^^
 
-Suboject pattern
-""""""""""""""""
+Subobject pattern
+"""""""""""""""""
 
 .. code:: C
 
     verify_json(txt,
-                "suboject={"
+                "subobject={"
                 "   key1=%s,"
                 "   key2=%s}",
                 "value3", "value4");
@@ -206,7 +206,7 @@ The previous example would match something like:
     {
         "key1": "value1",
         "key2": "value2",
-        "suboject": {
+        "subobject": {
             "key1": "value3",
             "key2": "value4"
         }
@@ -215,8 +215,8 @@ The previous example would match something like:
 Subobject patterns can be nested.
 
 
-Suboject pattern
-""""""""""""""""
+String subobject pattern
+""""""""""""""""""""""""
 
 .. code:: C
 
@@ -226,7 +226,7 @@ Suboject pattern
                 "  key2=%s}",
                 "value3", "value4");
 
-This pattern is similar to the suboject pattern,
+This pattern is similar to the subobject pattern,
 but in this case
 the preceding dot expression must point to a JSON string value
 that contains a literal JSON object.
@@ -296,7 +296,7 @@ The full list of checks enabled is:
     fsanitize=vla-bound
 
 More information about every specific option can be found in the
-`Clang Undefined behavior sanitizer` and `Clang Address sanitizer` documentation.
+``Clang Undefined behavior sanitizer`` and ``Clang Address sanitizer`` documentation.
 More information about how this is done
 can be found in :ref:`toolchain`.
 
@@ -305,14 +305,57 @@ Code coverage
 
 The tests are designed to cover
 as much code as possible
-and the coverage level is measured using `llvm-cov`.
+and the coverage level is measured using ``llvm-cov``.
 When the tests are compiled for the CI execution
-they are instrumented to generate output `llvm-cov` coverage information
+they are instrumented to generate output ``llvm-cov`` coverage information
 that later is processed by some scripts and
 reported to the CI
 to ensure that the minimun coverage level is matched.
 More information about how this is done
 can be found in :ref:`toolchain`.
+
+Execution
+*********
+
+The tests must be compiled with ``unit-test-all-hubs-wasm.config``.
+
+.. code:: shell
+
+    make config KBUILD_DEFCONFIG=configs/unit-test-all-hubs-wasm.config
+
+Tests can then be run with the single make target ``test``.
+
+.. code:: shell
+
+    make test KBUILD_DEFCONFIG=configs/unit-test-all-hubs-wasm.config
+
+This target will build everything the tests require,
+create a virtual environment (``.venv``),
+install the python sdk,
+and execute all tests in parallel inside
+the virtual environment.
+
+The completed tests will be reported
+as ``PASS`` or ``FAIL`` upon completion,
+and a global summary will show the test results:
+
+.. code:: shell
+
+    make test
+    ...
+    PASS    EVP1    src/systest/test_instance_state.elf
+    FAIL     TB     src/systest/test_python_mod_zombie.elf
+    PASS    EVP1    src/systest/test_capture_mode.elf
+    PASS     TB     src/systest/test_capture_mode.elf
+    PASS     TB     src/st-nohub/test_start_stop.elf
+    FAIL     TB     src/evp2-tb/test_embed_backdoor.elf
+    ----------- SUMMARY -----------
+    RUN 203
+    PASSED 201
+    FAILED 2
+    FAIL     TB     src/systest/test_python_mod_zombie.elf
+    FAIL     TB     src/evp2-tb/test_embed_backdoor.elf
+
 
 --------------
 
