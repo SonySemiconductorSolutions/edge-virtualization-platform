@@ -29,7 +29,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
       options: ${{ startsWith(matrix.runner, 'buildjet') && '--user 1000:1001' || '--user 1001:127' }}
-    timeout-minutes: 8 # the worst case is 3 minutes
+    timeout-minutes: ${{ startsWith(matrix.runner, 'buildjet') && 20 || 8 }} # the worst case is 3 minutes but buildjet sometimes is slower downloading the docker image
     strategy:
       fail-fast: false
       matrix:
@@ -50,7 +50,8 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Build
-        run: bear -- make -j$((`nproc` * 2)) CFLAGS="-g -Werror"
+        run: bear -- make -j$((`nproc` * 2)) CFLAGS="-g -Werror" \
+          LDFLAGS="-Wl,--export-dynamic"
 
       - name: Generate SBOM
         run: |

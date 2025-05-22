@@ -158,12 +158,10 @@ blob_type_evp_load(const struct evp_agent_context *agent,
 	}
 
 	if (!entry_obj) {
-		xlog_info("No cache hit for instanceName=%s",
-			  wk->module_instance_name);
-		xlog_debug("No cache hit for "
-			   "instanceName=%s, remoteName=%s, storageName=%s",
-			   wk->module_instance_name, wk->remote_name,
-			   wk->storage_name);
+		xlog_info("No cache hit for "
+			  "instanceName=%s, remoteName=%s, storageName=%s",
+			  wk->module_instance_name, wk->remote_name,
+			  wk->storage_name);
 		goto end;
 	}
 

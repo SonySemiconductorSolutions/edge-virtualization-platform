@@ -144,8 +144,11 @@ state_cb(EVP_STATE_CALLBACK_REASON reason, void *userData)
 {
 	struct test_context *ctxt = userData;
 
-	check_expected(reason);
+	xlog_info("reason=%d", reason);
+	assert(reason == EVP_STATE_CALLBACK_REASON_SENT ||
+	       reason == EVP_STATE_CALLBACK_REASON_OVERWRITTEN);
 	check_expected(userData);
+	function_called();
 	ctxt->called = true;
 }
 
@@ -156,6 +159,7 @@ telemetry_cb(EVP_TELEMETRY_CALLBACK_REASON reason, void *userData)
 
 	check_expected(reason);
 	check_expected(userData);
+	function_called();
 	ctxt->called = true;
 }
 
@@ -215,15 +219,10 @@ test_state(void **state)
 		result = EVP_sendState(ctxt->h, state_topic, state_blob,
 				       strlen(state_blob), state_cb, ctxt);
 		assert_int_equal(result, EVP_OK);
-
 		expect_value(state_cb, userData, ctxt);
-
-		EVP_STATE_CALLBACK_REASON reason =
-			i + 1 < 10 ? EVP_STATE_CALLBACK_REASON_OVERWRITTEN
-				   : EVP_STATE_CALLBACK_REASON_SENT;
-
-		expect_value(state_cb, reason, reason);
 	}
+
+	expect_function_calls(state_cb, 10);
 
 	for (int i = 0; i < 10; i++) {
 		ensure_event(ctxt);
@@ -263,6 +262,8 @@ test_telemetry(void **state)
 			     EVP_TELEMETRY_CALLBACK_REASON_SENT);
 		expect_value(telemetry_cb, userData, ctxt);
 	}
+
+	expect_function_calls(telemetry_cb, 11);
 
 	for (int i = 0; i < 10; ++i) {
 		ensure_event(ctxt);

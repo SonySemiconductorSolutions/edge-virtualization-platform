@@ -146,12 +146,14 @@ _tls_send(FAR void *ctx, FAR struct webclient_tls_connection *conn,
 {
 	ssize_t written_bytes = 0;
 	int rv = 0;
+	const unsigned char *buf_cpy = buf;
 
 	while (len > 0) {
 		if ((conn->flags & _GOT_FATAL_ERROR) != 0) {
 			rv = MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
 		} else {
-			rv = mbedtls_ssl_write(&conn->ctx.ssl_ctx, buf, len);
+			rv = mbedtls_ssl_write(&conn->ctx.ssl_ctx, buf_cpy,
+					       len);
 			if (mbedtls_fatal_error(rv)) {
 				conn->flags |= _GOT_FATAL_ERROR;
 			}
@@ -159,7 +161,7 @@ _tls_send(FAR void *ctx, FAR struct webclient_tls_connection *conn,
 		}
 		if (rv >= 0) {
 			written_bytes += rv;
-			buf += rv;
+			buf_cpy += rv;
 			len -= rv;
 		} else {
 			break;
@@ -194,12 +196,14 @@ _tls_recv(FAR void *ctx, FAR struct webclient_tls_connection *conn,
 {
 	ssize_t read_bytes = 0;
 	int rv = 0;
+	unsigned char *buf_cpy = buf;
 
 	while (len > 0) {
 		if ((conn->flags & _GOT_FATAL_ERROR) != 0) {
 			rv = MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
 		} else {
-			rv = mbedtls_ssl_read(&conn->ctx.ssl_ctx, buf, len);
+			rv = mbedtls_ssl_read(&conn->ctx.ssl_ctx, buf_cpy,
+					      len);
 #if defined(MBEDTLS_SSL_SESSION_TICKETS) && MBEDTLS_VERSION_MAJOR == 3
 			if (rv ==
 			    MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET) {
@@ -218,7 +222,7 @@ _tls_recv(FAR void *ctx, FAR struct webclient_tls_connection *conn,
 				return -EINVAL;
 			}
 			read_bytes += rv;
-			buf += rv;
+			buf_cpy += rv;
 			len -= rv;
 		} else if (rv == 0) {
 			conn->flags |= _CLOSED_BY_PEER;

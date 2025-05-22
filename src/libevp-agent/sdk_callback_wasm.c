@@ -112,8 +112,10 @@ sdk_callback_impl_wasm_invoke_config_callback(void *ctx,
 		};
 		if (!wasm_runtime_call_indirect(exec_env, func,
 						__arraycount(args), args)) {
-			xlog_error("wasm_runtime_call_indirect failed: %s",
-				   topic);
+			xlog_error("wasm_runtime_call_indirect failed: "
+				   "topic=%s, exception=%s",
+				   topic,
+				   wasm_runtime_get_exception(module_inst));
 		}
 	} else {
 		xlog_error("failed to allocate wasm module memory: %zu bytes",

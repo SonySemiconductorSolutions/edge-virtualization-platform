@@ -884,9 +884,14 @@ module_instance_forward_fn(const void *message, const void *module_instance)
 				  m->name, msg->topic, subscribe_alias->name,
 				  (int)msg->bloblen, (const char *)msg->blob);
 #endif
-			sdk_queue_message(m->name, subscribe_alias->name,
-					  msg->blob, msg->bloblen);
-			msg->reason = EVP_MESSAGE_SENT_CALLBACK_REASON_SENT;
+			if (sdk_queue_message(m->name, subscribe_alias->name,
+					      msg->blob, msg->bloblen)) {
+				msg->reason =
+					EVP_MESSAGE_SENT_CALLBACK_REASON_ERROR;
+			} else {
+				msg->reason =
+					EVP_MESSAGE_SENT_CALLBACK_REASON_SENT;
+			}
 		}
 	}
 

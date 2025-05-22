@@ -558,19 +558,19 @@ B838E55D9366945FE643B14028366303
 #    sdk.c(268) : allocated -> leak : config end scope : Memory leaked
 753C80AA0C46D7EFF76F1EF35D45EAA6
 
-#[7E30001FB07717CFF2FE5B13587B01B0 : high : Memory Leak : controlflow ]
+# [BAE2BC448B642C2CD798A8FC2C6E6506 : high : Memory Leak : controlflow ]
 #
-#    sdk.c(302) : Branch taken: (h != NULL)
-#    sdk.c(302) : Branch taken: (h->exiting == 0)
-#    sdk.c(303) : start -> allocated : r = xcalloc_internal(...)
-#        util.c(188) : start -> allocated : vp = calloc(...)
-#        util.c(188) : allocated -> allocated : vp refers to dynamically allocated memory
-#        util.c(189) : Branch not taken: (vp != NULL)
-#        util.c(192) : allocated -> allocated : return
-#    sdk.c(303) : allocated -> allocated : r refers to dynamically allocated memory
-#    sdk.c(310) : allocated -> allocated : r no longer refers to dynamically allocated memory
-#    sdk.c(310) : allocated -> leak : r end scope : Memory leaked
-7E30001FB07717CFF2FE5B13587B01B0
+#     sdk.c(305) : Branch taken: (h != NULL)
+#     sdk.c(305) : Branch taken: (h->exiting == 0)
+#     sdk.c(306) : start -> allocated : r = xcalloc_internal(...)
+#         util.c(188) : start -> allocated : vp = calloc(...)
+#         util.c(188) : allocated -> allocated : vp refers to dynamically allocated memory
+#         util.c(189) : Branch not taken: (vp != NULL)
+#         util.c(192) : allocated -> allocated : return
+#     sdk.c(306) : allocated -> allocated : r refers to dynamically allocated memory
+#     sdk.c(313) : allocated -> allocated : r no longer refers to dynamically allocated memory
+#     sdk.c(313) : allocated -> leak : r end scope : Memory leaked
+BAE2BC448B642C2CD798A8FC2C6E6506
 
 #[753C80AA0C46D7EFF76F1EF35D45EAA6 : high : Memory Leak : controlflow ]
 #
@@ -589,42 +589,42 @@ B838E55D9366945FE643B14028366303
 
 # False positive. The ownership for instance_name is transferred to the
 # caller when successful. Otherwise, the memory is released via free(3).
-#[BC68A3AE07F66F3EA7F344AA1CF6B9E1 : high : Memory Leak : controlflow ]
+# [E77DED688408DBFD92E99EDCB968F3C3 : high : Memory Leak : controlflow ]
 #
-#    sdk.c(1351) : start -> allocated : instance_name = strdup(...)
-#    sdk.c(1351) : allocated -> allocated : instance_name refers to dynamically allocated memory
-#    sdk.c(1353) : Branch taken: (evp_ext->storage_name != NULL)
-#    sdk.c(1356) : Branch taken: (storage_name == NULL)
-#    sdk.c(1358) : goto
-#    sdk.c(1372) : Branch not taken: (ret == 0)
-#    sdk.c(1377) : allocated -> allocated : instance_name no longer refers to dynamically allocated memory
-#    sdk.c(1377) : allocated -> leak : instance_name end scope : Memory leaked
-BC68A3AE07F66F3EA7F344AA1CF6B9E1
+#     sdk.c(1323) : start -> allocated : instance_name = strdup(...)
+#     sdk.c(1323) : allocated -> allocated : instance_name refers to dynamically allocated memory
+#     sdk.c(1326) : Branch not taken: (instance_name != NULL)
+#     sdk.c(1326) : Branch taken: (remote_name == NULL)
+#     sdk.c(1328) : goto
+#     sdk.c(1338) : Branch not taken: (ret == 0)
+#     sdk.c(1343) : allocated -> allocated : instance_name no longer refers to dynamically allocated memory
+#     sdk.c(1343) : allocated -> leak : instance_name end scope : Memory leaked
+E77DED688408DBFD92E99EDCB968F3C3
 
 # False positive.
-#[88FACBFC4F408F7012D2315A7D788BF9 : high : Memory Leak : controlflow ]
+# [CF748D3292048B92728F6F86597A864C : high : Memory Leak : controlflow ]
 #
-#    sdk.c(1321) : start -> allocated : remote_name = strdup(...)
-#    sdk.c(1321) : allocated -> allocated : remote_name refers to dynamically allocated memory
-#    sdk.c(1323) : Branch taken: (instance_name == NULL)
-#    sdk.c(1325) : goto
-#    sdk.c(1335) : Branch not taken: (ret == 0)
-#    sdk.c(1340) : allocated -> allocated : remote_name no longer refers to dynamically allocated memory
-#    sdk.c(1340) : allocated -> leak : remote_name end scope : Memory leaked
-88FACBFC4F408F7012D2315A7D788BF9
+#     sdk.c(1324) : start -> allocated : remote_name = strdup(...)
+#     sdk.c(1324) : allocated -> allocated : remote_name refers to dynamically allocated memory
+#     sdk.c(1326) : Branch taken: (instance_name == NULL)
+#     sdk.c(1328) : goto
+#     sdk.c(1338) : Branch not taken: (ret == 0)
+#     sdk.c(1343) : allocated -> allocated : remote_name no longer refers to dynamically allocated memory
+#     sdk.c(1343) : allocated -> leak : remote_name end scope : Memory leaked
+CF748D3292048B92728F6F86597A864C
 
 # False positive. Similar to 2875963782EF8F6D3886C98861CEC80A.
-#[05D749459E2661F49E9A2800A98323B3 : high : Memory Leak : controlflow ]
+# [157F3BC11F711CA6BADF8A6DF41A8448 : high : Memory Leak : controlflow ]
 #
-#    sdk.c(1350) : start -> allocated : remote_name = strdup(...)
-#    sdk.c(1350) : allocated -> allocated : remote_name refers to dynamically allocated memory
-#    sdk.c(1353) : Branch taken: (evp_ext->storage_name != NULL)
-#    sdk.c(1356) : Branch taken: (storage_name == NULL)
-#    sdk.c(1358) : goto
-#    sdk.c(1372) : Branch not taken: (ret == 0)
-#    sdk.c(1377) : allocated -> allocated : remote_name no longer refers to dynamically allocated memory
-#    sdk.c(1377) : allocated -> leak : remote_name end scope : Memory leaked
-05D749459E2661F49E9A2800A98323B3
+#     sdk.c(1353) : start -> allocated : remote_name = strdup(...)
+#     sdk.c(1353) : allocated -> allocated : remote_name refers to dynamically allocated memory
+#     sdk.c(1356) : Branch taken: (evp_ext->storage_name != NULL)
+#     sdk.c(1359) : Branch taken: (storage_name == NULL)
+#     sdk.c(1361) : goto
+#     sdk.c(1375) : Branch not taken: (ret == 0)
+#     sdk.c(1380) : allocated -> allocated : remote_name no longer refers to dynamically allocated memory
+#     sdk.c(1380) : allocated -> leak : remote_name end scope : Memory leaked
+157F3BC11F711CA6BADF8A6DF41A8448
 
 #[13DD2A203C18A517C7B4840513317DB0 : high : Memory Leak : controlflow ]
 #
@@ -640,30 +640,30 @@ BC68A3AE07F66F3EA7F344AA1CF6B9E1
 #    sdk.c(268) : allocated -> leak : config end scope : Memory leaked
 13DD2A203C18A517C7B4840513317DB0
 
-#[89E9B42F5C5AF6377B59C48DE9E785F7 : high : Memory Leak : controlflow ]
+# [A22C8E3EDE60D6EE0EDE28AA495E708C : high : Memory Leak : controlflow ]
 #
-#    sdk.c(1016) : Branch not taken: (g_mqtt_client != NULL)
-#    sdk.c(1022) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, len) != 0)
-#    sdk.c(1033) : start -> allocated : state = malloc(...)
-#    sdk.c(1033) : allocated -> allocated : state refers to dynamically allocated memory
-#    sdk.c(1034) : Branch not taken: (state != NULL)
-#    sdk.c(1054) : Branch not taken: (oevent == NULL)
-#    sdk.c(1082) : Branch not taken: (ret == 0)
-#    sdk.c(1085) : allocated -> allocated : state no longer refers to dynamically allocated memory
-#    sdk.c(1085) : allocated -> leak : state end scope : Memory leaked
-89E9B42F5C5AF6377B59C48DE9E785F7
+#     sdk.c(1019) : Branch not taken: (g_mqtt_client != NULL)
+#     sdk.c(1025) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, len) != 0)
+#     sdk.c(1036) : start -> allocated : state = malloc(...)
+#     sdk.c(1036) : allocated -> allocated : state refers to dynamically allocated memory
+#     sdk.c(1037) : Branch not taken: (state != NULL)
+#     sdk.c(1057) : Branch not taken: (oevent == NULL)
+#     sdk.c(1085) : Branch not taken: (ret == 0)
+#     sdk.c(1088) : allocated -> allocated : state no longer refers to dynamically allocated memory
+#     sdk.c(1088) : allocated -> leak : state end scope : Memory leaked
+A22C8E3EDE60D6EE0EDE28AA495E708C
 
-#[4E89E0F5591AA8A38639E4FE6EB0A8B2 : high : Memory Leak : controlflow ]
+# [19F336B4C1767F9513F6BF71B012C12F : high : Memory Leak : controlflow ]
 #
-#    sdk.c(1320) : start -> allocated : instance_name = strdup(...)
-#    sdk.c(1320) : allocated -> allocated : instance_name refers to dynamically allocated memory
-#    sdk.c(1323) : Branch not taken: (instance_name != NULL)
-#    sdk.c(1323) : Branch taken: (remote_name == NULL)
-#    sdk.c(1325) : goto
-#    sdk.c(1335) : Branch not taken: (ret == 0)
-#    sdk.c(1340) : allocated -> allocated : instance_name no longer refers to dynamically allocated memory
-#    sdk.c(1340) : allocated -> leak : instance_name end scope : Memory leaked
-4E89E0F5591AA8A38639E4FE6EB0A8B2
+#     sdk.c(1354) : start -> allocated : instance_name = strdup(...)
+#     sdk.c(1354) : allocated -> allocated : instance_name refers to dynamically allocated memory
+#     sdk.c(1356) : Branch taken: (evp_ext->storage_name != NULL)
+#     sdk.c(1359) : Branch taken: (storage_name == NULL)
+#     sdk.c(1361) : goto
+#     sdk.c(1375) : Branch not taken: (ret == 0)
+#     sdk.c(1380) : allocated -> allocated : instance_name no longer refers to dynamically allocated memory
+#     sdk.c(1380) : allocated -> leak : instance_name end scope : Memory leaked
+19F336B4C1767F9513F6BF71B012C12F
 
 # False positive
 #
@@ -676,14 +676,14 @@ BC68A3AE07F66F3EA7F344AA1CF6B9E1
 #       gets each element in the queue
 #       cast to specific event.
 #       free at the end of each event by sdk_free_event
-#[3E1476C1E6658229EE0E5AF63E7786B7 : high : Memory Leak : controlflow ]
+# [581A9337EC14CC230A42B3A7DFCD1A25 : high : Memory Leak : controlflow ]
 #
-#    sdk.c(1659) : start -> allocated : event_message = malloc(...)
-#    sdk.c(1659) : allocated -> allocated : event_message refers to dynamically allocated memory
-#    sdk.c(1661) : Branch not taken: (event_message != NULL)
-#    sdk.c(1692) : allocated -> allocated : event_message no longer refers to dynamically allocated memory
-#    sdk.c(1692) : allocated -> leak : event_message end scope : Memory leaked
-3E1476C1E6658229EE0E5AF63E7786B7
+#     sdk.c(1662) : start -> allocated : event_message = malloc(...)
+#     sdk.c(1662) : allocated -> allocated : event_message refers to dynamically allocated memory
+#     sdk.c(1664) : Branch not taken: (event_message != NULL)
+#     sdk.c(1696) : allocated -> allocated : event_message no longer refers to dynamically allocated memory
+#     sdk.c(1696) : allocated -> leak : event_message end scope : Memory leaked
+581A9337EC14CC230A42B3A7DFCD1A25
 
 # False positive (idem of previous)
 #
@@ -696,28 +696,28 @@ BC68A3AE07F66F3EA7F344AA1CF6B9E1
 #       gets each element in the queue
 #       cast to specific event.
 #       free at the end of each event by sdk_free_event
-#[B3B20F3988D18CC8CA5C28514719C705 : high : Memory Leak : controlflow ]
+# [234DCC25865816EAF391DA8AF23E9794 : high : Memory Leak : controlflow ]
 #
-#    sdk.c(1721) : Branch not taken: (g_mqtt_client != NULL)
-#    sdk.c(1725) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, total_size) != 0)
-#    sdk.c(1729) : start -> allocated : t = malloc(...)
-#    sdk.c(1729) : allocated -> allocated : t refers to dynamically allocated memory
-#    sdk.c(1730) : Branch not taken: (t != NULL)
-#    sdk.c(1760) : allocated -> allocated : t no longer refers to dynamically allocated memory
-#    sdk.c(1760) : allocated -> leak : t end scope : Memory leaked
-B3B20F3988D18CC8CA5C28514719C705
+#     sdk.c(1725) : Branch not taken: (g_mqtt_client != NULL)
+#     sdk.c(1729) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, total_size) != 0)
+#     sdk.c(1733) : start -> allocated : t = malloc(...)
+#     sdk.c(1733) : allocated -> allocated : t refers to dynamically allocated memory
+#     sdk.c(1734) : Branch not taken: (t != NULL)
+#     sdk.c(1764) : allocated -> allocated : t no longer refers to dynamically allocated memory
+#     sdk.c(1764) : allocated -> leak : t end scope : Memory leaked
+234DCC25865816EAF391DA8AF23E9794
 
-#[D0731D514166A49C8FFB53F1F9FD92A2 : high : Memory Leak : controlflow ]
+# [A68E05E17E134D7BCDF2863CB397A042 : high : Memory Leak : controlflow ]
 #
-#    sdk.c(1817) : Branch not taken: (response != NULL)
-#    sdk.c(1826) : Branch not taken: (g_mqtt_client != NULL)
-#    sdk.c(1831) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, outsz) != 0)
-#    sdk.c(1835) : start -> allocated : r = malloc(...)
-#    sdk.c(1835) : allocated -> allocated : r refers to dynamically allocated memory
-#    sdk.c(1836) : Branch not taken: (r != NULL)
-#    sdk.c(1864) : allocated -> allocated : r no longer refers to dynamically allocated memory
-#    sdk.c(1864) : allocated -> leak : r end scope : Memory leaked
-D0731D514166A49C8FFB53F1F9FD92A2
+#     sdk.c(1821) : Branch not taken: (response != NULL)
+#     sdk.c(1830) : Branch not taken: (g_mqtt_client != NULL)
+#     sdk.c(1835) : Branch not taken: (xmqtt_request_fits(g_mqtt_client, outsz) != 0)
+#     sdk.c(1839) : start -> allocated : r = malloc(...)
+#     sdk.c(1839) : allocated -> allocated : r refers to dynamically allocated memory
+#     sdk.c(1840) : Branch not taken: (r != NULL)
+#     sdk.c(1868) : allocated -> allocated : r no longer refers to dynamically allocated memory
+#     sdk.c(1868) : allocated -> leak : r end scope : Memory leaked
+A68E05E17E134D7BCDF2863CB397A042
 
 # It is true response might not be a null-terminated string, as it is
 # read from user input. However, this same assumption is made in a few
@@ -828,16 +828,16 @@ D2CB91D8DE70456F32CA8103BE32E947
 # False positive.
 # Fortify fails to see sem is a semaphore that would block until
 # the event is handled (and free(3)d) by the module instance thread.
-#[16C3E81F20D2E967B9D97592D8968F69 : high : Memory Leak : controlflow ]
+# [B74502983F4BBB99376A68FF938F6CFB : high : Memory Leak : controlflow ]
 #
-#    sdk.c(1099) : Branch not taken: (sem_init((&sem), 0, 0) == 0)
-#    sdk.c(1106) : Branch taken: (h->exiting == 0)
-#    sdk.c(1107) : start -> allocated : event = malloc(...)
-#    sdk.c(1107) : allocated -> allocated : event refers to dynamically allocated memory
-#    sdk.c(1109) : Branch not taken: (event != NULL)
-#    sdk.c(1133) : allocated -> allocated : event no longer refers to dynamically allocated memory
-#    sdk.c(1133) : allocated -> leak : event end scope : Memory leaked
-16C3E81F20D2E967B9D97592D8968F69
+#     sdk.c(1102) : Branch not taken: (sem_init((&sem), 0, 0) == 0)
+#     sdk.c(1109) : Branch taken: (h->exiting == 0)
+#     sdk.c(1110) : start -> allocated : event = malloc(...)
+#     sdk.c(1110) : allocated -> allocated : event refers to dynamically allocated memory
+#     sdk.c(1112) : Branch not taken: (event != NULL)
+#     sdk.c(1136) : allocated -> allocated : event no longer refers to dynamically allocated memory
+#     sdk.c(1136) : allocated -> leak : event end scope : Memory leaked
+B74502983F4BBB99376A68FF938F6CFB
 
 # IMPORTANT NOTE: This is an actual memory leak (!)
 # For implementations using sdk_local_wasm.c, response_copy is never freed.
@@ -2677,29 +2677,28 @@ C382DF34B7262C9187069ABBC7FEEDCF
 # The string gets a final zero termination regardless, not counted in the
 # string length (in compliance with the FlatBuffers format)."
 
-#[3397B3B424EF87DF712DEFD26B45C7AC : high : String Termination Error : dataflow ]
-#sdk.c(1059) :  ->strcmp(1)
-#    sdk_remote.c(403) :  ->EVP_impl_sendState(2)
-#    sdk_remote.c(397) : <=> (topic)
-#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(583) : return
-#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(583) : <=> (elem__tmp)
-#    sdk_remote.c(397) : <->EVP_SDK_StateInput_topic(0->return)
-#    sdk_remote.c(394) : <=> (state)
-#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : return
-#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : <=> (elem__tmp)
-#    sdk_remote.c(394) : <->EVP_SDK_Request_body(0->return)
-#    sdk_remote.c(952) :  ->process_send_state(1)
-#    sdk_remote.c(909) : <=> (req)
-#        /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1031) : return
-#    sdk_remote.c(909) : <->EVP_SDK_Request_as_root(0->return)
-#    sdkrpc/server.c(96) :  ->sdk_process_request(0)
-#    sdkrpc/server.c(85) : <- readall(1)
-#    ioutil.c(22) : <- read(1)
-#
+# [E1EB5963E3FE75C62086DEB9AF360BC1 : high : String Termination Error : dataflow ]
+# sdk.c(1062) :  ->strcmp(1)
+#     sdk_remote.c(403) :  ->EVP_impl_sendState(2)
+#     sdk_remote.c(397) : <=> (topic)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(583) : return
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(583) : <=> (elem__tmp)
+#     sdk_remote.c(397) : <->EVP_SDK_StateInput_topic(0->return)
+#     sdk_remote.c(394) : <=> (state)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : return
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1033) : <=> (elem__tmp)
+#     sdk_remote.c(394) : <->EVP_SDK_Request_body(0->return)
+#     sdk_remote.c(952) :  ->process_send_state(1)
+#     sdk_remote.c(909) : <=> (req)
+#         /__w/wedge-agent/wedge-agent/include/sdkenc/sdk_reader.h(1031) : return
+#     sdk_remote.c(909) : <->EVP_SDK_Request_as_root(0->return)
+#     sdkrpc/server.c(96) :  ->sdk_process_request(0)
+#     sdkrpc/server.c(85) : <- readall(1)
+#     ioutil.c(22) : <- read(1)
 ## StateInput_topic is a Flatbuffer String. In sdkenc/sdk.fbs:
 # table StateInput {
 #     topic:string (required);
-3397B3B424EF87DF712DEFD26B45C7AC
+E1EB5963E3FE75C62086DEB9AF360BC1
 
 # StateInput_topic is a Flatbuffer String. In sdkenc/sdk.fbs:
 #[263E550BDAD8048B7714327862E5FA4B : high : String Termination Error : dataflow ]

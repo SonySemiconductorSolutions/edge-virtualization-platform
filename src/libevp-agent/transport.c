@@ -202,14 +202,8 @@ on_message(void **state, struct mqtt_response_publish *msg)
 	// TODO: Replace assert (programming error)
 	assert(ctxt != NULL);
 
-	// Don't print data from/to instances in INFO level
-	// Since it is user data and it can be confidential
-	xlog_info("onMessage: topic=%s, id=%d, qos=%d, size=%zu", topic,
-		  (int)msg->packet_id, (int)msg->qos_level,
-		  msg->application_message_size);
-
-	xlog_debug("onMessage: topic=%s, id=%d, qos=%d, payload=%s", topic,
-		   (int)msg->packet_id, (int)msg->qos_level, payload);
+	xlog_info("onMessage: topic=%s, id=%d, qos=%d, payload=%s", topic,
+		  (int)msg->packet_id, (int)msg->qos_level, payload);
 
 	ctxt->hub_on_message(ctxt->agent, topic, msg->packet_id,
 			     msg->qos_level, payload);

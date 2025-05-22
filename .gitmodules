@@ -16,7 +16,7 @@
 	url = https://github.com/apache/nuttx-apps
 [submodule "src/wasm-micro-runtime"]
 	path = src/wasm-micro-runtime
-	url = https://github.com/bytecodealliance/wasm-micro-runtime
+	url = https://github.com/midokura/wasm-micro-runtime.git
 [submodule "test/libweb"]
 	path = test/libweb
 	url = https://github.com/midokura/libweb.git

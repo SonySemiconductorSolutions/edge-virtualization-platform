@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     gpg \
     make \
+    patchelf \
     pycodestyle \
     python3-pip \
     python3-bashate \
@@ -60,7 +61,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 50
 
 # Remove this once stdeb is fully released for ubuntu:24.04 (python3.12)
-RUN pip3 install git+https://github.com/astraw/stdeb.git --break-system-packages
+RUN pip3 install \
+    auditwheel==6.3.0 \
+    git+https://github.com/astraw/stdeb.git \
+    --break-system-packages
 
 RUN echo "deb https://apt.llvm.org/noble/ llvm-toolchain-noble-${LLVM_VERSION} main" > /etc/apt/sources.list.d/apt.llvm.org.list && \
     curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \

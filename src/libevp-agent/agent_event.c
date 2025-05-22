@@ -13,6 +13,7 @@
 /* clang-format off */
 static const char(*const list[]) = {
 	"agent/status",
+	"agent/conn_status",
 	"blob/result",
 	"deployment/reconcileStatus",
 	"mqtt/sync/err",

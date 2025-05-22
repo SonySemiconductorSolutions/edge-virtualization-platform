@@ -271,11 +271,12 @@ sdk_queue_config(const char *name, const char *topic, const void *blob,
 	sdk_unlock();
 }
 
-void
+int
 sdk_queue_message(const char *module_instance_name,
 		  const char *subscribe_alias, const void *blob,
 		  size_t bloblen)
 {
+	int ret = -1;
 	/* this function never consumes 'blob'. */
 	sdk_lock();
 	struct EVP_client *h =
@@ -287,8 +288,10 @@ sdk_queue_message(const char *module_instance_name,
 		struct sdk_event *event = (struct sdk_event *)inbox_msg;
 		TAILQ_INSERT_TAIL(&h->events, event, q);
 		sdk_wakeup_handle(h);
+		ret = 0;
 	}
 	sdk_unlock();
+	return ret;
 }
 
 void
@@ -1672,6 +1675,7 @@ EVP_impl_sendMessage(struct EVP_client *h, const void *rawbuf,
 		.bloblen = bloblen,
 		.cb = cb,
 		.cb_userdata = userData,
+		.reason = EVP_MESSAGE_SENT_CALLBACK_REASON_ERROR,
 	};
 
 	sdk_lock();

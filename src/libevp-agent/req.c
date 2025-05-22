@@ -234,8 +234,8 @@ request_handle_response(struct evp_agent_context *agent, EVP_RPC_ID id,
 		uint32_t delay = now_ms - req->when_ms;
 		// To dicuss: Exposing the counter id it is a clue to
 		// impersonate the request/response
-		xlog_debug("got request id %ju in %" PRIu32 " ms",
-			   (uintmax_t)id, delay);
+		xlog_info("got request id %ju in %" PRIu32 " ms",
+			  (uintmax_t)id, delay);
 		if (req->callback) {
 			req->callback(req->id, req->callback_data, payload,
 				      delay, 0);
@@ -254,9 +254,9 @@ request_send(struct transport_ctxt *t, struct request *req)
 
 	size_t payloadlen = strlen(req->payload);
 	rc = transport_send(t, topic, req->payload, payloadlen, req->qos);
-	xlog_debug("%s req.id=%ju topic=%s, payload=%s, qos=%d, rc=%d",
-		   (req->when_ms == 0) ? "SEND" : "RESEND", req->id, topic,
-		   req->payload, req->qos, (int)rc);
+	xlog_info("%s req.id=%ju topic=%s, payload=%s, qos=%d, rc=%d",
+		  (req->when_ms == 0) ? "SEND" : "RESEND", req->id, topic,
+		  req->payload, req->qos, (int)rc);
 	free(topic);
 	if (rc != 0) {
 		xlog_warning("transport_send failed with %d", rc);

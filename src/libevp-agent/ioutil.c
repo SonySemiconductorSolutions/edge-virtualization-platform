@@ -19,7 +19,7 @@ readall(int fd, void *buf, size_t sz)
 		if (want == 0) {
 			break; /* done */
 		}
-		ssz = read(fd, buf + done_bytes, want);
+		ssz = read(fd, (char *)buf + done_bytes, want);
 		if (ssz == 0) {
 			break; /* EOF */
 		}

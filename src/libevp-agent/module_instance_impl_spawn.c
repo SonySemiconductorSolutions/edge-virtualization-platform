@@ -123,7 +123,7 @@ module_instance_impl_spawn_stop(struct module_instance *m)
 
 		goto stopped;
 	}
-	return EBUSY;
+	return EAGAIN;
 
 stopped:
 	m->stopped = true;

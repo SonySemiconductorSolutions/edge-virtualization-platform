@@ -22,6 +22,7 @@ check_hash(struct module *module, const unsigned char *ref, size_t ref_len,
 	   char **result)
 {
 	int ret;
+	unsigned char *calc = NULL;
 
 	mbedtls_md_type_t type = MBEDTLS_MD_SHA256;
 	const mbedtls_md_info_t *info = mbedtls_md_info_from_type(type);
@@ -32,11 +33,12 @@ check_hash(struct module *module, const unsigned char *ref, size_t ref_len,
 	const char *md_name = mbedtls_md_get_name(info);
 	const size_t byte_size = mbedtls_md_get_size(info);
 	if (ref_len != byte_size) {
-		return EINVAL;
+		*result = xstrdup("Module hash mismatch");
+		ret = 0;
+		goto finish;
 	}
 
-	unsigned char *calc = malloc(byte_size);
-	if (!calc) {
+	if (!(calc = malloc(byte_size))) {
 		return ENOMEM;
 	}
 
@@ -70,9 +72,9 @@ check_hash(struct module *module, const unsigned char *ref, size_t ref_len,
 			goto finish;
 		}
 		char *r = bin_array_to_hexchar(ref, byte_size, ref_string,
-					       sizeof(ref_string));
+					       byte_size * 2 + 1);
 		char *c = bin_array_to_hexchar(calc, byte_size, calc_string,
-					       sizeof(calc_string));
+					       byte_size * 2 + 1);
 
 		if (!r || !c) {
 			xlog_error("bin_array_to_hexchar failed:%s%s",
