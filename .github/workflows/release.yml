@@ -13,14 +13,26 @@ jobs:
   release-artifacts:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Get release version name
+        id: version
+        run: |
+          name=$(echo "${{ github.ref_name }}" | awk -F/ '{print $NF}')
+          echo "name=$name" >> $GITHUB_OUTPUT
 
       - name: Get last successful run id
         id: run-id
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          last_run_id=$(gh run list -w main.yml -c ${{ github.sha }} -b main -s completed --json databaseId -L 1 | jq -r .[].databaseId)
+          last_run_id=$(
+            gh run list \
+            --repo ${{ github.repository }} \
+            -w main.yml \
+            -c ${{ github.sha }} \
+            -b main \
+            -s completed \
+            --json databaseId -L 1 | jq -r .[].databaseId
+          )
           test -z $last_run_id && echo "cannot find last successful run_id" && exit 1 || echo "last_run_id=$last_run_id" && echo "last_run_id=$last_run_id" >> $GITHUB_OUTPUT
 
       - name: Download Python SDK (RaspiOS bookworm ARM64)
@@ -113,6 +125,17 @@ jobs:
           path: dist-ubuntu-noble-amd64
           github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
 
+      - name: Download SBOM
+        uses: actions/download-artifact@v4
+        env:
+          LAST_RUN_ID: ${{ steps.run-id.outputs.last_run_id }}
+        with:
+          pattern: sbom-agent-*${{ env.LAST_RUN_ID }}
+          merge-multiple: false
+          run-id: ${{ env.LAST_RUN_ID }}
+          path: sbom
+          github-token: ${{ github.event.repository.private && secrets.MIDOJENKINS_ARTIFACT_READ_EVP_AGENT_OSS || github.token }}
+
       - name: Rename deb artifacts
         run: |
           set -x
@@ -135,6 +158,15 @@ jobs:
             mv $whl $(echo $whl | sed -E 's/(.*)-([^-]*).whl/\1-raspios_bookworm-\2.whl/');
           done
 
+      - name: Create a zip for sbom
+        run: |
+          set -x
+          cd sbom
+          for dir in sbom-agent*; do
+            sbom_name="${dir%-*}"
+            zip -r ${sbom_name}-${{ steps.version.outputs.name }}.zip $dir;
+          done
+
       - name: List files in dist-ubuntu-noble-amd64
         run: ls -la dist-ubuntu-noble-amd64
 
@@ -151,3 +183,4 @@ jobs:
           files: |
             dist-*/*.deb
             dist-*/*.whl
+            sbom/*.zip

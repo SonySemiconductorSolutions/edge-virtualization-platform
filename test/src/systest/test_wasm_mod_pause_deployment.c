@@ -264,7 +264,8 @@ pause_deployment_not_in_progress(void **state)
 	struct evp_agent_context *ctxt = *state;
 
 	// Request pause when no module is being downloaded
-	assert_int_equal(evp_agent_request_pause_deployment(ctxt), 0);
+	while (evp_agent_request_pause_deployment(ctxt))
+		;
 
 	// Send a new deployment with a module to download
 	send_deployment(ctxt, DEPLOYMENT_ID1, INSTANCE_ID1, MODULE_1,

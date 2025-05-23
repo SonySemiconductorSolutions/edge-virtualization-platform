@@ -16,9 +16,9 @@
 void sdk_init(void);
 void sdk_queue_config(const char *name, const char *topic, const void *blob,
 		      size_t bloblen);
-void sdk_queue_message(const char *module_instance_name,
-		       const char *subscribe_alias, const void *blob,
-		       size_t bloblen);
+int sdk_queue_message(const char *module_instance_name,
+		      const char *subscribe_alias, const void *blob,
+		      size_t bloblen);
 void sdk_queue_rpc_request(const char *name, EVP_RPC_ID id, const char *method,
 			   const char *params);
 bool sdk_forward_local_to_publish_topic(struct sdk_event_message_sent *msg,

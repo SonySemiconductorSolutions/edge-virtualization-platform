@@ -60,7 +60,7 @@ EVP Agent requires the following tools:
 
 It also requires the following libraries:
 
-	* `WAMR`_ 2.1.2
+	* `WAMR`_ 2.2.0
 	* `MbedTLS`_ 3.6.2
 	* `Flatcc`_ 0.6.1
 
@@ -89,7 +89,7 @@ To build the AoT and XiP modules, WAMRC is required.
 This requires:
 
 	* `WASI-SDK`_ 24
-	* `WAMRC`_ 2.1.2
+	* `WAMRC`_ 2.2.0
 
 Package installation
 ********************

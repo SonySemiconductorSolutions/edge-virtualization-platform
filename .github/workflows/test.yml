@@ -29,7 +29,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
       options: ${{ startsWith(matrix.runner, 'buildjet') && '--user 1000:1001' || '--user 1001:127' }}
-    timeout-minutes: 30
+    timeout-minutes: ${{ startsWith(matrix.runner, 'buildjet') && 20 || 8 }} # the worst case is 3 minutes but buildjet sometimes is slower downloading the docker image
     strategy:
       fail-fast: false
       matrix:
@@ -67,7 +67,7 @@ jobs:
           make -j$((`nproc` * 2))\
             KBUILD_DEFCONFIG=configs/unit-test-all-hubs-wasm.config\
             test_modules/tests
-            
+
       - name: Run tests
         env:
           ASAN_OPTIONS: detect_leaks=1:detect_stack_use_after_return=1
