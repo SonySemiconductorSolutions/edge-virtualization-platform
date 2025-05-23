@@ -7,7 +7,7 @@
 all:
 
 # Macros related to the version of the agent
-VERSION = 1.47.0
+VERSION = 1.48.0
 SDK_VERSION = 1.0.0
 
 # Default value for configuration macros

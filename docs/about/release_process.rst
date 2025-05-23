@@ -28,7 +28,7 @@ of the different relevant artifacts:
 
 When creating and publishing a GitHub release UI,
 targetting the ``main`` branch.
-The tag ``releases/v<version>``
+The tag ``v<version>``
 with the same value from ``scripts/rules.mk`` must be created.
 The field version is the value defined in ``rules.mk``
 where ``version`` must follow `semantic versioning`_.
