@@ -25,9 +25,13 @@ on:
         description: The package namespace for docker images
         required: true
         type: string
-
-  schedule:
-    - cron: 0 0 * * 1-5
+  workflow_call:
+    inputs:
+      ref:
+        description: The ref sha to checkout evp-agent-oss
+        type: string
+        required: false
+        default: main
 
 concurrency:
   group: ${{ github.repository }}-${{ github.workflow }}@main-${{ github.ref }}
@@ -37,7 +41,7 @@ jobs:
 
   infos:
     name: Infos
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     outputs:
       package-namespace: ${{ steps.infos.outputs.namespace }}
     steps:
@@ -78,20 +82,33 @@ jobs:
       ref: ${{ inputs.ref || github.sha }}
       package-namespace: ${{ needs.infos.outputs.package-namespace }}
 
-  test-modules:
-    name: Test-modules
+  build-sdk:
+    name: Build
     needs:
       - checks
       - builder
       - infos
-    uses: ./.github/workflows/test-modules.yml
+    uses: ./.github/workflows/build-sdk.yml
     secrets: inherit
     with:
       builder-tag: ${{ needs.builder.outputs.builder-tag }}
       ref: ${{ inputs.ref || github.sha }}
       package-namespace: ${{ needs.infos.outputs.package-namespace }}
 
-  build:
+  build-modules:
+    name: Build
+    needs:
+      - checks
+      - builder
+      - infos
+    uses: ./.github/workflows/build-modules.yml
+    secrets: inherit
+    with:
+      builder-tag: ${{ needs.builder.outputs.builder-tag }}
+      ref: ${{ inputs.ref || github.sha }}
+      package-namespace: ${{ needs.infos.outputs.package-namespace }}
+
+  build-agent:
     name: Build
     needs:
       - checks
@@ -108,8 +125,8 @@ jobs:
     name: Tests
     needs:
       - checks
-      - build
-      - test-modules
+      - build-sdk
+      - build-modules
       - builder
       - infos
     uses: ./.github/workflows/test.yml
@@ -121,9 +138,10 @@ jobs:
 
   checkpoint-success:
     if: ${{ always() }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     needs:
       - tests
+      - build-agent
     steps:
       - name: Check all previous jobs finished correctly
         run: |

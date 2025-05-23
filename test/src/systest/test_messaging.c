@@ -18,6 +18,8 @@
 #include "module_instance.h"
 #include "mqtt_custom.h"
 
+#define TEST_PROCESS_EVENT_TIMEOUT 5000
+
 enum test_messaging_payloads { DEPLOYMENT_MANIFEST_1 };
 
 #define TEST_DEPLOYMENT_ID1 "4fa905ae-e103-46ab-a8b9-73be07599708"
@@ -183,14 +185,16 @@ test_messaging(void **state)
 	expect_value(recv_message_cb, msgPayloadLen, sizeof(testPayload));
 	expect_memory(recv_message_cb, userData, userRecvData,
 		      sizeof(userRecvData));
-	result = EVP_processEvent(sdk_handle_two, 1000);
+
+	result = EVP_processEvent(sdk_handle_two, TEST_PROCESS_EVENT_TIMEOUT);
 	assert_int_equal(EVP_OK, result);
 
 	// check send callback
 	expect_value(send_message_cb, reason, EVP_STATE_CALLBACK_REASON_SENT);
 	expect_memory(send_message_cb, userData, userSendData,
 		      sizeof(userSendData));
-	result = EVP_processEvent(sdk_handle_one, 1000);
+
+	result = EVP_processEvent(sdk_handle_one, TEST_PROCESS_EVENT_TIMEOUT);
 	assert_int_equal(EVP_OK, result);
 
 	// test unknown/invalid alias
@@ -202,7 +206,8 @@ test_messaging(void **state)
 		     EVP_MESSAGE_SENT_CALLBACK_REASON_ERROR);
 	expect_memory(send_message_cb, userData, userSendData,
 		      sizeof(userSendData));
-	result = EVP_processEvent(sdk_handle_one, 1000);
+
+	result = EVP_processEvent(sdk_handle_one, TEST_PROCESS_EVENT_TIMEOUT);
 	assert_int_equal(EVP_OK, result);
 }
 

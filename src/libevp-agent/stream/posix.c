@@ -673,32 +673,6 @@ cleanup_fd(void *arg)
 	int *fd = arg;
 
 	if (*fd >= 0) {
-		if (shutdown(*fd, SHUT_WR)) {
-			fprintf(stderr, "%s: shutdown(2): %s\n", __func__,
-				strerror(errno));
-		}
-
-		char b;
-
-		switch (read(*fd, &b, sizeof(b))) {
-		case sizeof(b):
-			fprintf(stderr, "%s: unexpected input data\n",
-				__func__);
-			break;
-
-		/* Remote has closed the connection. */
-		case 0:
-			fprintf(stderr,
-				"%s: remote has closed the connection\n",
-				__func__);
-			break;
-
-		default:
-			fprintf(stderr, "%s: read(2): %s\n", __func__,
-				strerror(errno));
-			break;
-		}
-
 		if (close(*fd)) {
 			fprintf(stderr, "%s: close(2): %s\n", __func__,
 				strerror(errno));
@@ -842,9 +816,7 @@ get_first_request(const struct out_thread_args *args, struct request **out)
 
 	ret = -1;
 
-	struct request *req = list->head;
-
-	if (req == NULL) {
+	while (list->head == NULL) {
 		error = pthread_cond_wait(&list->cond, &list->mutex);
 
 		if (error) {
@@ -852,15 +824,10 @@ get_first_request(const struct out_thread_args *args, struct request **out)
 				__func__, strerror(error));
 			/* Assume the mutex state has not been modified. */
 			goto locked;
-		} else if (list->head == NULL) {
-			fprintf(stderr, "%s: unexpected null instance\n",
-				__func__);
-			goto locked;
 		}
 	}
 
-	req = list->head;
-	*out = req;
+	*out = list->head;
 	ret = 0;
 
 locked:

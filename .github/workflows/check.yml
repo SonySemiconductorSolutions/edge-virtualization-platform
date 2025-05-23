@@ -22,7 +22,7 @@ on:
 jobs:
   check:
     name: Formatting
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     container:
       image: ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ inputs.builder-tag}}
       options: --user 1001:127

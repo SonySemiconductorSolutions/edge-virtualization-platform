@@ -35,13 +35,13 @@ jobs:
       matrix:
         include:
           - name: raspios-bookworm
-            runner: ${{ github.event.repository.private && 'buildjet-8vcpu-ubuntu-2204-arm' || 'ubuntu-24.04-arm' }}
+            runner: ${{ github.event.repository.private && 'buildjet-8vcpu-ubuntu-2204-arm' || 'ubuntu-22.04-arm' }}
             platform: arm64
           - name: ubuntu-noble
-            runner: ${{ github.event.repository.private && 'buildjet-8vcpu-ubuntu-2204-arm' || 'ubuntu-24.04-arm' }}
+            runner: ${{ github.event.repository.private && 'buildjet-8vcpu-ubuntu-2204-arm' || 'ubuntu-22.04-arm' }}
             platform: arm64
           - name: ubuntu-noble
-            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204' || 'ubuntu-24.04' }}
+            runner: ${{ github.event.repository.private && 'buildjet-4vcpu-ubuntu-2204' || 'ubuntu-22.04' }}
             platform: amd64
 
     steps:
@@ -104,6 +104,11 @@ jobs:
           UBSAN_OPTIONS: print_stacktrace=1
           TERM: xterm
         run: . .venv/bin/activate && make -C test -j RUNFLAGS='-c -t 60'
+
+      - name: Report summary blob profiling
+        if: always()
+        working-directory: test/logs
+        run: LC_ALL=C ../../scripts/gen-blob-prof.awk */src/*/*.log
 
       - name: Print failure logs
         if: failure()

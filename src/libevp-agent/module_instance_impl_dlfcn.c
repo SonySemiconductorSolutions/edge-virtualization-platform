@@ -10,7 +10,9 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <sched.h>
+#include <semaphore.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <internal/util.h>
 
@@ -25,7 +27,7 @@
 #include "xpthread.h"
 
 static struct evp_lock g_spawn_lock = EVP_LOCK_INITIALIZER;
-static pthread_cond_t g_spawn_cv EVP_GUARDED_BY(g_spawn_lock);
+static sem_t g_spawn_sem;
 static int (*g_entry_point)(int, char **) EVP_GUARDED_BY(g_spawn_lock);
 
 static int
@@ -38,8 +40,12 @@ _start_task(int argc, FAR char **argv)
 	// TODO: Replace assert (programming error)
 	assert(entryPoint != NULL);
 	g_entry_point = NULL;
-	xpthread_cond_signal(&g_spawn_cv);
 	xpthread_mutex_unlock(&g_spawn_lock);
+
+	if (sem_post(&g_spawn_sem)) {
+		xlog_error("sem_post(3) failed with %s", strerror(errno));
+		return -1;
+	}
 
 	clearenv();
 
@@ -87,8 +93,13 @@ impl_start(struct module_instance *m, const struct ModuleInstanceSpec *spec,
 			  ret);
 		return ret;
 	}
-	xpthread_cond_wait(&g_spawn_cv, &g_spawn_lock);
 	xpthread_mutex_unlock(&g_spawn_lock);
+	while (sem_wait(&g_spawn_sem)) {
+		if (errno == EINTR)
+			continue;
+		xlog_error("sem_wait(3) failed with %s", strerror(errno));
+		return errno;
+	}
 	sdk_handle_setpid(m->sdk_handle, m->pid);
 	return 0;
 }
@@ -138,6 +149,10 @@ impl_stop(struct module_instance *m)
 			//       Prefer xlog_abort[if]
 			xerrx(1, "waitpid returned 0");
 		}
+	}
+	if (sem_destroy(&g_spawn_sem)) {
+		xlog_error("sem_destroy(3) failed with %s", strerror(errno));
+		return errno;
 	}
 	return 0;
 }
@@ -200,7 +215,12 @@ impl_stat(struct module_instance *m)
 static int
 impl_init(void)
 {
-	return pthread_cond_init(&g_spawn_cv, NULL);
+	if (sem_init(&g_spawn_sem, 0, 0)) {
+		xlog_error("sem_init failed with %s", strerror(errno));
+		return errno;
+	}
+
+	return 0;
 }
 
 static void

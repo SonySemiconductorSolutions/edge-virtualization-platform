@@ -550,6 +550,7 @@ impl_stop(struct module_instance *m)
 					     m->name);
 				wasm_runtime_terminate(m->wasm_module_inst);
 				status = EVP_AGENT_WASM_STOPPED_CANCELLED;
+				break;
 			} else if (errno != EINTR) {
 				ret = errno;
 				xlog_warning("sem_timedwait error %d", ret);

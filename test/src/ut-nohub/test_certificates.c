@@ -47,7 +47,7 @@ void
 test_certificates(void **state)
 {
 	const char *test_cert = certificates;
-	size_t test_cert_size = strlen(test_cert) + 1;
+	size_t test_cert_size = certlist_crt_len;
 
 	struct cert *cert1;
 	struct cert *cert2;
@@ -62,7 +62,7 @@ test_certificates(void **state)
 	ret = cert_set("hoge", "broken", 7, &cert1);
 	assert_true(ret == EINVAL);
 
-	ret = cert_set("hoge", test_cert, test_cert_size, &cert1);
+	ret = cert_set("hoge", certificates, test_cert_size, &cert1);
 	assert_true(ret == 0);
 	assert_true(cert_refcnt(cert1) == 2);
 	cert_release(cert1);
