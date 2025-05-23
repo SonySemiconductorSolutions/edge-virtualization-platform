@@ -50,7 +50,8 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Build
-        run: bear -- make -j$((`nproc` * 2)) CFLAGS="-g -Werror"
+        run: bear -- make -j$((`nproc` * 2)) CFLAGS="-g -Werror" \
+          LDFLAGS="-Wl,--export-dynamic"
 
       - name: Generate SBOM
         run: |

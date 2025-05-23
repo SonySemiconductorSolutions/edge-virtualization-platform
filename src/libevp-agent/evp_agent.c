@@ -298,6 +298,9 @@ evp_agent_loop(struct evp_agent_context *ctxt)
 				xlog_info("agent connected to hub");
 				evp_agent_notification_publish(
 					ctxt, "agent/status", "connected");
+				evp_agent_notification_publish(
+					ctxt, "agent/conn_status",
+					"connected");
 			}
 
 		} else {
@@ -306,6 +309,9 @@ evp_agent_loop(struct evp_agent_context *ctxt)
 				xlog_info("agent disconnected from hub");
 				evp_agent_notification_publish(
 					ctxt, "agent/status", "disconnected");
+				evp_agent_notification_publish(
+					ctxt, "agent/conn_status",
+					"connecting");
 			}
 		}
 		evp_agent_unlock();
@@ -335,6 +341,10 @@ evp_agent_loop(struct evp_agent_context *ctxt)
 	case EVP_AGENT_STATUS_DISCONNECTING:
 		if (connections_get_count() == 0) {
 			ctxt->status = EVP_AGENT_STATUS_DISCONNECTED;
+			ret |= evp_agent_notification_publish(
+				ctxt, "agent/status", "disconnected");
+			ret |= evp_agent_notification_publish(
+				ctxt, "agent/conn_status", "disconnected");
 		}
 		break;
 	default:
@@ -444,6 +454,12 @@ evp_agent_free(struct evp_agent_context *ctxt)
 	free(ctxt);
 }
 
+void
+evp_agent_wakeup(const char *name)
+{
+	main_loop_wakeup(name);
+}
+
 int
 evp_agent_connect(struct evp_agent_context *ctxt)
 {
@@ -482,14 +498,20 @@ evp_agent_disconnect(struct evp_agent_context *ctxt)
 	int rv = transport_disconnect(ctxt->transport_ctxt);
 	// Disconnect network connections
 	connections_set_status(false);
+	const char *conn_status;
 	if (connections_get_count() == 0) {
 		ctxt->status = EVP_AGENT_STATUS_DISCONNECTED;
+		conn_status = "disconnected";
 	} else {
 		ctxt->status = EVP_AGENT_STATUS_DISCONNECTING;
+		conn_status = "disconnecting";
 	}
 	main_loop_wakeup(__func__);
 	evp_agent_unlock();
-	evp_agent_notification_publish(ctxt, "agent/status", "disconnected");
+	rv |= evp_agent_notification_publish(ctxt, "agent/status",
+					     "disconnected");
+	rv |= evp_agent_notification_publish(ctxt, "agent/conn_status",
+					     conn_status);
 	return rv;
 }
 

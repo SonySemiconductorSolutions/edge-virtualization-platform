@@ -1342,13 +1342,13 @@ dump_global(void)
 	if (g_evp_global.desired) {
 		char *p =
 			json_serialize_to_string_pretty(g_evp_global.desired);
-		xlog_debug("DESIRED: %s", p);
+		xlog_info("DESIRED: %s", p);
 		json_free_serialized_string(p);
 	}
 	if (g_evp_global.current) {
 		char *p =
 			json_serialize_to_string_pretty(g_evp_global.current);
-		xlog_debug("CURRENT: %s", p);
+		xlog_info("CURRENT: %s", p);
 		json_free_serialized_string(p);
 	}
 }

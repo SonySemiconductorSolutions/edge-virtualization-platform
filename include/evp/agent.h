@@ -200,6 +200,7 @@ enum evp_agent_status evp_agent_get_status(struct evp_agent_context *ctxt);
 int evp_agent_loop(struct evp_agent_context *ctxt);
 int evp_agent_stop(struct evp_agent_context *ctxt);
 void evp_agent_free(struct evp_agent_context *ctxt);
+void evp_agent_wakeup(const char *name);
 
 /**
  * Set the platform methods

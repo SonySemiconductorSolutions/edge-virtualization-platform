@@ -74,13 +74,6 @@ close_stream(struct stream_impl *si)
 		return 0;
 	}
 
-	if (si->ops != NULL) {
-		ret = si->ops->close(si);
-		if (ret != 0) {
-			fprintf(stderr, "%s: stream close failed\n", __func__);
-		}
-	}
-
 	if (si->in_thread_init) {
 		int error = pthread_cancel(si->in_thread);
 
@@ -96,6 +89,13 @@ close_stream(struct stream_impl *si)
 			fprintf(stderr, "%s: pthread_join(3): %s\n", __func__,
 				strerror(error));
 			ret = -1;
+		}
+	}
+
+	if (si->ops != NULL) {
+		ret = si->ops->close(si);
+		if (ret != 0) {
+			fprintf(stderr, "%s: stream close failed\n", __func__);
 		}
 	}
 

@@ -11,7 +11,7 @@ version=0.0.0
 
 usage()
 {
-    echo "usage: mk-sdk-deb [-a arch] [-V version]" >&2
+    echo "usage: mk-app-sdk-deb [-a arch] [-V version]" >&2
     exit 1
 }
 

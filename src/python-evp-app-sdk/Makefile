@@ -24,13 +24,20 @@ TARGET = $(LIBDIR)/python
 
 all: $(TARGET)
 
-dist: $(DEPS)
+dist-stamp: $(DEPS)
 	CFLAGS='$(CFLAGS)' LDFLAGS='$(LDFLAGS)' CC=$(CC) python -m build
+	set -e; for f in dist/*.whl; do \
+		plat=$$(python3 get_manylinux_platform.py $$f); \
+		auditwheel repair --plat $$plat $$f; \
+	done
+	touch $@
 
-$(TARGET): dist
+$(TARGET): dist-stamp
 	mkdir -p $@
-	cp dist/* $@
+	cp wheelhouse/* $@
 
 clean:
 	rm -rf $(TARGET)
 	rm -rf dist
+	rm -rf wheelhouse
+	rm -f dist-stamp

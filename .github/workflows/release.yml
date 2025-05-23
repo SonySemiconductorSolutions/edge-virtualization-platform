@@ -147,17 +147,6 @@ jobs:
             mv $deb $(echo $deb | sed -E 's/(.*)_([^_]*).deb/\1-raspios-bookworm_\2.deb/');
           done
 
-      - name: Rename whl artifacts
-        run: |
-          set -x
-          for whl in dist-ubuntu-noble-*/*.whl; do
-            mv $whl $(echo $whl | sed -E 's/(.*)-([^-]*).whl/\1-ubuntu_noble-\2.whl/');
-          done
-
-          for whl in dist-raspios-bookworm-*/*.whl; do
-            mv $whl $(echo $whl | sed -E 's/(.*)-([^-]*).whl/\1-raspios_bookworm-\2.whl/');
-          done
-
       - name: Create a zip for sbom
         run: |
           set -x

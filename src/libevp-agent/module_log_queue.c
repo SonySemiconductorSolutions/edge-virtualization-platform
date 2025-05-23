@@ -156,7 +156,7 @@ module_log_queue_put(const char *instance_id, const char *stream,
 }
 
 size_t
-module_log_queue_write(void *data, size_t len)
+module_log_queue_write(char *data, size_t len)
 {
 	struct queue *self = &g_context;
 	size_t ret = 0;
@@ -175,7 +175,7 @@ module_log_queue_write(void *data, size_t len)
 }
 
 size_t
-module_log_queue_read(void *data, size_t len)
+module_log_queue_read(char *data, size_t len)
 {
 	struct queue *self = &g_context;
 	size_t ret = 0;

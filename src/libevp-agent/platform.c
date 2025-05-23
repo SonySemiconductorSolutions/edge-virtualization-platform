@@ -399,11 +399,17 @@ plat_mod_fs_prune(void)
 	int ret;
 	const char *module_dir = path_get(MODULE_PATH_ID);
 	DIR *dir = opendir(module_dir);
+
 	if (dir == NULL) {
 		xlog_abort("opendir(3): %d (%s)", errno, strerror(errno));
 	}
 	struct dirent *d;
 
+	/*
+	 * cppcheck doesn't follow xlog_abort well and doesnt detects
+	 * the exit inside xlog_abort
+	 */
+	// cppcheck-suppress nullPointerRedundantCheck
 	while ((d = readdir(dir)) != NULL) {
 		if (!strcmp(d->d_name, "..") || !strcmp(d->d_name, ".")) {
 			continue;

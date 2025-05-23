@@ -116,6 +116,8 @@ STESTS=\
 	src/systest/test_capture_mode.elf\
 	src/systest/test_connection_error.elf\
 	src/systest/test_deployment.elf\
+	src/systest/test_deployment_invalid_hash.elf\
+	src/systest/test_deployment_unload_error.elf\
 	src/systest/test_device_config.elf\
 	src/systest/test_direct_command.elf\
 	src/systest/test_direct_command_parallel.elf\
@@ -126,6 +128,7 @@ STESTS=\
 	src/systest/test_mi_denied_requests.elf\
 	src/systest/test_module_log.elf\
 	src/systest/test_mstp.elf\
+	src/systest/test_mstp_legacy.elf\
 	src/systest/test_mstp_null.elf\
 	src/systest/test_spawn_mod_config_echo.elf\
 	src/systest/test_spawn_mod_download_evp_file.elf\

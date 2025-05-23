@@ -43,7 +43,7 @@ record_read(struct record_reader *r, struct sdk_transport *trans)
 	}
 	if (offset < r->hdr.size) {
 		size_t want = r->hdr.size - offset;
-		ret = read(fd, r->buf + offset, want);
+		ret = read(fd, (char *)r->buf + offset, want);
 		if (ret == 0) {
 			return EIO; /* EOF */
 		}
@@ -104,7 +104,7 @@ record_write(struct record_writer *w, struct sdk_transport *trans)
 	size_t offset = w->bytes_written - sizeof(w->hdr);
 	if (offset < w->hdr.size) {
 		size_t want = w->hdr.size - offset;
-		ret = write(fd, w->buf + offset, want);
+		ret = write(fd, (char *)w->buf + offset, want);
 		// TODO: Replace assert (runtime error)
 		assert(ret != 0);
 		if (ret == -1) {

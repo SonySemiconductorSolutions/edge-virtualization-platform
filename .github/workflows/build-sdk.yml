@@ -92,7 +92,7 @@ jobs:
 
       - name: Build Python package
         working-directory: src/python-evp-app-sdk
-        run: python3 -m build
+        run: make
 
       - name: SDK Debian package
         working-directory: src/python-evp-app-sdk
@@ -101,7 +101,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: python-sdk-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
-          path: src/python-evp-app-sdk/dist/*
+          path: lib/python/*
 
       - uses: actions/upload-artifact@v4
         with:

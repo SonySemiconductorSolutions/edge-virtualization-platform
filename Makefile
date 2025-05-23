@@ -88,7 +88,8 @@ deps.mk: .config
 
 dist: all
 	$(SCRIPTDIR)/mk-agent-deb.sh -V $(VERSION) -a $(ARCH)
-	$(SCRIPTDIR)/mk-sdk-deb.sh -V $(SDK_VERSION) -a $(ARCH)
+	$(SCRIPTDIR)/mk-app-sdk-deb.sh -V $(SDK_VERSION) -a $(ARCH)
+	$(SCRIPTDIR)/mk-agent-sdk-deb.sh -V $(SDK_VERSION) -a $(ARCH)
 
 clean:
 	cd test && $(MAKE) clean

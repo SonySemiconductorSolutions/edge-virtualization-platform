@@ -259,9 +259,9 @@ xmemdup_internal(const char *file, int line, const void *p0, size_t sz)
 	void *p = malloc(allocsz);
 	if (p == NULL) {
 		plat_out_of_memory(file, line, "xmemdup", sz);
+	} else {
+		memcpy(p, p0, sz);
 	}
-
-	memcpy(p, p0, sz);
 	return p;
 }
 

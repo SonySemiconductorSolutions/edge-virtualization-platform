@@ -4,8 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -24,7 +26,7 @@
 #define TEST_HTTP_GET_FILE "foobar.txt"
 #define TEST_HTTP_PUT_FILE "boofar.bin"
 
-static pthread_mutex_t webclient_hang_lock;
+static sem_t in_sem, out_sem;
 
 int
 __wrap_webclient_get_poll_info(FAR struct webclient_context *ctx,
@@ -36,9 +38,8 @@ __wrap_webclient_get_poll_info(FAR struct webclient_context *ctx,
 int
 __wrap_webclient_perform(FAR struct webclient_context *ctx)
 {
-	/* provide a way for us to lock the thread using the mutex */
-	pthread_mutex_lock(&webclient_hang_lock);
-	pthread_mutex_unlock(&webclient_hang_lock);
+	assert(!sem_post(&in_sem));
+	assert(!sem_wait(&out_sem));
 	return -EAGAIN;
 }
 
@@ -51,15 +52,27 @@ blob_cb(EVP_BLOB_CALLBACK_REASON reason, const void *vp, void *userData)
 	check_expected(result->error);
 }
 
+static int
+on_conn_status(const void *data, void *user)
+{
+	agent_write_to_pipe(data);
+	return 0;
+}
+
 void
 test_connections_disconnecting(void **state)
 {
 	// init mutex
-	pthread_mutex_init(&webclient_hang_lock, NULL);
+	assert_int_equal(sem_init(&in_sem, 0, 0), 0);
+	assert_int_equal(sem_init(&out_sem, 0, 0), 0);
 
 	// start agent
 	struct evp_agent_context *ctxt = agent_test_start();
-	agent_poll_status(ctxt, EVP_AGENT_STATUS_CONNECTED, 10);
+
+	assert_int_equal(
+		evp_agent_notification_subscribe(ctxt, "agent/conn_status",
+						 on_conn_status, NULL),
+		0);
 
 	// create backdoor instance
 	struct EVP_client *sdk_handle =
@@ -78,9 +91,6 @@ test_connections_disconnecting(void **state)
 		.filename = filename,
 	};
 
-	// Hang the webclient thread
-	pthread_mutex_lock(&webclient_hang_lock);
-
 	// test HTTP GET to file
 	struct EVP_BlobRequestHttp request = {
 		.url = TEST_HTTP_GET_URL,
@@ -91,26 +101,23 @@ test_connections_disconnecting(void **state)
 				   EVP_BLOB_OP_GET, &request, &localstore,
 				   blob_cb, &cb_data);
 
-	// wait a bit for the blob operation to start
-	sleep(1);
+	// wait for webclient_perform to be called
+	assert_int_equal(sem_wait(&in_sem), 0);
 
 	// Disconnection
-	result = evp_agent_disconnect(ctxt);
-	assert_int_equal(result, EVP_OK);
-	agent_poll_status(ctxt, EVP_AGENT_STATUS_DISCONNECTING, 0);
+	assert_int_equal(evp_agent_disconnect(ctxt), EVP_OK);
+	agent_poll(verify_equals, "disconnecting");
 
 	// let the webclient_perform thread continue
-	pthread_mutex_unlock(&webclient_hang_lock);
+	assert_int_equal(sem_post(&out_sem), 0);
 
-	// We must go to DISCONNECTED in 5 seconds maximum
-	agent_poll_status(ctxt, EVP_AGENT_STATUS_DISCONNECTED, 5);
+	agent_poll(verify_equals, "disconnected");
 
 	// Expect processed blob to abort
 	expect_value(blob_cb, reason, EVP_BLOB_CALLBACK_REASON_DONE);
 	expect_value(blob_cb, result->result, EVP_BLOB_RESULT_ERROR);
 	expect_value(blob_cb, result->error, ENETDOWN);
-	result = EVP_processEvent(sdk_handle, 2000);
-	assert_int_equal(result, EVP_OK);
+	assert_int_equal(EVP_processEvent(sdk_handle, -1), EVP_OK);
 
 	free(filename);
 }

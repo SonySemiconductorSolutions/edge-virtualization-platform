@@ -14,8 +14,8 @@ void module_log_queue_init(void);
 void module_log_queue_free(void);
 int module_log_queue_put(const char *instance_id, const char *stream,
 			 const char *log);
-size_t module_log_queue_write(void *data, size_t sz);
-size_t module_log_queue_read(void *data, size_t sz);
+size_t module_log_queue_write(char *data, size_t sz);
+size_t module_log_queue_read(char *data, size_t sz);
 size_t module_log_queue_get_len(void);
 bool module_log_queue_is_full(void);
 

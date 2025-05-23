@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     gpg \
     make \
+    patchelf \
     pycodestyle \
     python3-pip \
     python3-bashate \
@@ -89,6 +90,8 @@ RUN echo "deb https://apt.llvm.org/bookworm/ llvm-toolchain-bookworm-${LLVM_VERS
     && update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-${LLVM_VERSION} 50 \
     && update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-${LLVM_VERSION} 50 \
     && update-alternatives --install /usr/bin/wasm-ld wasm-ld /usr/bin/wasm-ld-${LLVM_VERSION} 50
+
+RUN pip3 install auditwheel==6.3.0 --break-system-packages
 
 ENV WASI_PREFIX=/usr/bin/
 ARG WASI_SDK_VERSION=24

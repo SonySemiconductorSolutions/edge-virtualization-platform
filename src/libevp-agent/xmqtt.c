@@ -31,7 +31,7 @@ static void
 mqtt_dump(struct mqtt_client *m)
 {
 #if defined(MQTT_LOG_VERBOSE)
-	printf("error = %d (%s)\n", m->error, mqtt_error_str(m->error));
+	printf("error = %d (%s)\n", (int)m->error, mqtt_error_str(m->error));
 	long len = mqtt_mq_length(&m->mq);
 	printf("mqtt_mq_length = %ld\n", len);
 	printf("send_offset = %zu\n", m->send_offset);

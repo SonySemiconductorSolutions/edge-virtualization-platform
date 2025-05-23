@@ -436,13 +436,8 @@ get_done_evp1(EVP_RPC_ID id, void *cb_data, void *payload, uint32_t delay,
 	// TODO: Replace assert (programming error)
 	assert(error == 0);
 
-	// Don't print deployment data in INFO level
-	// Since it could contain user data
-	xlog_debug("get_done (in %" PRIu32 " ms): id=%ju, payload=%s", delay,
-		   (uintmax_t)id, (const char *)payload);
-
-	xlog_info("get_done (in %" PRIu32 " ms): id=%ju, length=%zu", delay,
-		  (uintmax_t)id, strlen(payload));
+	xlog_info("get_done (in %" PRIu32 " ms): id=%ju, payload=%s", delay,
+		  (uintmax_t)id, (const char *)payload);
 
 	/* Parse payload and process shared attributes. */
 	/*
@@ -477,13 +472,8 @@ get_done_evp2(EVP_RPC_ID id, void *cb_data, void *payload, uint32_t delay,
 	// TODO: Replace assert (programming error)
 	assert(error == 0);
 
-	// Don't print deployment data in INFO level
-	// Since it could contain user data
-	xlog_debug("get_done (in %" PRIu32 " ms): id=%ju, payload=%s", delay,
-		   (uintmax_t)id, (const char *)payload);
-
-	xlog_info("get_done (in %" PRIu32 " ms): id=%ju, length=%zu", delay,
-		  (uintmax_t)id, strlen(payload));
+	xlog_info("get_done (in %" PRIu32 " ms): id=%ju, payload=%s", delay,
+		  (uintmax_t)id, (const char *)payload);
 
 	/* Parse payload and process shared attributes. */
 	/*

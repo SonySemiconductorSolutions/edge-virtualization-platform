@@ -106,6 +106,7 @@ License:  BSD-3-Clause
 EOF
 
 mkdir -p dist/usr/bin
+mkdir -p dist/usr/lib
 mkdir -p dist/var/lib/evp_agent
 mkdir -p dist/lib/systemd/system
 
@@ -129,5 +130,6 @@ WantedBy=multi-user.target
 EOF
 
 cp bin/evp_agent dist/usr/bin/evp_agent
+cp lib/libiwasm.so dist/usr/lib/libiwasm.so
 
 dpkg-deb --build dist evp-agent-${version}_$arch.deb

@@ -347,7 +347,7 @@ work_trycancel(struct workq *q, struct work *wk)
 	/* NOTE: done callback has not been called */
 	if (status == WORK_STATUS_INPROGRESS ||
 	    status == WORK_STATUS_NOTIFICATION) {
-		return EBUSY;
+		return EAGAIN;
 	}
 	if (status == WORK_STATUS_NEW) {
 		return ENOENT;

@@ -121,7 +121,7 @@ static int
 docker_stream_fn(unsigned http_status, char **bufp, int offset, int datend,
 		 int *buflen, void *vp)
 {
-	const void *p = (*bufp) + offset;
+	const char *p = (*bufp) + offset;
 	size_t n = datend - offset;
 	struct docker_stream_state *state = vp;
 

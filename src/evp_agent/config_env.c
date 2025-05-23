@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <evp/agent_config.h>
+
 #include <internal/cdefs.h>
 #include <internal/config_impl.h>
 #include <internal/util.h>
