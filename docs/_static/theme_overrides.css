@@ -1,0 +1,118 @@
+/*
+ * SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
+.rst-content .toctree-wrapper > p.caption, h1, h2, h3, h4, h5, h6, legend {
+    margin-top: 0;
+    font-weight: 700;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* AITRIOS/SONY colors */
+
+.wy-table-responsive table td, .wy-table-responsive table th {
+white-space:nowrap
+}
+
+a {
+color: #7192D3;
+text-decoration: none;
+cursor:pointer
+}
+
+.wy-nav-side {
+background: #928D89;
+}
+
+.wy-menu-vertical a {
+color:#FFFFFF
+}
+
+.wy-menu-vertical header, .wy-menu-vertical p.caption {
+color: #3B3B3B;
+}
+
+.wy-side-nav-search {
+background-color: #3E455C;
+}
+
+.wy-side-nav-search > div.version {
+color:#ffffff
+}
+
+/* Increase font sizes */
+
+body {
+	font-size: 100%;
+}
+
+div[class^="highlight"] pre {
+	font-size: 100%;
+}
+
+.c {
+	font-style: normal;
+}
+
+p {
+	font-size: 100%;
+}
+
+/* Tweak for this: https://github.com/rtfd/sphinx_rtd_theme/issues/419 */
+
+div[class^="highlight"] pre {
+    line-height: normal;
+}
+.rst-content .highlight > pre {
+    line-height: normal;
+}
+
+/* increase page width */
+.wy-nav-content{max-width: 1000px; }
+
+/* For tables:
+ * - Make table cells wrap for not going past the page width.
+ * - Align caption to the left
+ */
+
+.wy-table-responsive table td { white-space: normal; }
+.rst-content table.docutils caption { text-align: left; font-size: 100%; }
+
+.toc-title {
+    font-size: 150%;
+    font-weight: bold;
+}
+
+/*  captions should have full font size */
+caption, .wy-table caption, .rst-content table.field-list caption {
+    font-size: 100%;
+}
+
+.rst-content .section ul li:last-child, .rst-content .section ul li p:last-child {
+      margin-bottom: 10px;
+}
+
+/* inline verbatim: remove borderbox and padding and set larger font */
+code, .rst-content tt, .rst-content code {
+    border: none;
+    padding: unset;
+    font-size: 85%;
+}
+
+/* Make type reference hyperlinks of a higher-contrast color */
+code.xref .pre {
+    color: #ea8028;
+}
+
+/* Indented content: the main feature */
+div.indent {
+    margin-left: 24px;
+}
+
+/* Indented content: reduced inter-element spacing, in all but the last one */
+div.indent :not(:last-child) {
+    margin-bottom: 10px;
+}

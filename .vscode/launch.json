@@ -1,0 +1,57 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}.elf",
+            "args": [],
+            "cwd": "${workspaceFolder}/test",
+            "environment": [
+                {
+                    "name": "EVP_IOT_PLATFORM",
+                    "value": "${input:hub}"
+                },
+                {
+                    "name": "EVP_DATA_DIR",
+                    "value": "/tmp/evp_data"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Capture usr signal",
+                    "text": "-exec process handle -p false -s false -n true SIGUSR1",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "prepare-test"
+        }
+    ],
+    "inputs": [
+        {
+            "type": "pickString",
+            "id": "hub",
+            "description": "Please select Variant and EVP version",
+            "options": [
+                "tb",
+                "evp1"
+            ],
+        },
+    ]
+}

@@ -1,0 +1,78 @@
+#!/bin/sh
+
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+usage()
+{
+	echo "usage: sources [-d objdump][-c database] [file...]" >&2
+	exit 1
+}
+
+for i
+do
+	case "$i" in
+	-d)
+		objdump=${2?`usage`}
+		shift 2
+		;;
+	-c)
+		database=${2?`usage`}
+		shift 2
+		;;
+	-*)
+		usage
+		;;
+	*)
+		break
+	esac
+done
+
+${objdump:-objdump} -Wi "$@"  |
+awk '
+$2 == "DW_AT_name" {
+	sub(/.*: */, "")
+	name = $0
+}
+$2 == "DW_AT_comp_dir" {
+	sub(/.*: */, "")
+	dir = $0
+
+	if (name !~ /^\//)
+		name = dir "/" name
+	print dir,name
+}' |
+while read dir file
+do
+	echo $file
+	jq -r '
+	map(select(.file == "'$file'"))[] |
+	("cd " + .directory,
+	 (.arguments |
+	 . |= [.[0]] + . |
+	 .[1] |= "-M" |
+	 map(select(. != "-c")) |
+	 map(select(. != "-o")) |
+	 map(select(test("\\.o$") == false)) |
+	 map("\"" + . + "\"") |
+	 join(" ")))' ${database:-compile_commands.json} |
+	sh |
+	sed -E '
+		# Remove target part
+		s/^.*://
+		# Remove continuation escapes
+		s/\\$//
+		# Remove leading whitespaces
+		s/^[[:space:]]*//
+		# Remove trailing whitespaces
+		s/[[:space:]]*$//
+		# Split multifile lines
+		s/[[:space:]]+/\
+/g' |
+	# convert relative paths to absolute
+	sed 's@^[^/]@'$dir'/&@'
+done |
+awk '/^\//    {print | "xargs realpath -m"}
+     /^[^\/]/ {print}' |
+sort -u

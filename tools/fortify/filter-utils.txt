@@ -1,0 +1,31 @@
+# False positive.
+# Yet again, Fortify fails to see the ownership for bucket is
+# transferred to ret->bucket, which will then be free(3)d accordingly
+# by string_map_dealloc
+# [5AC2632A151E2A14D1D6D209DB4C916B : high : Memory Leak : controlflow ]
+#
+#     string_map_alloc.c(24) : Branch not taken: (ret != NULL)
+#     string_map_alloc.c(28) : start -> allocated : bucket = calloc(...)
+#     string_map_alloc.c(28) : allocated -> allocated : bucket refers to dynamically allocated memory
+#     string_map_alloc.c(30) : Branch not taken: (bucket != NULL)
+#     string_map_alloc.c(35) : allocated -> allocated : bucket refers to dynamically allocated memory
+#     string_map_alloc.c(37) : allocated -> allocated : bucket no longer refers to dynamically allocated memory
+#     string_map_alloc.c(37) : allocated -> allocated : <AnonymousObject>.bucket no longer refers to dynamically allocated memory
+#     string_map_alloc.c(37) : allocated -> leak : <AnonymousObject> end scope : Memory leaked
+5AC2632A151E2A14D1D6D209DB4C916B
+
+# False positive.
+# The `cond` is free by the user when the channel is destroy with `chan_dealloc`
+# So it is not a real leak.
+#[03696024E78CE167089D43BD0FDE67DA : high : Unreleased Resource : Synchronization : controlflow ]
+#
+#    chan_alloc.c(20) : Branch not taken: (pthread_condattr_init((&cond_attr)) == 0)
+#    chan_alloc.c(24) : Branch not taken: (pthread_condattr_setclock((&cond_attr), 1) == 0)
+#    chan_alloc.c(28) : start -> loaded : pthread_cond_init((&cond), ...)
+#    chan_alloc.c(28) : loaded -> loaded : (&cond) refers to an allocated resource
+#    chan_alloc.c(28) : Branch not taken: (pthread_cond_init((&cond), (&cond_attr)) == 0)
+#    chan_alloc.c(31) : Branch not taken: (ch != NULL)
+#    chan_alloc.c(39) : loaded -> loaded : return
+#    chan_alloc.c(39) : loaded -> loaded : (&cond) no longer refers to an allocated resource
+#    chan_alloc.c(39) : loaded -> end_of_scope : cond end scope : Resource leaked
+03696024E78CE167089D43BD0FDE67DA

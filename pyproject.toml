@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "Edge Virtualization Platform"
+dynamic = ["version", "description"]
+
+[tool.rstcheck]
+report_level = "WARNING"
+#ignore_directives = []
+#ignore_roles = []
+#ignore_substitutions = []
+ignore_languages = [
+    "python",
+    "cpp",
+    "c",
+    "shell",
+    "json"
+]
+ignore_messages = "(Hyperlink target \".*\" is not referenced.$)"

@@ -1,0 +1,21 @@
+{
+        "deploymentId": "2dc1a1c3-531b-4693-abba-a4a039bb827d",
+        "instanceSpecs": {
+            "07fe77d5-7117-4326-9042-47fda5dd9bf5": {
+                "moduleId": "b91fe3e8-df6d-41b7-90cb-72f8b92bdf5e",
+                "entryPoint": "backdoor-telemetry",
+                "version": 1,
+                "publish": {},
+                "subscribe": {}
+            }
+        },
+        "modules": {
+            "b91fe3e8-df6d-41b7-90cb-72f8b92bdf5e": {
+                "moduleImpl": "spawn",
+                "downloadUrl": "",
+                "hash": ""
+            }
+        },
+        "publishTopics": {},
+        "subscribeTopics": {}
+}

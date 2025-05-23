@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools >= 61.0",
+    "swig",
+]
+
+[tool.pytest.ini_options]
+addopts = "--ignore=external"

@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+**/*.a
+**/*.aot
+**/*.d
+**/*.o
+**/*.wo
+**/*.xip
+.config
+.vscode/
+bin/
+build/
+doc/
+include/config.h
+lib/
+platform/*/Dockerfile
+src/*/build
+test/

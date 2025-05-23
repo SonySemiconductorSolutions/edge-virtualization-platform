@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[submodule "src/mbedtls"]
+	path = src/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls.git
+[submodule "src/flatcc"]
+	path = src/flatcc
+	url = https://github.com/dvidelabs/flatcc
+[submodule "src/nuttx"]
+	path = src/nuttx
+	url = https://github.com/apache/nuttx
+[submodule "src/nuttx-apps"]
+	path = src/nuttx-apps
+	url = https://github.com/apache/nuttx-apps
+[submodule "src/wasm-micro-runtime"]
+	path = src/wasm-micro-runtime
+	url = https://github.com/bytecodealliance/wasm-micro-runtime
+[submodule "test/libweb"]
+	path = test/libweb
+	url = https://github.com/midokura/libweb.git

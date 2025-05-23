@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2024 Sony Semiconductor Solutions Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+recursive-include external/include *.h
+recursive-include external/flatcc *.h
+include external/lib/libevp-app-sdk-bundle.a
