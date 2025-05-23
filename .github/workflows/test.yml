@@ -50,21 +50,8 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      - name: Download test modules
-        uses: actions/download-artifact@v4
-        with:
-          name: test-modules-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
-          path: test_modules/
-
-      - name: Download Python SDK
-        uses: actions/download-artifact@v4
-        with:
-          name: python-sdk-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
-          path: py-sdk
-
-      - name: Set permissions
-        run: chmod +x test_modules/*.elf
-
+      # We need to build dependencies independently as we don't want the same
+      # build flags i.e. `-Og -Werror` flag
       - name: Build dependencies
         run: |
           make -j$((`nproc` * 2)) \
@@ -73,37 +60,28 @@ jobs:
             TOOL=clang \
             depend
 
-      - name: Build agent
+      # We need to build the modules independently as we don't want the same
+      # build flags i.e. `-Werror` flag
+      - name: Build modules
         run: |
           make -j$((`nproc` * 2))\
             KBUILD_DEFCONFIG=configs/unit-test-all-hubs-wasm.config\
-            TOOL=clang \
-            SANITIZER=ENABLED \
-            COVERAGE=ccov \
-            CFLAGS="-g -Og -Werror" \
-
-      - name: Build tests
-        run: |
-          make -C test -j$((`nproc` * 2))\
-            TOOL=clang \
-            SANITIZER=ENABLED \
-            COVERAGE=ccov \
-            CFLAGS="-g -Og -Werror" \
-            LDFLAGS="-fuse-ld=lld -g" \
-            build
-
-      - name: Install the Python SDK
-        run: |
-          python3 -m venv .venv
-          . .venv/bin/activate
-          pip3 install py-sdk/*.whl
-
+            test_modules/tests
+            
       - name: Run tests
         env:
           ASAN_OPTIONS: detect_leaks=1:detect_stack_use_after_return=1
           UBSAN_OPTIONS: print_stacktrace=1
           TERM: xterm
-        run: . .venv/bin/activate && make -C test -j RUNFLAGS='-c -t 60'
+        run: |
+          make test -j$((`nproc` * 2))\
+            KBUILD_DEFCONFIG=configs/unit-test-all-hubs-wasm.config\
+            TOOL=clang \
+            SANITIZER=ENABLED \
+            COVERAGE=ccov \
+            CFLAGS="-g -Og -Werror" \
+            LDFLAGS="-g" \
+            RUNFLAGS='-c -t 60'
 
       - name: Report summary blob profiling
         if: always()
@@ -140,6 +118,15 @@ jobs:
           name: test-log-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: test/logs/**/*.log
           retention-days: ${{ job.status == 'success' && '7' || '14' }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-modules-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
+          path: |
+            test_modules/*.elf
+            test_modules/*.wasm
+            test_modules/*.wasm.*
+            test_modules/python/*.zip
 
       - name: Upload coverage results
         uses: actions/upload-artifact@v4

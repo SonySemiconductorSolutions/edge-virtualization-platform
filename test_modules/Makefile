@@ -69,7 +69,7 @@ MORE_LDLIBS =\
 	$(DEPLIBS)\
 	-lm\
 
-all: elf wasm aot xip
+all: python elf wasm aot xip
 
 elf: FORCE
 	$(MAKE) EXT=elf modules

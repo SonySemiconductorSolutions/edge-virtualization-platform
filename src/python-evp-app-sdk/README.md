@@ -16,10 +16,10 @@ make KBUILD_DEFCONFIG=configs/linux-docker.config
 
 This will build the dependencies, the SDK and the Agent with support for the "Remote SDK"
 
-Instal cython dependencies:
+Install cython dependencies:
 
 ```bash
-sudo apt-get update && sudo apt-get install -y python3-dev
+sudo apt-get update && sudo apt-get install -y python3-dev python3-build
 ```
 
 Now, build the python package:

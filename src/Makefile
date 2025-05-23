@@ -4,19 +4,25 @@
 
 PROJECTDIR = ..
 
-EVP_LIBS = \
-	libevp-agent\
-	libevp-utils\
-	libevp-app-sdk \
-
 DIRS = \
 	evp_agent\
 	libparson\
 	sdkenc\
-	$(EVP_LIBS)
+	libevp-agent\
+	libevp-utils\
+	libevp-app-sdk\
+	python-evp-app-sdk\
 
 include $(PROJECTDIR)/scripts/rules.mk
 -include $(PROJECTDIR)/deps.mk
+-include $(PROJECTDIR)/.config
+
+EVP_LIBS-y += \
+	libevp-agent\
+	libevp-utils\
+
+EVP_LIBS-$(CONFIG_EVP_SDK_SOCKET) +=\
+	libevp-app-sdk\
 
 # After build try to remove the cmake directory that
 # some cmake projects create in the top directory
@@ -25,9 +31,11 @@ all: evp_agent libs
 
 depend: $(LIBDIRS)
 
-libs: $(EVP_LIBS)
+libs: $(EVP_LIBS-y)
 
 libevp-agent libevp-app-sdk: $(LIBDIRS)
+
+python-evp-app-sdk: libevp-app-sdk
 
 libevp-agent: libevp-utils
 

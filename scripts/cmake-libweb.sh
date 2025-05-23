@@ -24,6 +24,7 @@ cmake \
     -DCMAKE_C_COMPILER="${CC:-cc}" \
     -DCMAKE_CXX_COMPILER="${CXX:-c++}" \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     ..
 
 trap "" EXIT INT TERM HUP

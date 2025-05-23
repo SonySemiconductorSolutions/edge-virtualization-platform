@@ -95,19 +95,6 @@ jobs:
       ref: ${{ inputs.ref || github.sha }}
       package-namespace: ${{ needs.infos.outputs.package-namespace }}
 
-  build-modules:
-    name: Build
-    needs:
-      - checks
-      - builder
-      - infos
-    uses: ./.github/workflows/build-modules.yml
-    secrets: inherit
-    with:
-      builder-tag: ${{ needs.builder.outputs.builder-tag }}
-      ref: ${{ inputs.ref || github.sha }}
-      package-namespace: ${{ needs.infos.outputs.package-namespace }}
-
   build-agent:
     name: Build
     needs:
@@ -125,8 +112,6 @@ jobs:
     name: Tests
     needs:
       - checks
-      - build-sdk
-      - build-modules
       - builder
       - infos
     uses: ./.github/workflows/test.yml
