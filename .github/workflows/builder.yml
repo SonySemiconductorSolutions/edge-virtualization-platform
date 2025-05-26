@@ -40,7 +40,7 @@ jobs:
     name: Is builder necessary?
     runs-on: ubuntu-22.04
     outputs:
-      build: ${{ steps.changed-files.outputs.all_changed_and_modified_files != '' }}
+      build: ${{ steps.changed-files.outputs.all_changed_and_modified_files != '' || github.event_name == 'workflow_dispatch' }}
       builder-tag: ${{ steps.builder-tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
