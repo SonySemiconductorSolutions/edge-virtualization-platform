@@ -14,15 +14,15 @@ CI_FILTER=\
 
 coverage/cov.lcov: FORCE
 	trap "rm -f $$$$.tmp" EXIT INT TERM;\
-	find . -name '*.profraw' |\
+	find test/ -name '*.profraw' |\
 	xargs llvm-profdata merge -o coverage/cov.profdata -sparse
-	find . -name '*.elf' |\
+	find test/ -name '*.elf' |\
 	xargs llvm-cov export --instr-profile coverage/cov.profdata --format lcov > $$$$.tmp &&\
 	mv $$$$.tmp $@
 
 coverage/filtered.lcov: coverage/cov.lcov
 	trap "rm -f $$$$.tmp" EXIT INT TERM;\
-	find . -name '*.elf' |\
+	find test/ -name '*.elf' |\
 	xargs llvm-cov export --instr-profile coverage/cov.profdata --format lcov \
 	--sources $(CI_FILTER) \
 	--object > $$$$.tmp &&\
