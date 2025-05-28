@@ -76,7 +76,7 @@ jobs:
     if: ${{ needs.builder-necessary.outputs.build == 'true' }}
     needs:
       - builder-necessary
-    runs-on: ${{ github.event.repository.private && 'buildjet-8vcpu-ubuntu-2204-arm' || 'ubuntu-22.04-arm' }}
+    runs-on: ubuntu-22.04-4core-arm64
 
     steps:
       - name: Checkout the code
@@ -111,9 +111,9 @@ jobs:
       matrix:
         include:
           - platform: amd64
-            runner: ${{ github.event.repository.private && 'buildjet-8vcpu-ubuntu-2204' || 'ubuntu-22.04' }}
+            runner: ubuntu-22.04
           - platform: arm64
-            runner: ${{ github.event.repository.private &&  'buildjet-8vcpu-ubuntu-2204-arm' || 'ubuntu-22.04-arm' }}
+            runner: ubuntu-22.04-4core-arm64
 
     steps:
       - name: Checkout the code
