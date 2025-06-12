@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <assert.h>
 #include <errno.h>
+#include <semaphore.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -15,7 +17,6 @@
 
 #include "webclient/webclient.h"
 
-#include "../sync.h"
 #include "agent_test.h"
 #include "hub.h"
 #include "path.h"
@@ -31,7 +32,7 @@
 #define PROCESS_EVENT_TIMEOUT 3000
 
 struct test {
-	struct sync_ctxt sync_cons;
+	sem_t sem;
 	char *filename;
 };
 
@@ -44,7 +45,7 @@ __wrap_connections_webclient_perform(FAR struct webclient_context *ctx)
 {
 	// Sync point with test thread. If enabled, will wait for other
 	// call to `sync_join` from the other thread.
-	sync_join(&g_test.sync_cons);
+	assert(!sem_post(&g_test.sem));
 	return __real_connections_webclient_perform(ctx);
 }
 
@@ -83,9 +84,6 @@ test_disconnect_reconnect(void **state)
 		.filename = t->filename,
 	};
 
-	// Start blocking blob work
-	sync_activate(&t->sync_cons, 2);
-
 	// test HTTP GET to file
 	struct EVP_BlobRequestHttp request = {
 		.url = TEST_HTTP_GET_URL,
@@ -102,7 +100,7 @@ test_disconnect_reconnect(void **state)
 
 	// Control race condition: wait for blob work to be started and before
 	// http operation is performed.
-	sync_join(&t->sync_cons);
+	assert_int_equal(sem_wait(&t->sem), 0);
 
 	// Expect processed blob to have failed
 	expect_value(blob_cb, reason, EVP_BLOB_CALLBACK_REASON_DONE);
@@ -151,7 +149,7 @@ setup(void **state)
 	struct test *t = &g_test;
 
 	int rv;
-	rv = sync_init(&t->sync_cons);
+	rv = sem_init(&t->sem, 0, 0);
 	assert_int_equal(0, rv);
 	agent_test_setup();
 	rv = systemf("mkdir -p %s", path_get(MODULE_INSTANCE_PATH_ID));
@@ -170,6 +168,9 @@ teardown(void **state)
 	struct test *t = *state;
 
 	free(t->filename);
+
+	if (sem_destroy(&t->sem))
+		return -1;
 
 	agent_test_exit();
 	return 0;
