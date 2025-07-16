@@ -21,6 +21,7 @@
 #include "base64.h"
 #include "blob.h"
 #include "blob_type_evp.h"
+#include "evp/agent.h"
 #include "hub.h"
 #include "mstp_schema.h"
 #include "path.h"
@@ -494,6 +495,7 @@ complete_storage_token_request(EVP_RPC_ID id, void *cb_data, void *payload,
 	struct evp_agent_context *agent = args->agent;
 	JSON_Value *json = NULL;
 	struct storagetoken_response resp = {0};
+	struct evp_agent_notification_stp_error notification = {0};
 
 	xlog_debug(
 		"complete_storage_token_request called for %s, delay=%" PRIu32
@@ -504,6 +506,9 @@ complete_storage_token_request(EVP_RPC_ID id, void *cb_data, void *payload,
 		/* Error completing the request means timeout */
 		xlog_error("Timeout response: %d. Delay time is %" PRIu32,
 			   error, delay);
+
+		notification.error = error;
+
 		goto end;
 	}
 
@@ -535,6 +540,10 @@ complete_storage_token_request(EVP_RPC_ID id, void *cb_data, void *payload,
 		error = resp.status;
 		xlog_error("Error from hub: %d (%s). Delay time is %" PRIu32,
 			   resp.status, resp.error, delay);
+
+		notification.error = resp.status;
+		notification.error_msg = resp.error;
+
 		goto end;
 	}
 
@@ -552,6 +561,12 @@ end:
 	if (error) {
 		notify_done(wk, BLOB_RESULT_ERROR, error);
 	}
+
+	if (notification.error != 0) {
+		evp_agent_notification_publish(agent, "stp/error",
+					       &notification);
+	}
+
 	storagetoken_response_dtor(&resp);
 	json_value_free(json);
 	free(args);

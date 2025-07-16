@@ -190,6 +190,11 @@ struct evp_agent_notification_blob_result {
 	unsigned int http_status;
 };
 
+struct evp_agent_notification_stp_error {
+	int error;
+	const char *error_msg;
+};
+
 typedef void (*evp_log_handler_t)(int lvl, const char *file, int line,
 				  const char *fmt, va_list ap);
 

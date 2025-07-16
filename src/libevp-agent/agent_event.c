@@ -19,6 +19,7 @@ static const char(*const list[]) = {
 	"mqtt/sync/err",
 	"network/error",
 	"start",
+	"stp/error",
 	"wasm/stopped",
 };
 /* clang-format on */
