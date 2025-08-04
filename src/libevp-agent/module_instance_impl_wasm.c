@@ -58,6 +58,11 @@
 #endif
 
 #define MAX_EXIT_TIME_IN_SECONDS 5
+#define POOL_SIZE                1
+
+// Network access configuration for WASM modules.
+static const char *g_addr_pool[POOL_SIZE] = {"0.0.0.0/0"};
+static const char *g_ns_lookup_pool[POOL_SIZE] = {"*"};
 
 static void
 module_instance_set_status(struct module_instance *m,
@@ -298,6 +303,14 @@ failure:
 	return ret;
 }
 
+static void
+setup_network_pools(wasm_module_t wasm_module)
+{
+	wasm_runtime_set_wasi_addr_pool(wasm_module, g_addr_pool, POOL_SIZE);
+	wasm_runtime_set_wasi_ns_lookup_pool(wasm_module, g_ns_lookup_pool,
+					     POOL_SIZE);
+}
+
 static int
 instantiate(struct instance_start *s, char **error)
 {
@@ -447,6 +460,7 @@ ensure_instance(struct instance_start *s, struct module *mi,
 	}
 
 	ret = setup_fds(s, workspace, error);
+	setup_network_pools(s->module);
 
 	if (ret) {
 		xlog_error("setup_fds failed with %d", ret);
