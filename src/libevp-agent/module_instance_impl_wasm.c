@@ -460,12 +460,13 @@ ensure_instance(struct instance_start *s, struct module *mi,
 	}
 
 	ret = setup_fds(s, workspace, error);
-	setup_network_pools(s->module);
 
 	if (ret) {
 		xlog_error("setup_fds failed with %d", ret);
 		return ret;
 	}
+
+	setup_network_pools(s->module);
 
 	ret = instantiate(s, error);
 
