@@ -58,11 +58,13 @@
 #endif
 
 #define MAX_EXIT_TIME_IN_SECONDS 5
+#if defined(CONFIG_EVP_MODULE_IMPL_WASM_ENABLE_DNS_ACCESS)
 #define POOL_SIZE                1
 
 // Network access configuration for WASM modules.
 static const char *g_addr_pool[POOL_SIZE] = {"0.0.0.0/0"};
 static const char *g_ns_lookup_pool[POOL_SIZE] = {"*"};
+#endif // CONFIG_EVP_MODULE_IMPL_WASM_ENABLE_DNS_ACCESS
 
 static void
 module_instance_set_status(struct module_instance *m,
@@ -303,6 +305,7 @@ failure:
 	return ret;
 }
 
+#if defined(CONFIG_EVP_MODULE_IMPL_WASM_ENABLE_DNS_ACCESS)
 static void
 setup_network_pools(wasm_module_t wasm_module)
 {
@@ -310,6 +313,7 @@ setup_network_pools(wasm_module_t wasm_module)
 	wasm_runtime_set_wasi_ns_lookup_pool(wasm_module, g_ns_lookup_pool,
 					     POOL_SIZE);
 }
+#endif // CONFIG_EVP_MODULE_IMPL_WASM_ENABLE_DNS_ACCESS
 
 static int
 instantiate(struct instance_start *s, char **error)
@@ -466,7 +470,9 @@ ensure_instance(struct instance_start *s, struct module *mi,
 		return ret;
 	}
 
+#if defined(CONFIG_EVP_MODULE_IMPL_WASM_ENABLE_DNS_ACCESS)
 	setup_network_pools(s->module);
+#endif // CONFIG_EVP_MODULE_IMPL_WASM_ENABLE_DNS_ACCESS
 
 	ret = instantiate(s, error);
 
