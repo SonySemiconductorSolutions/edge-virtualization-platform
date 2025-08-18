@@ -59,7 +59,7 @@
 
 #define MAX_EXIT_TIME_IN_SECONDS 5
 #if defined(CONFIG_EVP_MODULE_IMPL_WASM_ENABLE_DNS_ACCESS)
-#define POOL_SIZE                1
+#define POOL_SIZE 1
 
 // Network access configuration for WASM modules.
 static const char *g_addr_pool[POOL_SIZE] = {"0.0.0.0/0"};
