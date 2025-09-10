@@ -113,12 +113,12 @@ evp_hub_setup(const char *iot_platform)
 enum evp_hub_type
 get_hub_type(const char *iot_platform)
 {
-	/* Assume EVP1 TB by default, even for invalid 'iot_platform' */
-	enum evp_hub_type hub_type = EVP_HUB_TYPE_EVP1_TB;
+	/* Assume EVP2 TB by default, even for invalid 'iot_platform' */
+	enum evp_hub_type hub_type = EVP_HUB_TYPE_EVP2_TB;
 
 	if (iot_platform != NULL) {
-		if (strcasecmp(iot_platform, HUB_TB_NAME) == 0) {
-			hub_type = EVP_HUB_TYPE_EVP2_TB;
+		if (strcasecmp(iot_platform, HUB_EVP1_NAME) == 0) {
+			hub_type = EVP_HUB_TYPE_EVP1_TB;
 		}
 	}
 
