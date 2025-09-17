@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-VERSION = 1.48.1
+VERSION = 1.48.4
 COMMIT_HASH = $(shell git describe --always --abbrev=0 --dirty --match "NOT A TAG")
 
 define VERSION_BODY
