@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 
 # Contributor Covenant Code of Conduct
 
+Please also review our [Privacy Policy](PrivacyPolicy.md) before participating in our community.
+
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our
