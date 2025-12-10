@@ -135,8 +135,8 @@ plat_mod_fs_file_mmap(struct module *module, const void **data, size_t *size,
 	struct stat sb;
 	if (fstat(fd, &sb) == -1) {
 		*error = errno;
-		xlog_error("%s: error on stat %s(%d): %d", __func__, filename,
-			   fd, *error);
+		xlog_error("%s: error on stat %s(%d): errno=%d", __func__,
+			   filename, fd, *error);
 		goto failure;
 	}
 
@@ -146,7 +146,7 @@ plat_mod_fs_file_mmap(struct module *module, const void **data, size_t *size,
 
 	if (addr == MAP_FAILED) {
 		*error = errno;
-		xlog_error("%s: error on mmap %s(%d): %d, st_size=%zu",
+		xlog_error("%s: error on mmap %s(%d): errno=%d, st_size=%zu",
 			   __func__, filename, fd, errno, sb.st_size);
 		goto failure;
 	}
