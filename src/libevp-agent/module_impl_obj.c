@@ -114,7 +114,7 @@ module_impl_obj_load(struct module *m, const struct Module *modspec)
 			return EINVAL;
 		}
 	} else if (ret != ENOENT) {
-		/* Cleaned up the module if some IO error occurs. */
+		/* Clean up the module if some IO error occurs. */
 		plat_mod_fs_file_unlink(m);
 
 		/* some IO error in check_hash */
