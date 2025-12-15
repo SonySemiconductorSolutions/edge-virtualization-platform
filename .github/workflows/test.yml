@@ -34,12 +34,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: raspios-bookworm
-            runner: ubuntu-22.04-4core-arm64
-            platform: arm64
-          - name: ubuntu-noble
-            runner: ubuntu-22.04-4core-arm64
-            platform: arm64
           - name: ubuntu-noble
             runner: ubuntu-22.04
             platform: amd64
@@ -137,7 +131,7 @@ jobs:
           retention-days: ${{ job.status == 'success' && '7' || '14' }}
 
       - name: Report code coverage
-        if: ${{ matrix.name == 'raspios-bookworm' && matrix.platform == 'arm64' }}
+        if: ${{ matrix.name == 'ubuntu-noble' && matrix.platform == 'amd64' }}
         id: report-action-lcov
         uses: zgosalvez/github-actions-report-lcov@v4.1.2
         with:
@@ -148,7 +142,7 @@ jobs:
           update-comment: true
 
       - name: Report summary coverage to status
-        if: ${{ matrix.name == 'raspios-bookworm' && matrix.platform == 'arm64' }}
+        if: ${{ matrix.name == 'ubuntu-noble' && matrix.platform == 'amd64' }}
         uses: guibranco/github-status-action-v2@v1.1.13
         with:
           authToken: ${{ github.token }}

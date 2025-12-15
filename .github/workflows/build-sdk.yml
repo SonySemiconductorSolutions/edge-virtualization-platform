@@ -34,12 +34,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: raspios-bookworm
-            runner: ubuntu-22.04-4core-arm64
-            platform: arm64
-          - name: ubuntu-noble
-            runner: ubuntu-22.04-4core-arm64
-            platform: arm64
           - name: ubuntu-noble
             runner: ubuntu-22.04
             platform: amd64
