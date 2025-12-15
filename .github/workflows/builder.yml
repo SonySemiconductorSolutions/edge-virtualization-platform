@@ -53,7 +53,6 @@ jobs:
         with:
           files: |
             .devcontainer/ubuntu/Dockerfile
-            .devcontainer/raspi/Dockerfile
             .github/workflows/builder.yml
 
       - name: Set builder tag
@@ -71,35 +70,6 @@ jobs:
             echo "$file"
           done
 
-  build-push-raspi:
-    name: Build and push raspios bookworm builder
-    if: ${{ needs.builder-necessary.outputs.build == 'true' }}
-    needs:
-      - builder-necessary
-    runs-on: ubuntu-22.04-4core-arm64
-
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Github Registry
-        uses: docker/login-action@v3
-        with:
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-          registry: ghcr.io
-
-      - name: Build and push raspios bookworm builder
-        uses: docker/build-push-action@v5
-        with:
-          context: .devcontainer/raspi
-          file: .devcontainer/raspi/Dockerfile
-          push: true
-          tags: ghcr.io/${{ inputs.package-namespace }}/builder-raspios-bookworm:${{ needs.builder-necessary.outputs.builder-tag }}
-
   build-push-ubuntu:
     name: Build and push ubuntu noble (${{ matrix.platform }})
     if: ${{ needs.builder-necessary.outputs.build == 'true' }}
@@ -112,8 +82,6 @@ jobs:
         include:
           - platform: amd64
             runner: ubuntu-22.04
-          - platform: arm64
-            runner: ubuntu-22.04-4core-arm64
 
     steps:
       - name: Checkout the code
@@ -136,28 +104,4 @@ jobs:
           file: .devcontainer/ubuntu/Dockerfile
           push: true
           provenance: false
-          tags: ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-${{ matrix.platform }}
-
-  manifest-ubuntu:
-    if: ${{ needs.builder-necessary.outputs.build == 'true' }}
-    needs:
-      - builder-necessary
-      - build-push-ubuntu
-    name: Docker manifest
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Login to Github Registry
-        uses: docker/login-action@v3
-        with:
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-          registry: ghcr.io
-
-      - name: Create and push multiarch manifests
-        run: |
-          docker manifest create \
-            ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }} \
-            ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-amd64 \
-            ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}-arm64
-            docker manifest push ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}
+          tags: ghcr.io/${{ inputs.package-namespace }}/builder-ubuntu-noble:${{ needs.builder-necessary.outputs.builder-tag }}
