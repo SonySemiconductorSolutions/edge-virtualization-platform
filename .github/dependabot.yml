@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/.github/**/*"
+    schedule:
+      interval: "quarterly"
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions-all:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "SonySemiconductorSolutions/*"
