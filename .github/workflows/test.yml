@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref }}
 
@@ -112,14 +112,14 @@ jobs:
 
       # Upload test logs upon failure.
       - name: Upload logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-log-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: test/logs/**/*.log
           retention-days: ${{ job.status == 'success' && '7' || '14' }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: test-modules-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
           path: |
@@ -129,7 +129,7 @@ jobs:
             test_modules/python/*.zip
 
       - name: Upload coverage results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           # Use a specific folder to not overwrite log files
           name: coverage-report-${{ matrix.name }}-${{ matrix.platform }}-${{github.run_id}}
@@ -139,7 +139,7 @@ jobs:
       - name: Report code coverage
         if: ${{ matrix.name == 'raspios-bookworm' && matrix.platform == 'arm64' }}
         id: report-action-lcov
-        uses: zgosalvez/github-actions-report-lcov@v4.1.2
+        uses: zgosalvez/github-actions-report-lcov@v7.0.12
         with:
           title-prefix: ${{ matrix.name }}-${{ matrix.platform }}
           coverage-files: coverage/filtered.lcov
@@ -149,7 +149,7 @@ jobs:
 
       - name: Report summary coverage to status
         if: ${{ matrix.name == 'raspios-bookworm' && matrix.platform == 'arm64' }}
-        uses: guibranco/github-status-action-v2@v1.1.13
+        uses: guibranco/github-status-action-v2@v1.2.4
         with:
           authToken: ${{ github.token }}
           context: "Coverage line level: "

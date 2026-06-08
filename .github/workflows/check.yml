@@ -29,7 +29,7 @@ jobs:
     timeout-minutes: 3 # the worst case is < 1 minute
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref }}
 

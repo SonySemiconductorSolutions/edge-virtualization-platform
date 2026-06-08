@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref }}
 
@@ -98,12 +98,12 @@ jobs:
         working-directory: src/python-evp-app-sdk
         run: python setup.py --command-packages=stdeb.command bdist_deb
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: python-sdk-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
           path: lib/python/*
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: python-sdk-deb-${{ matrix.name }}-${{ matrix.platform }}-${{ github.run_id }}
           path: src/python-evp-app-sdk/deb_dist/*.deb
