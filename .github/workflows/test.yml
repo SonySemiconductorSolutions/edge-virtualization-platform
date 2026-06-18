@@ -139,7 +139,7 @@ jobs:
       - name: Report code coverage
         if: ${{ matrix.name == 'raspios-bookworm' && matrix.platform == 'arm64' }}
         id: report-action-lcov
-        uses: zgosalvez/github-actions-report-lcov@v7.0.12
+        uses: zgosalvez/github-actions-report-lcov@v7
         with:
           title-prefix: ${{ matrix.name }}-${{ matrix.platform }}
           coverage-files: coverage/filtered.lcov
@@ -149,7 +149,7 @@ jobs:
 
       - name: Report summary coverage to status
         if: ${{ matrix.name == 'raspios-bookworm' && matrix.platform == 'arm64' }}
-        uses: guibranco/github-status-action-v2@v1.2.4
+        uses: guibranco/github-status-action-v2@v1
         with:
           authToken: ${{ github.token }}
           context: "Coverage line level: "
