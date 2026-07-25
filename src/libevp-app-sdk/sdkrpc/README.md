@@ -11,9 +11,9 @@ SPDX-License-Identifier: Apache-2.0
 This implements a simple record exchange protocol used
 by CONFIG_EVP_SDK_SOCKET.
 
-The client is a part of [evpmodulesdk](../evpmodulesdk).
+The client is a part of [libevp-app-sdk](..).
 
-The server is a part of the evp agent, [sdk_worker.c](../sdk_worker.c).
+The server is a part of the evp agent, [sdk_worker.c](../../libevp-agent/sdk_worker.c).
 
 ## Protocol
 
@@ -28,6 +28,6 @@ To avoid a deadlock, it's the responsibility of the client to drain
 the receive buffer even when it would be blocked on the send buffer.
 
 Each record is a flatbuffers-encoded binary, prepended by
-[struct record_hdr](record_hdr.h).
+[struct record_hdr](../../../include/internal/record_hdr.h).
 
-You can find the flatbuffers schema at [sdk.fbs](../sdkenc/sdk.fbs).
+You can find the flatbuffers schema at [sdk.fbs](../../sdkenc/sdk.fbs).
